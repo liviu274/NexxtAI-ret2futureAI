@@ -47,6 +47,11 @@ export interface Flag extends ScreeningFlagExtension {
   evidence: Evidence[];
   explanation: string;
   clientFixMessage: string;
+  status?: "open" | "sent_to_client" | "resolved" | "dismissed";
+  client_fixable?: boolean;
+  fix_message?: string | null;
+  dismissedBy?: string;
+  dismissalNote?: string;
 }
 
 export interface RiskReason {
@@ -87,6 +92,7 @@ export interface Case {
   company?: { name: string; cui: string; registration: string; caen: string; address: string };
   ownership?: { registry: OwnershipPerson[]; declared: OwnershipPerson[] };
   screeningSummary?: ScreeningSummary;
+  executedRuleIds?: string[];
 }
 
 export interface OwnershipPerson { id: string; name: string; pct: number }
@@ -106,6 +112,10 @@ export interface Playbook {
   customerType: CustomerType;
   rules: PlaybookRule[];
   sourceDocumentText: string;
+  requiredDocuments?: string[];
+  sourceName?: string;
+  sourceDate?: string;
+  clauses?: { number: string; text: string; status: "Automatizată" | "Acoperită" | "Manuală" | "Context" | "Neverificată"; ruleIds: string[] }[];
 }
 
 export interface AuditEntry {

@@ -15,3 +15,4 @@
 - Routing is TanStack Router file routes (React Router is not supported on this stack).
 - Mock documents use per-case PNG pages with PDF fallback; normalized top-left evidence boxes resolve through the API from per-case truth fixtures, never guessed coordinates.
 - Direct PJ ownership comparisons are derived from case.company and case.ownership, with React Flow rendered client-side to keep SSR browser-safe.
+- Screenshot-mapped content routes share focused presentation components; /upload remains a client-portal alias to preserve its existing address.

@@ -169,3 +169,16 @@
     color: var(--color-foreground);
   }
 }
+
+/* Stitch screen proportions and the direct ownership diagram. */
+body { letter-spacing: 0; }
+.ownership-match .react-flow__edge-path { stroke: var(--line); }
+.ownership-mismatch .react-flow__edge-path { stroke: var(--sev-high); }
+.react-flow__edge-text { fill: var(--ink-muted); font-size: 10px; }
+.react-flow__edge-textbg { fill: var(--beige); }
+.ownership-mismatch .react-flow__edge-text { fill: var(--sev-high); }
+@media (max-width: 640px) {
+  .staff-header { flex-wrap: wrap; padding-top: 10px; padding-bottom: 10px; }
+  .staff-nav { order: 3; width: 100%; justify-content: center; }
+  .review-shell aside { border-right: 0; border-bottom: 1px solid var(--border); }
+}

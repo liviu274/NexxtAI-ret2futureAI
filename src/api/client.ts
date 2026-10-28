@@ -88,10 +88,5 @@ export async function uploadDocument(file: File): Promise<{ ok: boolean; message
     return res.json();
   }
   await delay(1600);
-  const n = file.name.toLowerCase();
-  if (n.includes("ci") || n.includes("buletin"))
-    return { ok: false, severity: "high", message: "Cartea ta de identitate a expirat. Te rugăm să încarci una valabilă." };
-  if (n.includes("flutur"))
-    return { ok: false, severity: "medium", message: "Fluturașul este mai vechi de 30 de zile. Încarcă unul din ultima lună." };
-  return { ok: true, severity: "ok", message: "Document verificat. Totul arată bine!" };
+  return { ok: true, severity: "ok", message: "Fișier primit în demonstrația SPECIMEN. Verificarea conținutului nu este conectată." };
 }

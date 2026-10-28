@@ -14,6 +14,7 @@ import { Route as AuditRouteImport } from './routes/audit'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as CasesIndexRouteImport } from './routes/cases.index'
 import { Route as PlaybooksIdRouteImport } from './routes/playbooks.$id'
+import { Route as PortalCaseIdRouteImport } from './routes/portal.$caseId'
 import { Route as CasesIdIndexRouteImport } from './routes/cases.$id.index'
 import { Route as CasesIdAuditRouteImport } from './routes/cases.$id.audit'
 
@@ -42,6 +43,11 @@ const PlaybooksIdRoute = PlaybooksIdRouteImport.update({
   path: '/playbooks/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PortalCaseIdRoute = PortalCaseIdRouteImport.update({
+  id: '/portal/$caseId',
+  path: '/portal/$caseId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CasesIdIndexRoute = CasesIdIndexRouteImport.update({
   id: '/cases/$id/',
   path: '/cases/$id/',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/audit': typeof AuditRoute
   '/upload': typeof UploadRoute
   '/playbooks/$id': typeof PlaybooksIdRoute
+  '/portal/$caseId': typeof PortalCaseIdRoute
   '/cases/': typeof CasesIndexRoute
   '/cases/$id/audit': typeof CasesIdAuditRoute
   '/cases/$id/': typeof CasesIdIndexRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/audit': typeof AuditRoute
   '/upload': typeof UploadRoute
   '/playbooks/$id': typeof PlaybooksIdRoute
+  '/portal/$caseId': typeof PortalCaseIdRoute
   '/cases': typeof CasesIndexRoute
   '/cases/$id/audit': typeof CasesIdAuditRoute
   '/cases/$id': typeof CasesIdIndexRoute
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/audit': typeof AuditRoute
   '/upload': typeof UploadRoute
   '/playbooks/$id': typeof PlaybooksIdRoute
+  '/portal/$caseId': typeof PortalCaseIdRoute
   '/cases/': typeof CasesIndexRoute
   '/cases/$id/audit': typeof CasesIdAuditRoute
   '/cases/$id/': typeof CasesIdIndexRoute
@@ -88,6 +97,7 @@ export interface FileRouteTypes {
     | '/audit'
     | '/upload'
     | '/playbooks/$id'
+    | '/portal/$caseId'
     | '/cases/'
     | '/cases/$id/audit'
     | '/cases/$id/'
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/audit'
     | '/upload'
     | '/playbooks/$id'
+    | '/portal/$caseId'
     | '/cases'
     | '/cases/$id/audit'
     | '/cases/$id'
@@ -106,6 +117,7 @@ export interface FileRouteTypes {
     | '/audit'
     | '/upload'
     | '/playbooks/$id'
+    | '/portal/$caseId'
     | '/cases/'
     | '/cases/$id/audit'
     | '/cases/$id/'
@@ -116,6 +128,7 @@ export interface RootRouteChildren {
   AuditRoute: typeof AuditRoute
   UploadRoute: typeof UploadRoute
   PlaybooksIdRoute: typeof PlaybooksIdRoute
+  PortalCaseIdRoute: typeof PortalCaseIdRoute
   CasesIndexRoute: typeof CasesIndexRoute
   CasesIdAuditRoute: typeof CasesIdAuditRoute
   CasesIdIndexRoute: typeof CasesIdIndexRoute
@@ -158,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlaybooksIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/portal/$caseId': {
+      id: '/portal/$caseId'
+      path: '/portal/$caseId'
+      fullPath: '/portal/$caseId'
+      preLoaderRoute: typeof PortalCaseIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cases/$id/': {
       id: '/cases/$id/'
       path: '/cases/$id'
@@ -180,6 +200,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuditRoute: AuditRoute,
   UploadRoute: UploadRoute,
   PlaybooksIdRoute: PlaybooksIdRoute,
+  PortalCaseIdRoute: PortalCaseIdRoute,
   CasesIndexRoute: CasesIndexRoute,
   CasesIdAuditRoute: CasesIdAuditRoute,
   CasesIdIndexRoute: CasesIdIndexRoute,

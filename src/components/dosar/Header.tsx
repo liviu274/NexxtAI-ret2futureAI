@@ -14,7 +14,7 @@ export function AnalystHeader() {
       <Link to="/playbooks" className={pill} activeProps={active}><BookOpen className="h-3 w-3" />Playbook-uri</Link>
       <Link to="/audit" className={pill} activeProps={active}><ClipboardCheck className="h-3 w-3" />Audit</Link>
       <Link to="/statistici" className={pill} activeProps={active}><ChartNoAxesColumn className="h-3 w-3" />Statistici</Link>
-    </nav><div className="flex items-center gap-4"><Link to="/portal" target="_blank" rel="noopener noreferrer" className="hidden text-xs text-teal sm:block">Portal client ↗</Link><span title="Analist KYC" className="flex h-6 w-6 items-center justify-center rounded-full bg-avatar text-card"><UserRound className="h-3.5 w-3.5" /></span></div>
+    </nav><div className="flex items-center gap-4"><Link to="/portal" className="hidden text-xs text-teal sm:block">Portal client</Link><span title="Analist KYC" className="flex h-6 w-6 items-center justify-center rounded-full bg-avatar text-card"><UserRound className="h-3.5 w-3.5" /></span></div>
   </div></header>;
 }
 

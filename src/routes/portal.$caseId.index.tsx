@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ClientPortal } from "@/components/dosar/ClientPortal";
-export const Route = createFileRoute("/portal/$caseId")({
+export const Route = createFileRoute("/portal/$caseId/")({
   head: ({ params }) => ({ meta: [
     { title: `Documente ${params.caseId} · DosarAI` },
     { name: "description", content: "Documentele solicitate pentru dosarul tău SPECIMEN." },

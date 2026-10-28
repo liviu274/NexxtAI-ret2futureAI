@@ -16,9 +16,9 @@ import { Route as UploadRouteImport } from './routes/upload'
 import { Route as CasesIndexRouteImport } from './routes/cases.index'
 import { Route as PlaybooksIndexRouteImport } from './routes/playbooks.index'
 import { Route as PlaybooksIdRouteImport } from './routes/playbooks.$id'
-import { Route as PortalCaseIdRouteImport } from './routes/portal.$caseId'
 import { Route as CasesIdIndexRouteImport } from './routes/cases.$id.index'
 import { Route as CasesIdAuditRouteImport } from './routes/cases.$id.audit'
+import { Route as PortalCaseIdIndexRouteImport } from './routes/portal.$caseId.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -55,11 +55,6 @@ const PlaybooksIdRoute = PlaybooksIdRouteImport.update({
   path: '/playbooks/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PortalCaseIdRoute = PortalCaseIdRouteImport.update({
-  id: '/portal/$caseId',
-  path: '/portal/$caseId',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const CasesIdIndexRoute = CasesIdIndexRouteImport.update({
   id: '/cases/$id/',
   path: '/cases/$id/',
@@ -70,6 +65,11 @@ const CasesIdAuditRoute = CasesIdAuditRouteImport.update({
   path: '/cases/$id/audit',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PortalCaseIdIndexRoute = PortalCaseIdIndexRouteImport.update({
+  id: '/portal/$caseId/',
+  path: '/portal/$caseId/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -77,11 +77,11 @@ export interface FileRoutesByFullPath {
   '/statistici': typeof StatisticiRoute
   '/upload': typeof UploadRoute
   '/playbooks/$id': typeof PlaybooksIdRoute
-  '/portal/$caseId': typeof PortalCaseIdRoute
   '/cases/': typeof CasesIndexRoute
   '/playbooks/': typeof PlaybooksIndexRoute
   '/cases/$id/audit': typeof CasesIdAuditRoute
   '/cases/$id/': typeof CasesIdIndexRoute
+  '/portal/$caseId/': typeof PortalCaseIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -89,11 +89,11 @@ export interface FileRoutesByTo {
   '/statistici': typeof StatisticiRoute
   '/upload': typeof UploadRoute
   '/playbooks/$id': typeof PlaybooksIdRoute
-  '/portal/$caseId': typeof PortalCaseIdRoute
   '/cases': typeof CasesIndexRoute
   '/playbooks': typeof PlaybooksIndexRoute
   '/cases/$id/audit': typeof CasesIdAuditRoute
   '/cases/$id': typeof CasesIdIndexRoute
+  '/portal/$caseId': typeof PortalCaseIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -102,11 +102,11 @@ export interface FileRoutesById {
   '/statistici': typeof StatisticiRoute
   '/upload': typeof UploadRoute
   '/playbooks/$id': typeof PlaybooksIdRoute
-  '/portal/$caseId': typeof PortalCaseIdRoute
   '/cases/': typeof CasesIndexRoute
   '/playbooks/': typeof PlaybooksIndexRoute
   '/cases/$id/audit': typeof CasesIdAuditRoute
   '/cases/$id/': typeof CasesIdIndexRoute
+  '/portal/$caseId/': typeof PortalCaseIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -116,11 +116,11 @@ export interface FileRouteTypes {
     | '/statistici'
     | '/upload'
     | '/playbooks/$id'
-    | '/portal/$caseId'
     | '/cases/'
     | '/playbooks/'
     | '/cases/$id/audit'
     | '/cases/$id/'
+    | '/portal/$caseId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -128,11 +128,11 @@ export interface FileRouteTypes {
     | '/statistici'
     | '/upload'
     | '/playbooks/$id'
-    | '/portal/$caseId'
     | '/cases'
     | '/playbooks'
     | '/cases/$id/audit'
     | '/cases/$id'
+    | '/portal/$caseId'
   id:
     | '__root__'
     | '/'
@@ -140,11 +140,11 @@ export interface FileRouteTypes {
     | '/statistici'
     | '/upload'
     | '/playbooks/$id'
-    | '/portal/$caseId'
     | '/cases/'
     | '/playbooks/'
     | '/cases/$id/audit'
     | '/cases/$id/'
+    | '/portal/$caseId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -153,11 +153,11 @@ export interface RootRouteChildren {
   StatisticiRoute: typeof StatisticiRoute
   UploadRoute: typeof UploadRoute
   PlaybooksIdRoute: typeof PlaybooksIdRoute
-  PortalCaseIdRoute: typeof PortalCaseIdRoute
   CasesIndexRoute: typeof CasesIndexRoute
   PlaybooksIndexRoute: typeof PlaybooksIndexRoute
   CasesIdAuditRoute: typeof CasesIdAuditRoute
   CasesIdIndexRoute: typeof CasesIdIndexRoute
+  PortalCaseIdIndexRoute: typeof PortalCaseIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -211,13 +211,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlaybooksIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/portal/$caseId': {
-      id: '/portal/$caseId'
-      path: '/portal/$caseId'
-      fullPath: '/portal/$caseId'
-      preLoaderRoute: typeof PortalCaseIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/cases/$id/': {
       id: '/cases/$id/'
       path: '/cases/$id'
@@ -232,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CasesIdAuditRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/portal/$caseId/': {
+      id: '/portal/$caseId/'
+      path: '/portal/$caseId'
+      fullPath: '/portal/$caseId/'
+      preLoaderRoute: typeof PortalCaseIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -241,11 +241,11 @@ const rootRouteChildren: RootRouteChildren = {
   StatisticiRoute: StatisticiRoute,
   UploadRoute: UploadRoute,
   PlaybooksIdRoute: PlaybooksIdRoute,
-  PortalCaseIdRoute: PortalCaseIdRoute,
   CasesIndexRoute: CasesIndexRoute,
   PlaybooksIndexRoute: PlaybooksIndexRoute,
   CasesIdAuditRoute: CasesIdAuditRoute,
   CasesIdIndexRoute: CasesIdIndexRoute,
+  PortalCaseIdIndexRoute: PortalCaseIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,4 +1,5 @@
 import type { AuditEntry, Case, OwnershipEdge, OwnershipNode, Playbook } from "@/types";
+import { resolveEvidence } from "@/lib/dataset";
 
 export const USE_MOCK = true;
 const BASE = import.meta.env["VITE_API_BASE_URL"] ?? "";
@@ -27,7 +28,17 @@ export async function getCase(id: string): Promise<Case | null> {
   if (!USE_MOCK) return http(`/cases/${id}`);
   const m = await mocks();
   await delay(600);
-  return m.cases.find((c) => c.id === id) ?? null;
+  const source = m.cases.find((c) => c.id === id);
+  if (!source) return null;
+  const c = structuredClone(source);
+  try {
+    const res = await fetch(`/mocks/${id}/truth.json`);
+    if (res.ok && res.headers.get("content-type")?.includes("json")) {
+      const truth: unknown = await res.json();
+      c.flags = c.flags.map((f) => ({ ...f, evidence: f.evidence.map((e) => resolveEvidence(e, f, truth)) }));
+    }
+  } catch { /* Original fixtures are optional until imported. */ }
+  return c;
 }
 
 export async function getAuditLog(caseId: string): Promise<AuditEntry[]> {
@@ -41,14 +52,19 @@ export async function getOwnership(caseId: string): Promise<{ nodes: OwnershipNo
   if (!USE_MOCK) return http(`/cases/${caseId}/ownership`);
   const m = await mocks();
   await delay(300);
-  return caseId.startsWith("PJ") ? m.ownershipPJ : { nodes: [], edges: [] };
+  const c = m.cases.find((item) => item.id === caseId);
+  if (!c?.company || !c.ownership) return { nodes: [], edges: [] };
+  return {
+    nodes: [{ id: "company", label: c.company.name, kind: "companie", declared: true }, ...c.ownership.registry.map((p): OwnershipNode => ({ id: p.id, label: p.name, kind: "persoană", declared: c.ownership?.declared.some((d) => d.id === p.id) ?? false }))],
+    edges: c.ownership.registry.map((p) => ({ from: "company", to: p.id, pct: p.pct })),
+  };
 }
 
 export async function getPlaybook(id: string): Promise<Playbook | null> {
   if (!USE_MOCK) return http(`/playbooks/${id}`);
   const m = await mocks();
   await delay(400);
-  return m.playbooks.find((p) => p.id === id) ?? null;
+  return m.playbooks.find((p) => p.id === (id === "popriri" ? "pb_kyc_pf_v1" : id)) ?? null;
 }
 
 export async function listPlaybooks(): Promise<Playbook[]> {

@@ -3,7 +3,8 @@ import type { DocumentStatus, Severity } from "@/types";
 import { cn } from "@/lib/utils";
 
 const sev = {
-  high: { label: "Critic", cls: "bg-sev-high/10 text-sev-high border-sev-high/30", Icon: AlertOctagon },
+  critical: { label: "Critic", cls: "bg-sev-high/10 text-sev-high border-sev-high/30", Icon: AlertOctagon },
+  high: { label: "Ridicat", cls: "bg-sev-high/10 text-sev-high border-sev-high/30", Icon: AlertTriangle },
   medium: { label: "Mediu", cls: "bg-sev-medium/10 text-sev-medium border-sev-medium/30", Icon: AlertTriangle },
   low: { label: "Info", cls: "bg-teal/10 text-teal border-teal/30", Icon: Info },
 } as const;

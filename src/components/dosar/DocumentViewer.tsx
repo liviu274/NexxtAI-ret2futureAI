@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Minus, Plus, FileSearch } from "lucide-react";
 import type { BBox, Document } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,19 @@ export function DocumentViewer({ document, page = 0, highlights = [], onPageChan
   onPageChange?: (p: number) => void;
 }) {
   const [zoom, setZoom] = useState(1);
+  const scroller = useRef<HTMLDivElement>(null);
+  const first = highlights[0];
+  useEffect(() => {
+    const el = scroller.current;
+    if (!el || !first) return;
+    const t = setTimeout(() => {
+      const inner = el.firstElementChild as HTMLElement | null;
+      if (!inner) return;
+      const top = inner.offsetTop + first.y * inner.offsetHeight - el.clientHeight / 2;
+      el.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+    }, 50);
+    return () => clearTimeout(t);
+  }, [first?.x, first?.y, zoom, document?.id]);
   if (!document)
     return (
       <div className="flex h-[480px] flex-col items-center justify-center gap-2 rounded-lg bg-beige-dark text-center text-sm text-ink-muted">
@@ -35,7 +48,7 @@ export function DocumentViewer({ document, page = 0, highlights = [], onPageChan
           <Button size="icon" variant="ghost" aria-label="Pagina următoare" disabled={page >= pages - 1} onClick={() => onPageChange?.(page + 1)}><ChevronRight className="h-4 w-4" /></Button>
         </div>
       </div>
-      <div className="max-h-[560px] overflow-auto rounded-lg bg-beige-dark p-4">
+      <div ref={scroller} className="relative max-h-[560px] overflow-auto rounded-lg bg-beige-dark p-4">
         <div className="relative mx-auto shadow-card" style={{ width: `${zoom * 100}%` }}>
           <img src={document.pageImages[page]} alt={`${document.type}, pagina ${page + 1}`} className="block w-full" />
           {highlights.map((b, i) => (

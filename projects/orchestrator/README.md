@@ -66,6 +66,21 @@ File type is read from the file header, not from the MIME type or extension; any
 Not covered yet: pixel-level forensics on the ID photo (I tried error-level analysis: it flags clean cards with detailed portraits and missed synthetic edits, so it was left out until there are real photos to tune it on), bank-statement totals (raises, so it shows up as "could not run"), and a whole line re-rendered in a different family.
 Tamper flags are never client-visible (see Guardrails).
 
+## OCR (classify and extract)
+
+`nexxt_orchestrator/ingest.py` connects uploads to the Featherless OCR in `projects/data-collection`. It is switched on
+when `FEATHERLESS_API_KEY` is set where the API runs (models: `FEATHERLESS_OCR_MODEL`, `FEATHERLESS_EXTRACTION_MODEL`):
+
+1. Each page is transcribed once by the vision model; the text is cached in `runs/<case>/ocr/<doc_id>.json`.
+2. Classify: the model picks the `doc_type` from the case playbook's documents (anything else becomes `unknown`).
+3. Extract: the model returns exactly the playbook's fields for that type; dates, money, CNP/CUI and lists of people
+   are normalized in code. A value that cannot be normalized is kept as printed, so the checks flag it.
+4. Owner: same CNP as an already owned document, then same name, then the only person with the right role.
+   Company documents have no owner.
+
+Fields carry `bbox: [0, 0, 1, 1]`: the location is not extracted, so a flag opens the right page without a
+highlight. If the OCR service fails, the upload answers 502; the document is kept and retried on the next process.
+
 ## Guardrails (enforced in code, covered by tests)
 
 - Checks are looked up by catalog name only; an unknown check or a crash becomes a medium flag for the analyst (fails closed, never a silent pass).

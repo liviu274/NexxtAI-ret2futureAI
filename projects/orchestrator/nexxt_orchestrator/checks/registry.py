@@ -41,9 +41,12 @@ def company_cui(ctx: CheckContext) -> str | None:
     return None
 
 
-def person_key(person: dict) -> str:
-    cnp = re.sub(r"\D", "", str(person.get("cnp") or ""))
-    return cnp or " ".join(sorted(normalize(person.get("full_name", ""))))
+def same_person(a: dict, b: dict) -> bool:
+    """By CNP when both sides have one, else by name (word order, case and diacritics ignored)."""
+    cnp_a, cnp_b = (re.sub(r"\D", "", str(p.get("cnp") or "")) for p in (a, b))
+    if cnp_a and cnp_b:
+        return cnp_a == cnp_b
+    return sorted(normalize(a.get("full_name", ""))) == sorted(normalize(b.get("full_name", "")))
 
 
 def describe(people: list[dict]) -> str:
@@ -51,18 +54,17 @@ def describe(people: list[dict]) -> str:
 
 
 def differences(registry: list[dict], declared: list[dict]) -> list[str]:
-    in_registry = {person_key(p): p for p in registry}
-    in_declaration = {person_key(p): p for p in declared}
     found = []
-    for key, p in in_declaration.items():
-        if key not in in_registry:
+    for p in declared:
+        if not any(same_person(p, r) for r in registry):
             found.append(f"{p.get('full_name')} is declared as UBO but is not a UBO in the registry")
-    for key, p in in_registry.items():
-        if key not in in_declaration:
-            found.append(f"{p.get('full_name')} is a UBO in the registry but is missing from the declaration")
-        elif p.get("ownership_pct") != in_declaration[key].get("ownership_pct"):
-            found.append(f"{p.get('full_name')}: {in_declaration[key].get('ownership_pct')}% declared, "
-                         f"{p.get('ownership_pct')}% in the registry")
+    for r in registry:
+        match = next((p for p in declared if same_person(p, r)), None)
+        if match is None:
+            found.append(f"{r.get('full_name')} is a UBO in the registry but is missing from the declaration")
+        elif r.get("ownership_pct") != match.get("ownership_pct"):
+            found.append(f"{r.get('full_name')}: {match.get('ownership_pct')}% declared, "
+                         f"{r.get('ownership_pct')}% in the registry")
     return found
 
 

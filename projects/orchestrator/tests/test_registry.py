@@ -72,6 +72,12 @@ def test_missing_declaration_is_left_to_required_present(orch):
     assert registry_flags(orch, load("case_pj_04_declaratie_ubo_lipsa")) == []
 
 
+def test_a_declaration_without_cnps_matches_by_name():
+    registry = [{"full_name": "Tudor Exemplu", "cnp": "1850520408137", "ownership_pct": 60}]
+    assert differences(registry, [{"full_name": "Exemplu Tudor", "ownership_pct": 60}]) == []
+    assert differences(registry, [{"full_name": "Tudor Exemplu", "cnp": "1111111111111", "ownership_pct": 60}]) != []
+
+
 def test_people_match_by_cnp_then_by_name_in_any_order():
     registry = [{"full_name": "Tudor Exemplu", "cnp": "1850520408137", "ownership_pct": 60},
                 {"full_name": "Irina Model", "ownership_pct": 40}]

@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PortalStatus } from "@/components/dosar/PortalFlow";
 export const Route = createFileRoute("/portal/$caseId/")({
   head: ({ params }) => ({ meta: [
-    { title: `Documente ${params.caseId} · DosarAI` },
+    { title: `Documente ${params.caseId} · Raif2Future` },
     { name: "description", content: "Documentele solicitate pentru dosarul tău SPECIMEN." },
-    { property: "og:title", content: "Portal client · DosarAI" },
+    { property: "og:title", content: "Portal client · Raif2Future" },
     { property: "og:description", content: "Încarcă documentele solicitate pentru verificare." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary_large_image" },

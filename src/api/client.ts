@@ -2,11 +2,53 @@ import type { AuditEntry, Case, OwnershipEdge, OwnershipNode, Playbook } from "@
 import { resolveEvidence } from "@/lib/dataset";
 import { validateScreeningResolution } from "@/lib/screening";
 import type { ScreeningMatch } from "@/types/extensions";
-import { blockingFlags } from "@/lib/review";
-import { readDemoCases, writeDemoCases } from "./demo-store";
+import { blockingFlags, isTamper, riskFromFlags } from "@/lib/review";
+import { clearDemoCases, readDemoCases, writeDemoCases } from "./demo-store";
 import { portalDocumentPlan, simulatePortalResult } from "@/lib/portal";
 import type { CustomerType, Person } from "@/types";
-import { toClientCaseStatus, type ClientCaseStatus } from "@/lib/client-status";
+import { toClientCaseStatus, toClientPortalCase, type ClientCaseStatus, type ClientPortalCase } from "@/lib/client-status";
+import { fromBuilder, type BuilderResult } from "@/lib/playbook-builder";
+
+import { fromOrchestratorCase, fromOrchestratorAudit, type OrchestratorCase, type OrchestratorAudit, type AuditLogResult } from "@/lib/orchestrator-adapter";
+
+export const REAL_CASE_IDS = ["case_pj_07_procente_diferite", "case_pj_00_corect_control"] as const;
+const isRealCase = (id: string) => REAL_CASE_IDS.some((realId) => realId === id);
+const ORCHESTRATOR_BASE = (import.meta.env["VITE_ORCHESTRATOR_URL"] ?? "/api/orch").replace(/\/$/, "");
+let availability: Promise<boolean> | undefined;
+
+export function orchestratorAvailable(): Promise<boolean> {
+  if (typeof window === "undefined") return Promise.resolve(false);
+  return availability ??= (async () => {
+    const abort = new AbortController();
+    const timer = setTimeout(() => abort.abort(), 1500);
+    try { return (await fetch(`${ORCHESTRATOR_BASE}/cases`, { signal: abort.signal })).ok; }
+    catch { return false; }
+    finally { clearTimeout(timer); }
+  })();
+}
+async function orchestratorHttp<T>(path: string, init?: RequestInit): Promise<T> {
+  let res: Response;
+  try { res = await fetch(`${ORCHESTRATOR_BASE}${path}`, { ...init, headers: { "Content-Type": "application/json", ...init?.headers }, signal: AbortSignal.timeout(10_000) }); }
+  catch { availability = Promise.resolve(false); throw new Error("Serviciul de verificare nu răspunde."); }
+  if (!res.ok) {
+    if (res.status >= 500) availability = Promise.resolve(false);
+    if (res.status === 403 && path.endsWith("/decision")) {
+      const body = await res.json().catch(() => null) as { detail?: string } | null;
+      throw new Error(body?.detail?.includes("unresolved high/critical") ? "Aprobarea este blocată de probleme nerezolvate." : "Decizia nu poate fi înregistrată. Verifică starea dosarului.");
+    }
+    throw new Error(res.status === 404 ? "Dosarul sau problema nu a fost găsită în backend." : `Acțiunea nu a reușit (eroare ${res.status}).`);
+  }
+  return res.json() as Promise<T>;
+}
+async function readOrchestratorCase(id: string): Promise<Case | null> {
+  if (!isRealCase(id) || !await orchestratorAvailable()) return null;
+  try {
+    const raw = await orchestratorHttp<OrchestratorCase>(`/cases/${encodeURIComponent(id)}`);
+    const m = await mocks();
+    const playbook = await getPlaybook(raw.playbook_id);
+    return fromOrchestratorCase(raw, m.cases.find((c) => c.id === id), playbook?.rules);
+  } catch { return null; } // Read failures retain the existing demo experience; mutations never silently write to mocks after a failed POST.
+}
 
 export const USE_MOCK = true;
 const BASE = import.meta.env["VITE_API_BASE_URL"] ?? "";
@@ -28,10 +70,14 @@ export async function listCases(): Promise<Case[]> {
   if (!USE_MOCK) return http("/cases");
   const m = await mocks();
   await delay(400);
-  return readDemoCases(m.cases);
+  const stored = readDemoCases(m.cases);
+  if (!await orchestratorAvailable()) return stored;
+  return Promise.all(stored.map(async (c) => isRealCase(c.id) ? await readOrchestratorCase(c.id) ?? c : c));
 }
 
 export async function getCase(id: string): Promise<Case | null> {
+  const real = await readOrchestratorCase(id);
+  if (real) return real;
   if (!USE_MOCK) return http(`/cases/${id}`);
   const m = await mocks();
   await delay(600);
@@ -49,11 +95,23 @@ export async function getCase(id: string): Promise<Case | null> {
   return c;
 }
 
-export async function getAuditLog(caseId: string): Promise<AuditEntry[]> {
-  if (!USE_MOCK) return http(`/cases/${caseId}/audit`);
+export async function getAuditLogResult(caseId: string): Promise<AuditLogResult> {
+  if (isRealCase(caseId) && await orchestratorAvailable()) {
+    try {
+      const raw = await orchestratorHttp<OrchestratorAudit>(`/cases/${encodeURIComponent(caseId)}/audit`);
+      const c = await getCase(caseId);
+      const playbook = c?.playbookId ? await getPlaybook(c.playbookId) : null;
+      return fromOrchestratorAudit(raw, playbook?.rules);
+    } catch { /* A stopped service falls back to the original mock journal. */ }
+  }
+  if (!USE_MOCK) return { entries: await http<AuditEntry[]>(`/cases/${caseId}/audit`) };
   const m = await mocks();
   await delay(400);
-  return m.auditLog.filter((a) => a.caseId === caseId);
+  return { entries: m.auditLog.filter((a) => a.caseId === caseId) };
+}
+// Preserve the array API used by existing consumers; the audit UI also requests integrity metadata.
+export async function getAuditLog(caseId: string): Promise<AuditEntry[]> {
+  return (await getAuditLogResult(caseId)).entries;
 }
 
 export async function getScreeningMatch(caseId: string, flagId: string): Promise<ScreeningMatch | null> {
@@ -90,7 +148,7 @@ export async function getOwnership(caseId: string): Promise<{ nodes: OwnershipNo
   if (!USE_MOCK) return http(`/cases/${caseId}/ownership`);
   const m = await mocks();
   await delay(300);
-  const c = m.cases.find((item) => item.id === caseId);
+  const c = await readOrchestratorCase(caseId) ?? m.cases.find((item) => item.id === caseId);
   if (!c?.company || !c.ownership) return { nodes: [], edges: [] };
   return {
     nodes: [{ id: "company", label: c.company.name, kind: "companie", declared: true }, ...c.ownership.registry.map((p): OwnershipNode => ({ id: p.id, label: p.name, kind: "persoană", declared: c.ownership?.declared.some((d) => d.id === p.id) ?? false }))],
@@ -99,6 +157,8 @@ export async function getOwnership(caseId: string): Promise<{ nodes: OwnershipNo
 }
 
 export async function getPlaybook(id: string): Promise<Playbook | null> {
+  const built = readBuiltPlaybooks().find((p) => p.id === id);
+  if (built) return built;
   if (!USE_MOCK) return http(`/playbooks/${id}`);
   const m = await mocks();
   await delay(400);
@@ -109,10 +169,55 @@ export async function listPlaybooks(): Promise<Playbook[]> {
   if (!USE_MOCK) return http("/playbooks");
   const m = await mocks();
   await delay(300);
-  return m.playbooks;
+  // A freshly built playbook replaces the fixture with the same id.
+  const built = readBuiltPlaybooks();
+  return [...built, ...m.playbooks.filter((p) => !built.some((b) => b.id === p.id))];
+}
+
+// The playbook builder is a separate service; it is called for real even while the rest runs on mocks.
+const PLAYBOOK_BASE = import.meta.env["VITE_PLAYBOOK_URL"] ?? "/api/playbook";
+const BUILD_TIMEOUT_MS = 150_000; // builder deadline is 100 s, then it falls back
+
+export async function buildPlaybook(file: File): Promise<Playbook> {
+  const fd = new FormData();
+  fd.append("file", file);
+  const abort = new AbortController();
+  const timer = setTimeout(() => abort.abort(), BUILD_TIMEOUT_MS);
+  let res: Response;
+  try {
+    res = await fetch(`${PLAYBOOK_BASE}/playbooks/build`, { method: "POST", body: fd, signal: abort.signal });
+  } catch {
+    throw new Error(abort.signal.aborted ? "Generarea a depășit timpul maxim." : "Serviciul de generare a playbook-urilor nu răspunde. Pornește playbook-builder pe portul 8002.");
+  } finally {
+    clearTimeout(timer);
+  }
+  if (!res.ok) {
+    const detail = await res.json().then((b: { detail?: string }) => b.detail).catch(() => undefined);
+    const known: Record<number, string> = { 413: "Procedura depășește 10 MB.", 415: "Încarcă procedura în format PDF.", 422: "Procedura nu a putut fi transformată în playbook." };
+    // The proxy answers 500/502 when nothing listens on 8002.
+    throw new Error(known[res.status] ?? (res.status >= 500 ? "Serviciul de generare a playbook-urilor nu răspunde. Pornește playbook-builder pe portul 8002." : detail ?? `Eroare server ${res.status}`));
+  }
+  const playbook = fromBuilder(await res.json() as BuilderResult, file.name);
+  writeBuiltPlaybooks([playbook, ...readBuiltPlaybooks().filter((p) => p.id !== playbook.id)]);
+  return playbook;
+}
+
+const BUILT_KEY = "dosarai-built-playbooks-v1";
+function readBuiltPlaybooks(): Playbook[] {
+  if (typeof window === "undefined") return [];
+  try { return JSON.parse(window.localStorage.getItem(BUILT_KEY) ?? "[]") as Playbook[]; } catch { return []; }
+}
+function writeBuiltPlaybooks(list: Playbook[]) {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.setItem(BUILT_KEY, JSON.stringify(list)); } catch { /* storage full or blocked: the build still returns */ }
 }
 
 export async function submitDecision(caseId: string, decision: "aprobat" | "respins" | "documente", comment: string) {
+  if (isRealCase(caseId) && await orchestratorAvailable()) {
+    const outcomes = { aprobat: "approved", respins: "rejected", documente: "documents_requested" };
+    await orchestratorHttp(`/cases/${encodeURIComponent(caseId)}/decision`, { method: "POST", headers: { "X-Analyst": "Elena Radu" }, body: JSON.stringify({ outcome: outcomes[decision], note: comment }) });
+    return { ok: true };
+  }
   const c = await getCase(caseId);
   if (!c) throw new Error("Dosarul nu a fost găsit.");
   if (decision === "aprobat" && blockingFlags(c.flags).length) throw new Error("Aprobarea este blocată de probleme nerezolvate.");
@@ -139,6 +244,10 @@ export async function submitDecision(caseId: string, decision: "aprobat" | "resp
 
 export async function dismissFlag(caseId: string, flagId: string, note: string) {
   if (!note.trim()) throw new Error("Motivul este obligatoriu.");
+  if (isRealCase(caseId) && await orchestratorAvailable()) {
+    await orchestratorHttp(`/cases/${encodeURIComponent(caseId)}/flags/${encodeURIComponent(flagId)}/dismiss`, { method: "POST", headers: { "X-Analyst": "Elena Radu" }, body: JSON.stringify({ note: note.trim() }) });
+    return { ok: true };
+  }
   if (!USE_MOCK) throw new Error("Ignorarea cu motiv nu este conectată la serviciul real.");
   const m = await mocks(); const store = readDemoCases(m.cases); const f = store.find((c) => c.id === caseId)?.flags.find((f) => f.id === flagId);
   if (!f) throw new Error("Problema nu a fost găsită.");
@@ -167,8 +276,18 @@ export async function getClientCaseStatus(caseId: string): Promise<ClientCaseSta
   return c ? toClientCaseStatus(c) : null;
 }
 
-export async function listMyPortalCases(): Promise<Case[]> {
- const m = await mocks(); return readDemoCases(m.cases).filter((c) => c.id.startsWith("demo_"));
+/** Client portal only: the upload plan and stage of one case, never flags, risk or officer data. */
+export async function getClientPortalCase(caseId: string): Promise<ClientPortalCase | null> {
+ const m = await mocks();
+ const c = readDemoCases(m.cases).find((x) => x.id === caseId);
+ if (!c) return null;
+ const p = m.playbooks.find((pb) => pb.id === c.playbookId);
+ return toClientPortalCase(c, c.portalDocuments ?? portalDocumentPlan(c.customerType, p?.requiredDocuments ?? [], c.persons));
+}
+
+export async function listMyPortalCases(): Promise<ClientPortalCase[]> {
+ const m = await mocks();
+ return readDemoCases(m.cases).filter((c) => c.id.startsWith("demo_")).map((c) => toClientPortalCase(c, c.portalDocuments ?? []));
 }
 
 export async function checkPortalDocument(caseId: string, step: number, file: File) {
@@ -180,19 +299,54 @@ export async function checkPortalDocument(caseId: string, step: number, file: Fi
  const result = simulatePortalResult(doc.type, file.name);
  await delay(2300);
  doc.fileName = file.name; doc.ok = result.ok;
- doc.officerIssue = doc.type === "payslip" && /editat|modificat|metadata|metadate|font/i.test(file.name);
- if (doc.officerIssue && !c.flags.some((f) => f.id === `${c.id}-edited`)) {
-  const f = m.cases[0]?.flags.find((f) => f.ruleId === "R-PF-012");
-  if (f) c.flags.push({ ...structuredClone(f), id: `${c.id}-edited`, evidence: [], status: "open", client_fixable: false, fix_message: null });
- }
+ doc.officerIssue = doc.type === "payslip" && TAMPERED.test(file.name);
+ if (result.ok) attachDatasetDocument(c, m.cases, doc, file.name);
+ c.riskDraft = riskFromFlags(c.flags);
  if (result.ok && c.status === "Documente solicitate") { c.status = "În analiză"; c.officerNote = ""; for (const f of c.flags) if (f.status === "sent_to_client") f.status = "resolved"; }
  writeDemoCases(store); return result;
+}
+
+const TAMPERED = /editat|modificat|metadata|metadate|font/i;
+
+// Demo uploads carry no real content, so each accepted file is replaced by the matching SPECIMEN
+// document. Name keywords pick the scenario, keeping the officer view repeatable on stage.
+function datasetSource(type: string, fileName: string, customerType: CustomerType) {
+ const name = fileName.toLocaleLowerCase("ro");
+ if (customerType === "PJ") return "case_pj_00_corect_control";
+ if (type === "identity_document" && name.includes("expirat")) return "case_pf_03_act_expirat";
+ if (type === "utility_bill" && name.includes("adresa")) return "case_pf_05_adresa_factura_diferita";
+ if (type === "payslip" && TAMPERED.test(name)) return "case_pf_12_modificari_combinate";
+ return "case_pf_00_corect_control";
+}
+
+function attachDatasetDocument(c: Case, dataset: Case[], doc: NonNullable<Case["portalDocuments"]>[number], fileName: string) {
+ const source = dataset.find((x) => x.id === datasetSource(doc.type, fileName, c.customerType));
+ const original = source?.documents.find((d) => d.fileName.includes(doc.type) && (c.customerType === "PF" || !doc.personId || d.ownerPersonId === doc.personId));
+ if (!source || !original) return;
+ c.documents = [...c.documents.filter((d) => d.id !== original.id), { ...structuredClone(original), fileName }];
+ // Findings on the replaced document are re-derived from the new source document.
+ c.flags = c.flags.filter((f) => !f.evidence.some((e) => "documentId" in e && e.documentId === original.id) || f.status === "dismissed");
+ const findings = source.flags.filter((f) => isTamper(f) && f.evidence.some((e) => "documentId" in e && e.documentId === original.id));
+ for (const f of findings) c.flags.push({ ...structuredClone(f), id: `${c.id}-${f.ruleId}`, status: "open", client_fixable: false, fix_message: null });
 }
 
 export async function submitPortalCase(id: string) {
  const m = await mocks(); const store = readDemoCases(m.cases); const c = store.find((c) => c.id === id);
  if (!c?.portalDocuments?.length || !c.portalDocuments.every((d) => d.ok)) throw new Error("Încarcă toate documentele înainte de trimitere.");
- c.status = "În analiză"; writeDemoCases(store); return { ok: true };
+ c.status = "În analiză"; c.riskDraft = riskFromFlags(c.flags); writeDemoCases(store); return { ok: true };
+}
+
+export type GroundTruth = Record<string, { expected_rule_ids: string[]; source: "pipeline" | "date" }>;
+/** Planted errors per test case, from the archive's expected_flags.json files. */
+export async function getGroundTruth(): Promise<GroundTruth> {
+ return (await import("@/mocks/ground-truth.json")).default as GroundTruth;
+}
+
+/** Drops every demo change (portal cases, decisions, dismissals) and returns to the SPECIMEN dataset. */
+export async function resetDemo() {
+ clearDemoCases();
+ writeBuiltPlaybooks([]);
+ return { ok: true };
 }
 
 export async function uploadDocument(file: File): Promise<{ ok: boolean; message: string; severity: "ok" | "medium" | "high" }> {

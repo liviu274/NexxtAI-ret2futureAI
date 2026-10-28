@@ -7,7 +7,7 @@ import { PortalLayout } from "@/components/dosar/PortalFlow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { CustomerType, Person } from "@/types";
-export const Route = createFileRoute("/portal/")({head:()=>({meta:[{title:"Deschide un cont · DosarAI"},{name:"description",content:"Începe deschiderea unui cont pentru tine sau firma ta."},{property:"og:title",content:"Deschide un cont · DosarAI"},{property:"og:description",content:"Documentele necesare pentru deschiderea contului."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}]}),component:PortalStart});
+export const Route = createFileRoute("/portal/")({head:()=>({meta:[{title:"Deschide un cont · Raif2Future"},{name:"description",content:"Începe deschiderea unui cont pentru tine sau firma ta."},{property:"og:title",content:"Deschide un cont · Raif2Future"},{property:"og:description",content:"Documentele necesare pentru deschiderea contului."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}]}),component:PortalStart});
 function PortalStart(){
  const {data=[]}=useQuery({queryKey:["playbooks"],queryFn:listPlaybooks}); const [type,setType]=useState<CustomerType>("PF"); const [busy,setBusy]=useState(false); const navigate=useNavigate();
  const [persons,setPersons]=useState<Person[]>([{id:"p_admin",name:"Daria Model",role:"administrator"},{id:"p_ubo_1",name:"Tudor Exemplu",role:"UBO"},{id:"p_ubo_2",name:"Irina Model",role:"UBO"},{id:"p_sign",name:"Victor Test",role:"semnatar"}]);

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuditRouteImport } from './routes/audit'
 import { Route as CumFunctioneazaRouteImport } from './routes/cum-functioneaza'
+import { Route as PanouRouteImport } from './routes/panou'
 import { Route as SecuritateRouteImport } from './routes/securitate'
 import { Route as StatisticiRouteImport } from './routes/statistici'
 import { Route as UploadRouteImport } from './routes/upload'
@@ -41,6 +42,11 @@ const AuditRoute = AuditRouteImport.update({
 const CumFunctioneazaRoute = CumFunctioneazaRouteImport.update({
   id: '/cum-functioneaza',
   path: '/cum-functioneaza',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PanouRoute = PanouRouteImport.update({
+  id: '/panou',
+  path: '/panou',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SecuritateRoute = SecuritateRouteImport.update({
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/audit': typeof AuditRoute
   '/cum-functioneaza': typeof CumFunctioneazaRoute
+  '/panou': typeof PanouRoute
   '/securitate': typeof SecuritateRoute
   '/statistici': typeof StatisticiRoute
   '/upload': typeof UploadRoute
@@ -143,6 +150,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/audit': typeof AuditRoute
   '/cum-functioneaza': typeof CumFunctioneazaRoute
+  '/panou': typeof PanouRoute
   '/securitate': typeof SecuritateRoute
   '/statistici': typeof StatisticiRoute
   '/upload': typeof UploadRoute
@@ -164,6 +172,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/audit': typeof AuditRoute
   '/cum-functioneaza': typeof CumFunctioneazaRoute
+  '/panou': typeof PanouRoute
   '/securitate': typeof SecuritateRoute
   '/statistici': typeof StatisticiRoute
   '/upload': typeof UploadRoute
@@ -186,6 +195,7 @@ export interface FileRouteTypes {
     | '/'
     | '/audit'
     | '/cum-functioneaza'
+    | '/panou'
     | '/securitate'
     | '/statistici'
     | '/upload'
@@ -206,6 +216,7 @@ export interface FileRouteTypes {
     | '/'
     | '/audit'
     | '/cum-functioneaza'
+    | '/panou'
     | '/securitate'
     | '/statistici'
     | '/upload'
@@ -226,6 +237,7 @@ export interface FileRouteTypes {
     | '/'
     | '/audit'
     | '/cum-functioneaza'
+    | '/panou'
     | '/securitate'
     | '/statistici'
     | '/upload'
@@ -247,6 +259,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuditRoute: typeof AuditRoute
   CumFunctioneazaRoute: typeof CumFunctioneazaRoute
+  PanouRoute: typeof PanouRoute
   SecuritateRoute: typeof SecuritateRoute
   StatisticiRoute: typeof StatisticiRoute
   UploadRoute: typeof UploadRoute
@@ -285,6 +298,13 @@ declare module '@tanstack/react-router' {
       path: '/cum-functioneaza'
       fullPath: '/cum-functioneaza'
       preLoaderRoute: typeof CumFunctioneazaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/panou': {
+      id: '/panou'
+      path: '/panou'
+      fullPath: '/panou'
+      preLoaderRoute: typeof PanouRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/securitate': {
@@ -399,6 +419,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuditRoute: AuditRoute,
   CumFunctioneazaRoute: CumFunctioneazaRoute,
+  PanouRoute: PanouRoute,
   SecuritateRoute: SecuritateRoute,
   StatisticiRoute: StatisticiRoute,
   UploadRoute: UploadRoute,

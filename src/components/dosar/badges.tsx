@@ -51,5 +51,5 @@ export function Loading({ label = "Se verifică…" }: { label?: string }) {
 }
 
 export function Card({ className, ...p }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("rounded-lg border border-border bg-card shadow-card", className)} {...p} />;
+  return <div className={cn("rounded-[22px] bg-card shadow-card shadow-card", className)} {...p} />;
 }

@@ -3,7 +3,7 @@ import type { AuditEntry, Case, Playbook } from "@/types";
 import specimen from "./specimen.json";
 import { createScreeningCase } from "./screening_case";
 import review from "./review-fixtures.json";
-import { isTamper } from "@/lib/review";
+import { isTamper, problemLabel } from "@/lib/review";
 import { fullPipelineAudit } from "./pipeline-audit";
 
 const order = ["case_pf_12_modificari_combinate", "case_pj_07_procente_diferite", "case_pf_05_adresa_factura_diferita", "case_pf_03_act_expirat", "case_pf_01_factura_lipsa", "case_pf_00_corect_control", "case_pj_06_ubo_diferit", "case_pj_12_probleme_combinate", "case_pj_00_corect_control"];
@@ -19,12 +19,15 @@ for (const p of playbooks) {
   p.sourceName = p.customerType === "PJ" ? "PJ-ONB-01.pdf" : "Fără procedură sursă";
   p.sourceDate = "28.10.2026";
   p.sourceDocumentText = p.customerType === "PJ" ? review.pjSourceText : "";
-  if (p.customerType === "PJ") p.clauses = review.pjClauses as NonNullable<Playbook["clauses"]>;
+  if (p.customerType === "PJ") { p.clauses = review.pjClauses as NonNullable<Playbook["clauses"]>; p.coverage = 92; p.generatedBy = "llm"; }
 }
 for (const c of cases) {
-  c.screeningSummary ??= { sanctions: 25, pep: 25, news: 50, matches: 0 };
-  c.executedRuleIds = playbooks.find((p) => p.id === c.playbookId)?.rules.map((r) => r.id) ?? [];
+  c.screeningSummary ??= { sanctions: 25, pep: 25, news: 0, matches: 0 };
+  const playbook = playbooks.find((p) => p.id === c.playbookId);
+  c.executedRuleIds = playbook?.rules.map((r) => r.id) ?? [];
   for (const f of c.flags) {
+    // The Romanian rule text is the title; backend titles are English and stay only as a fallback.
+    if (f.stage !== "screening") f.title = playbook?.rules.find((r) => r.id === f.ruleId)?.text ?? f.title;
     const policy = (review.policies as Record<string, { client_fixable: boolean; fix_message: string | null }>)[f.ruleId];
     f.status = "open";
     f.client_fixable = !isTamper(f) && f.stage !== "screening" && policy?.client_fixable === true;
@@ -36,6 +39,6 @@ const tamper = ["R-PF-012", "R-PF-013", "R-PF-014", "R-PF-015"];
 export const auditLog: AuditEntry[] = cases.flatMap((c) => c.id === "case_pf_12_modificari_combinate" ? fullPipelineAudit(c) : [
   { id: `${c.id}-intake`, caseId: c.id, timestamp: "28.10.2026 10:14:03.218", actor: "ai", stage: "Primire documente", action: `${c.documents.length} documente primite`, status: "ok", durationMs: 400, input: `${c.documents.length} fișiere SPECIMEN`, output: c.documents.map((d) => d.type).join(", ") },
   ...c.flags.map((f, i) => ({ id: `${f.id}-audit`, caseId: c.id, timestamp: `28.10.2026 10:14:${String(10 + i * 3).padStart(2, "0")}.015`, actor: "ai" as const, stage: f.stage === "screening" ? "Screening" : tamper.includes(f.ruleId) ? "Detectare falsificare" : "Verificare încrucișată", action: f.explanation, status: "avertisment" as const, durationMs: 1200, input: JSON.stringify({ rule: f.ruleId, evidence: f.evidence }, null, 2), output: JSON.stringify({ severity: f.severity, evidence: f.evidence }, null, 2) })),
-  { id: `${c.id}-risk`, caseId: c.id, timestamp: "28.10.2026 10:14:39.220", actor: "ai", stage: "Propunere de risc", action: `${c.flags.length} probleme semnalate`, status: "ok", durationMs: 2100, input: `${c.flags.length} flag-uri`, output: c.riskDraft.level },
+  { id: `${c.id}-risk`, caseId: c.id, timestamp: "28.10.2026 10:14:39.220", actor: "ai", stage: "Propunere de risc", action: `${problemLabel(c.flags.length)} ${c.flags.length === 1 ? "semnalată" : "semnalate"}`, status: "ok", durationMs: 2100, input: `${c.flags.length} flag-uri`, output: c.riskDraft.level },
   { id: `${c.id}-ready`, caseId: c.id, timestamp: "28.10.2026 10:14:41.330", actor: "ai", stage: "Dosar pregătit", action: "Trimis spre analiză umană", status: "ok", durationMs: 100, input: "Dosar SPECIMEN", output: "Decizia finală aparține analistului." },
 ]);

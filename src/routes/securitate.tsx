@@ -6,9 +6,9 @@ export const Route = createFileRoute("/securitate")({
   component: Securitate,
   head: () => ({
     meta: [
-      { title: "Securitate · DosarAI" },
+      { title: "Securitate · Raif2Future" },
       { name: "description", content: "Decizia finală e întotdeauna umană, fiecare pas e înregistrat în audit, documentele sunt tratate ca date nesigure." },
-      { property: "og:title", content: "Securitate · DosarAI" },
+      { property: "og:title", content: "Securitate · Raif2Future" },
       { property: "og:description", content: "Principiile de siguranță ale verificării asistate de AI." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

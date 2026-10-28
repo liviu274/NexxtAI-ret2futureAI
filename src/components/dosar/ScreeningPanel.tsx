@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { getScreeningMatch, resolveScreeningMatch } from "@/api/client";
-import { screeningRows } from "@/lib/screening";
+import { matchKind, matchKindLabels, screeningRows } from "@/lib/screening";
 import type { Flag } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -31,7 +31,7 @@ export function ScreeningPanel({ caseId, flag }: { caseId: string; flag: Flag })
   const { entry } = match;
   return <div className="text-xs text-ink">
     <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-4">
-      <div><p className="text-[10px] text-ink-muted">{"id_sursa" in entry ? entry.id_sursa : entry.id_stire} · SPECIMEN</p><h2 className="mt-2 text-lg font-semibold">Potrivire screening</h2><p className="mt-2 font-semibold">{"categorie_risc" in entry ? entry.categorie_risc === "PEP" ? "Persoană expusă public" : "Sancțiuni internaționale" : "Presă negativă"}</p></div>
+      <div><p className="text-[10px] text-ink-muted">{"id_sursa" in entry ? entry.id_sursa : entry.id_stire} · SPECIMEN</p><h2 className="mt-2 text-lg font-semibold">{"id_sursa" in entry ? matchKindLabels[matchKind(match)] : "Potrivire screening"}</h2><p className="mt-2 font-semibold">{"categorie_risc" in entry ? entry.categorie_risc === "PEP" ? "Persoană expusă public" : "Sancțiuni internaționale" : "Presă negativă"}</p></div>
       <span className="text-sm font-semibold">Potrivire {match.score}%</span>
     </div>
     {"id_sursa" in entry ? <><p className="py-4 leading-relaxed text-ink-muted">{entry.motiv_includere}</p><table className="w-full table-fixed border-collapse text-left"><thead><tr className="border-b border-border"><th className="w-[25%] pb-3 font-normal" /><th className="pb-3 font-semibold">Client</th><th className="pb-3 font-semibold">Listă</th></tr></thead><tbody>{screeningRows(match).map((row) => <tr key={row.label} className={`border-b border-border ${row.matches ? "text-ink" : "text-sev-medium"}`}><th scope="row" className="break-words py-4 pr-2 font-normal">{row.label}</th><td className="break-words py-4 pr-3">{row.client}</td><td className="break-words py-4"><span className="flex items-start gap-2">{row.matches && <Check className="h-3.5 w-3.5 shrink-0 text-ink-muted" aria-label="Concordant" />}<span>{row.list}</span></span></td></tr>)}</tbody></table></> : <div className="divide-y divide-border"><h3 className="py-4 text-sm font-semibold leading-relaxed">{entry.titlu_stire}</h3>{[["Subiect", entry.nume_subiect], ["Sursă", entry.sursa_stire], ["An", entry.an_publicare], ["Țară", entry.tara_subiect], ["Cuvinte-cheie de risc", entry.cuvinte_cheie_risc.join(", ")]].map(([label, value]) => <p key={label} className="py-3 leading-relaxed"><span className="mr-3 text-ink-muted">{label}</span>{value}</p>)}</div>}

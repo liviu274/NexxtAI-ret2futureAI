@@ -5,9 +5,9 @@ export const Route = createFileRoute("/portal/ajutor")({
   component: Ajutor,
   head: () => ({
     meta: [
-      { title: "Ajutor · Portal client DosarAI" },
+      { title: "Ajutor · Portal client Raif2Future" },
       { name: "description", content: "Întrebări frecvente despre documentele necesare pentru deschiderea contului." },
-      { property: "og:title", content: "Ajutor · Portal client DosarAI" },
+      { property: "og:title", content: "Ajutor · Portal client Raif2Future" },
       { property: "og:description", content: "Răspunsuri la întrebările frecvente despre încărcarea documentelor." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

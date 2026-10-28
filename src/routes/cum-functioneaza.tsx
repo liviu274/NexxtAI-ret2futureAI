@@ -6,9 +6,9 @@ export const Route = createFileRoute("/cum-functioneaza")({
   component: CumFunctioneaza,
   head: () => ({
     meta: [
-      { title: "Cum funcționează · DosarAI" },
+      { title: "Cum funcționează · Raif2Future" },
       { name: "description", content: "Clientul încarcă actele, agentul AI le verifică instant față de procedura băncii, ofițerul ia decizia finală." },
-      { property: "og:title", content: "Cum funcționează · DosarAI" },
+      { property: "og:title", content: "Cum funcționează · Raif2Future" },
       { property: "og:description", content: "Verificare automată a documentelor în trei pași, cu decizia finală la ofițer." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -31,7 +31,7 @@ function CumFunctioneaza() {
         <div><p className="text-sm font-semibold">{i + 1}. {title}</p><p className="mt-1 text-xs leading-5 text-ink-muted">{text}</p></div>
       </div>
     ))}</div>
-    <div className="mt-6 rounded-md border border-border bg-card p-[18px]">
+    <div className="mt-6 rounded-[22px] bg-card shadow-card p-[18px]">
       <p className="text-sm font-semibold">Playbook-ul băncii</p>
       <p className="mt-2 text-xs leading-5 text-ink-muted">Procedura băncii devine reguli verificabile în sub 2 minute: agentul citește procedura originală și o transformă într-un set de reguli clare, fiecare cu trimitere la clauza din documentul sursă. Ofițerul poate verifica oricând de unde vine fiecare regulă.</p>
     </div>

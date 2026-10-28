@@ -1,0 +1,231 @@
+{
+  "playbook_id": "pb_cont_pf_v1",
+  "version": 1,
+  "process_name": "Deschiderea contului curent pentru persoane fizice",
+  "customer_type": "PF",
+  "source_procedure": {
+    "file": "procedures/PF-ONB-01.pdf",
+    "generated_at": "2026-10-28T12:30:00+02:00"
+  },
+  "required_documents": [
+    {
+      "doc_type": "id_card",
+      "applies_to": "applicant",
+      "min_count": 1,
+      "alternatives": ["passport"],
+      "fields": ["full_name", "cnp", "date_of_birth", "address", "series_number", "expiry_date"],
+      "source_ref": { "page": 1, "clause": "2.1", "quote": "Clientul prezintă o carte de identitate valabilă." }
+    },
+    {
+      "doc_type": "proof_of_address",
+      "applies_to": "applicant",
+      "min_count": 1,
+      "alternatives": [],
+      "fields": ["full_name", "address", "issue_date"],
+      "source_ref": { "page": 1, "clause": "3.1", "quote": "Clientul prezintă o dovadă a adresei, de exemplu o factură de utilități." }
+    },
+    {
+      "doc_type": "payslip",
+      "applies_to": "applicant",
+      "min_count": 1,
+      "alternatives": ["income_certificate"],
+      "fields": ["full_name", "employer", "gross_salary", "deductions", "net_salary", "period_end"],
+      "source_ref": { "page": 2, "clause": "4.1", "quote": "Clientul prezintă un document care atestă sursa fondurilor: un fluturaș de salariu sau o adeverință de venit (CGB 3.1.3)." }
+    }
+  ],
+  "rules": [
+    {
+      "rule_id": "R-PF-001",
+      "stage": "validate",
+      "check": "required_present",
+      "params": { "doc_type": "id_card", "min_count": 1 },
+      "applies_to": "applicant",
+      "severity": "high",
+      "description": "Clientul trebuie să prezinte o carte de identitate sau un pașaport valabil.",
+      "client_fixable": true,
+      "fix_message": "Vă rugăm să încărcați cartea de identitate sau pașaportul.",
+      "source_ref": { "page": 1, "clause": "2.1", "quote": "Clientul prezintă o carte de identitate valabilă." }
+    },
+    {
+      "rule_id": "R-PF-002",
+      "stage": "validate",
+      "check": "not_expired",
+      "params": { "doc_type": "id_card", "field": "expiry_date" },
+      "applies_to": "applicant",
+      "severity": "high",
+      "description": "Actul de identitate nu trebuie să fie expirat la data cererii.",
+      "client_fixable": true,
+      "fix_message": "Actul de identitate a expirat la {expiry_date}. Vă rugăm să încărcați un act de identitate valabil.",
+      "source_ref": { "page": 1, "clause": "2.3", "quote": "Actul de identitate nu trebuie să fie expirat la data cererii." }
+    },
+    {
+      "rule_id": "R-PF-003",
+      "stage": "validate",
+      "check": "field_present",
+      "params": { "doc_type": "id_card", "field": "cnp" },
+      "applies_to": "applicant",
+      "severity": "high",
+      "description": "CNP-ul trebuie să poată fi citit din actul de identitate.",
+      "client_fixable": true,
+      "fix_message": "CNP-ul nu se poate citi pe actul de identitate. Vă rugăm să încărcați o imagine clară a documentului.",
+      "source_ref": { "page": 1, "clause": "2.5", "quote": "Cererea nu se procesează dacă CNP-ul nu poate fi citit din actul de identitate." }
+    },
+    {
+      "rule_id": "R-PF-004",
+      "stage": "validate",
+      "check": "required_present",
+      "params": { "doc_type": "proof_of_address", "min_count": 1 },
+      "applies_to": "applicant",
+      "severity": "high",
+      "description": "Clientul trebuie să prezinte o dovadă a adresei.",
+      "client_fixable": true,
+      "fix_message": "Vă rugăm să încărcați o dovadă a adresei, de exemplu o factură de utilități.",
+      "source_ref": { "page": 1, "clause": "3.1", "quote": "Clientul prezintă o dovadă a adresei, de exemplu o factură de utilități." }
+    },
+    {
+      "rule_id": "R-PF-005",
+      "stage": "validate",
+      "check": "max_age_days",
+      "params": { "doc_type": "proof_of_address", "field": "issue_date", "days": 90 },
+      "applies_to": "applicant",
+      "severity": "medium",
+      "description": "Dovada adresei nu trebuie să fie mai veche de 90 de zile.",
+      "client_fixable": true,
+      "fix_message": "Dovada adresei este din {issue_date}. Vă rugăm să încărcați una emisă în ultimele 90 de zile.",
+      "source_ref": { "page": 1, "clause": "3.3", "quote": "Dovada adresei nu trebuie să fie mai veche de 90 de zile la data cererii." }
+    },
+    {
+      "rule_id": "R-PF-006",
+      "stage": "validate",
+      "check": "required_present",
+      "params": { "doc_type": "payslip", "min_count": 1 },
+      "applies_to": "applicant",
+      "severity": "high",
+      "description": "Clientul trebuie să prezinte un fluturaș de salariu sau o adeverință de venit.",
+      "client_fixable": true,
+      "fix_message": "Vă rugăm să încărcați un fluturaș de salariu recent sau o adeverință de venit.",
+      "source_ref": { "page": 2, "clause": "4.1", "quote": "Clientul prezintă un document care atestă sursa fondurilor: un fluturaș de salariu sau o adeverință de venit (CGB 3.1.3)." }
+    },
+    {
+      "rule_id": "R-PF-007",
+      "stage": "validate",
+      "check": "max_age_days",
+      "params": { "doc_type": "payslip", "field": "period_end", "days": 60 },
+      "applies_to": "applicant",
+      "severity": "medium",
+      "description": "Fluturașul de salariu nu trebuie să fie mai vechi de 60 de zile.",
+      "client_fixable": true,
+      "fix_message": "Fluturașul de salariu este pentru perioada încheiată la {period_end}. Vă rugăm să încărcați unul din ultimele 60 de zile.",
+      "source_ref": { "page": 2, "clause": "4.2", "quote": "Fluturașul de salariu nu trebuie să fie mai vechi de 60 de zile la data cererii." }
+    },
+    {
+      "rule_id": "R-PF-008",
+      "stage": "cross_check",
+      "check": "fields_match",
+      "params": { "field": "full_name", "doc_types": ["id_card", "proof_of_address", "payslip"], "mode": "fuzzy" },
+      "applies_to": "applicant",
+      "severity": "medium",
+      "description": "Numele clientului trebuie să fie același pe toate documentele.",
+      "client_fixable": true,
+      "fix_message": "Numele de pe documente nu coincide. Vă rugăm să încărcați un document care confirmă datele actuale.",
+      "source_ref": { "page": 2, "clause": "5.1", "quote": "Numele clientului trebuie să fie același pe toate documentele prezentate." }
+    },
+    {
+      "rule_id": "R-PF-009",
+      "stage": "cross_check",
+      "check": "fields_match",
+      "params": { "field": "address", "doc_types": ["id_card", "proof_of_address"], "mode": "normalized" },
+      "applies_to": "applicant",
+      "severity": "medium",
+      "description": "Adresa din actul de identitate trebuie să corespundă cu dovada adresei.",
+      "client_fixable": true,
+      "fix_message": "Adresa din actul de identitate diferă de cea din dovada adresei. Vă rugăm să încărcați un document care confirmă adresa actuală.",
+      "source_ref": { "page": 2, "clause": "5.2", "quote": "Adresa din actul de identitate trebuie să corespundă cu adresa din dovada adresei." }
+    },
+    {
+      "rule_id": "R-PF-010",
+      "stage": "tamper",
+      "check": "pdf_metadata",
+      "params": {},
+      "applies_to": "applicant",
+      "severity": "critical",
+      "description": "Documentele cu semne de modificare ulterioară emiterii se escaladează la conformitate.",
+      "client_fixable": false,
+      "fix_message": null,
+      "source_ref": { "page": 2, "clause": "6.1", "quote": "Documentele care prezintă semne de modificare ulterioară emiterii sunt escaladate către ofițerul de conformitate (CGB 3.1.4 lit. c)." }
+    },
+    {
+      "rule_id": "R-PF-011",
+      "stage": "tamper",
+      "check": "font_consistency",
+      "params": {},
+      "applies_to": "applicant",
+      "severity": "critical",
+      "description": "Fonturile diferite în același câmp sau rând indică o posibilă alterare.",
+      "client_fixable": false,
+      "fix_message": null,
+      "source_ref": { "page": 2, "clause": "6.2", "quote": "Textul dintr-un singur câmp sau rând care folosește fonturi diferite este tratat ca semn de alterare." }
+    },
+    {
+      "rule_id": "R-PF-012",
+      "stage": "tamper",
+      "check": "totals_consistency",
+      "params": { "doc_type": "payslip" },
+      "applies_to": "applicant",
+      "severity": "critical",
+      "description": "Pe fluturaș, salariul brut minus reținerile trebuie să fie egal cu salariul net.",
+      "client_fixable": false,
+      "fix_message": null,
+      "source_ref": { "page": 2, "clause": "6.3", "quote": "Pe fluturașul de salariu, salariul brut minus reținerile trebuie să fie egal cu salariul net." }
+    },
+    {
+      "rule_id": "R-PF-013",
+      "stage": "screening",
+      "check": "sanctions",
+      "params": { "list": "mock_sanctions_v1" },
+      "applies_to": "applicant",
+      "severity": "critical",
+      "description": "Clientul nu trebuie să apară în listele de sancțiuni internaționale.",
+      "client_fixable": false,
+      "fix_message": null,
+      "source_ref": { "page": 2, "clause": "7.1", "quote": "Fiecare client este verificat în listele de sancțiuni internaționale înainte de deschiderea contului (CGB 3.1.4 lit. g)." }
+    },
+    {
+      "rule_id": "R-PF-014",
+      "stage": "screening",
+      "check": "pep",
+      "params": { "list": "mock_pep_v1" },
+      "applies_to": "applicant",
+      "severity": "high",
+      "description": "O persoană expusă public necesită măsuri suplimentare și aprobarea ofițerului de conformitate.",
+      "client_fixable": false,
+      "fix_message": null,
+      "source_ref": { "page": 2, "clause": "7.2", "quote": "Banca verifică dacă clientul este persoană expusă public, membru de familie sau asociat apropiat al unei astfel de persoane (CGB 1.6.2)." }
+    },
+    {
+      "rule_id": "R-PF-015",
+      "stage": "screening",
+      "check": "adverse_media",
+      "params": {},
+      "applies_to": "applicant",
+      "severity": "medium",
+      "description": "Numele clientului se verifică în surse publice pentru informații negative.",
+      "client_fixable": false,
+      "fix_message": null,
+      "source_ref": { "page": 2, "clause": "7.4", "quote": "Numele clientului este verificat în surse publice pentru informații negative." }
+    },
+    {
+      "rule_id": "R-PF-016",
+      "stage": "risk",
+      "check": "risk_factors",
+      "params": { "factors": ["country", "occupation", "pep"] },
+      "applies_to": "applicant",
+      "severity": "info",
+      "description": "Gradul de risc (scăzut, mediu, ridicat) se stabilește după țara de rezidență, ocupație și statutul PEP.",
+      "client_fixable": false,
+      "fix_message": null,
+      "source_ref": { "page": 2, "clause": "8.1", "quote": "Fiecare client primește un grad de risc scăzut, mediu sau ridicat, în funcție de țara de rezidență, ocupație și calitatea de persoană expusă public (CGB 3.1.4 lit. k)." }
+    }
+  ],
+  "person_flows": null
+}

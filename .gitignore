@@ -210,6 +210,9 @@ tempCodeRunnerFile.py
 **/.env
 **/.env.*
 !.env.example
+**/data/external/
+**/classifier/*.json
+**/__pycache__/
 
 # Ruff stuff:
 .ruff_cache/

@@ -64,6 +64,10 @@ The runnable PF flow is in [`pipeline/`](./pipeline/). It executes intake,
 classification, rule-driven extraction, cross-document checks, tamper
 detection, synthetic screening, risk drafting, and human-review handoff.
 
+The image anomaly baseline is in [`classifier/`](./classifier/). It uses
+MIDV-500 as a reference bank, not as a forged/not-forged truth set. Its output
+is a triage signal and always requires human review for suspicious images.
+
 ## Validate the rules
 
 From the repository root:

@@ -1725,5 +1725,5 @@
   ],
   "expected_business_result": "Certificat vechi, UBO diferit, CUI diferit, act expirat și semnatar omis",
   "automatic_decision": null,
-  "registry_fixture": "../../fixtures/onrc_mock.json"
+  "registry_fixture": "data/mock_registries/onrc_registry.json"
 }

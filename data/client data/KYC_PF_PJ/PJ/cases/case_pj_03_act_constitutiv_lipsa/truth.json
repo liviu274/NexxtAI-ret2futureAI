@@ -1536,5 +1536,5 @@
   ],
   "expected_business_result": "Lipsește actul constitutiv",
   "automatic_decision": null,
-  "registry_fixture": "../../fixtures/onrc_mock.json"
+  "registry_fixture": "data/mock_registries/onrc_registry.json"
 }

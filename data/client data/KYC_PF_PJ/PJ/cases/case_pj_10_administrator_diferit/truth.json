@@ -1744,5 +1744,5 @@
   ],
   "expected_business_result": "Administratorul din certificat diferă de actul prezentat",
   "automatic_decision": null,
-  "registry_fixture": "../../fixtures/onrc_mock.json"
+  "registry_fixture": "data/mock_registries/onrc_registry.json"
 }

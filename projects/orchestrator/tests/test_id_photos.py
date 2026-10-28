@@ -53,3 +53,17 @@ def test_card_whose_mrz_contradicts_its_cnp_is_flagged(run_photo):
 def test_card_with_a_truncated_cnp_and_garbled_mrz_is_flagged(run_photo):
     (flag,) = run_photo("putin.png")
     assert "does not have 13 digits" in flag.explanation and "neither TD2" in flag.explanation
+
+
+def test_older_series_card_is_internally_consistent_but_its_mrz_layout_is_not_supported(run_photo):
+    """The 2003-series card has a 35-character MRZ line 2. Its CNP and check digits are valid, but the layout is neither
+    TD2 nor TD1, so the only finding is that the MRZ cannot be verified and an analyst has to look."""
+    from nexxt_orchestrator.checks.id_integrity import cnp_problems, mrz_check_digit
+    from datetime import date
+
+    line2 = "RX190023<51328002022F13020222378969"
+    assert cnp_problems("2800202237896", None, date(2026, 10, 28)) == []
+    assert (mrz_check_digit(line2[0:9]), mrz_check_digit(line2[13:19]), mrz_check_digit(line2[21:27])) == (int(line2[9]), int(line2[19]), int(line2[27]))
+    (flag,) = run_photo("Screenshot_2026-10-28_18-54-45.png")
+    assert flag.rule_id == "R-PF-017" and "neither TD2" in flag.explanation and "(36, 35)" in flag.explanation
+    assert "check digit" not in flag.explanation and "differs" not in flag.explanation  # only the layout, no data finding

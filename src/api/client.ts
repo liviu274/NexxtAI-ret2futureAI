@@ -1,7 +1,7 @@
 import type { AuditEntry, Case, OwnershipEdge, OwnershipNode, Playbook } from "@/types";
 
 export const USE_MOCK = true;
-const BASE = import.meta.env.VITE_API_BASE_URL ?? "";
+const BASE = import.meta.env["VITE_API_BASE_URL"] ?? "";
 
 const delay = (ms = 500) => new Promise((r) => setTimeout(r, ms));
 

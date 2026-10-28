@@ -1,0 +1,13 @@
+{
+  "description": "Numărul actului nu este înscris",
+  "reference_date": "2026-10-28",
+  "scenario_type": "negative",
+  "mutation": "missing_number",
+  "expected_rule_ids": [],
+  "synthetic": true,
+  "playbook_id": "pb_cont_pf_v1",
+  "legacy_expected_rule_ids": [
+    "R-PF-002"
+  ],
+  "out_of_procedure": "Procedura PF-ONB-01 cere doar înregistrarea seriei și numărului (2.4); numai CNP-ul ilizibil oprește cererea (2.5). Playbook-ul nu are regulă pentru acest caz."
+}

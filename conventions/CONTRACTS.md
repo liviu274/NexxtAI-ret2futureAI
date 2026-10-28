@@ -188,6 +188,7 @@ One problem found by any stage. It is shown to the analyst, and if `client_fixab
 | `created_by` | string | Module name |
 | `created_at` | timestamp | |
 | `resolution_note` | string \| null | Who resolved or dismissed it and why |
+| `person_id` | string \| null | Optional. The person the flag is about when the rule ran per person (e.g. which UBO has no ID); `null` for case-level flags |
 
 ---
 

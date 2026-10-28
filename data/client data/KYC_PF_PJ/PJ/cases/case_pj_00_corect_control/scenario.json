@@ -1,0 +1,8 @@
+{
+  "case_id": "case_pj_00_corect_control",
+  "description": "Dosar PJ corect de control",
+  "reference_date": "2026-10-28",
+  "mutation": null,
+  "expected_rule_ids": [],
+  "synthetic": true
+}

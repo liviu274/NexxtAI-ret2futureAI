@@ -1,0 +1,10 @@
+{
+  "case_id": "case_pf_11_salvare_incrementala",
+  "flag_count": 1,
+  "rule_ids": [
+    "R-PF-015"
+  ],
+  "risk_level": "high",
+  "status": "review",
+  "decision": null
+}

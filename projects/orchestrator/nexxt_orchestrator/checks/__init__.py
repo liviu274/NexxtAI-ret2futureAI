@@ -69,6 +69,7 @@ class CheckContext:
             flag_id="flag_pending",
             case_id=self.case.case_id,
             rule_id=rule.rule_id,
+            person_id=self.person_id,
             stage=rule.stage,
             severity=rule.severity,
             title=title[:80],

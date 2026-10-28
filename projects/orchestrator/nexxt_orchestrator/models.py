@@ -121,6 +121,7 @@ class Flag(Model):
     flag_id: str
     case_id: str
     rule_id: str
+    person_id: str | None = None
     stage: Stage
     severity: Severity
     title: str

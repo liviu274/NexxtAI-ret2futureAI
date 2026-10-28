@@ -1,0 +1,1060 @@
+{
+  "reference_date": "2026-10-28",
+  "pf_negative_cases": 12,
+  "pj_negative_cases": 12,
+  "control_cases": 2,
+  "pdf_count": 150,
+  "png_count": 150,
+  "documents": [
+    {
+      "flow": "PF",
+      "case_id": "case_pf_00_corect_control",
+      "pdf": "PF/data/gigel/cases/case_pf_00_corect_control/docs/doc_001_identity_document.pdf",
+      "image": "PF/data/gigel/cases/case_pf_00_corect_control/images/doc_001_identity_document.png",
+      "sha256_pdf": "f1aff1212ff94827814178827ed00f4ecdd148640e21805aff77e29f8cbb4437"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_00_corect_control",
+      "pdf": "PF/data/gigel/cases/case_pf_00_corect_control/docs/doc_002_utility_bill.pdf",
+      "image": "PF/data/gigel/cases/case_pf_00_corect_control/images/doc_002_utility_bill.png",
+      "sha256_pdf": "c29ec42e22bba93c3650773bccbfb39545cbdc7842a01b26f8b7da35afcd9f19"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_00_corect_control",
+      "pdf": "PF/data/gigel/cases/case_pf_00_corect_control/docs/doc_003_payslip.pdf",
+      "image": "PF/data/gigel/cases/case_pf_00_corect_control/images/doc_003_payslip.png",
+      "sha256_pdf": "ee24cb30f1b400a1bffe75ff61d3703dc6a3913520633e573c2983209b69c9a1"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_01_factura_lipsa",
+      "pdf": "PF/data/gigel/cases/case_pf_01_factura_lipsa/docs/doc_001_identity_document.pdf",
+      "image": "PF/data/gigel/cases/case_pf_01_factura_lipsa/images/doc_001_identity_document.png",
+      "sha256_pdf": "d3870c67744977eec1df35ac47b82f091b0f79fcda2acf07a5d9a4bc55263c38"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_01_factura_lipsa",
+      "pdf": "PF/data/gigel/cases/case_pf_01_factura_lipsa/docs/doc_003_payslip.pdf",
+      "image": "PF/data/gigel/cases/case_pf_01_factura_lipsa/images/doc_003_payslip.png",
+      "sha256_pdf": "b003c87860af61d99e6bc103652b98eb3593b6c0f9eabba6e06a0be6681adf29"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_02_numar_act_lipsa",
+      "pdf": "PF/data/gigel/cases/case_pf_02_numar_act_lipsa/docs/doc_001_identity_document.pdf",
+      "image": "PF/data/gigel/cases/case_pf_02_numar_act_lipsa/images/doc_001_identity_document.png",
+      "sha256_pdf": "8f6ec49ae7f647ebab5d5d378b85049694d6c4f6561383bf276a30f327f9a9ba"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_02_numar_act_lipsa",
+      "pdf": "PF/data/gigel/cases/case_pf_02_numar_act_lipsa/docs/doc_002_utility_bill.pdf",
+      "image": "PF/data/gigel/cases/case_pf_02_numar_act_lipsa/images/doc_002_utility_bill.png",
+      "sha256_pdf": "598172a3c934dd6a6ca6dcbd520c3bd000f9a32ace2655943f544bff1846c74b"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_02_numar_act_lipsa",
+      "pdf": "PF/data/gigel/cases/case_pf_02_numar_act_lipsa/docs/doc_003_payslip.pdf",
+      "image": "PF/data/gigel/cases/case_pf_02_numar_act_lipsa/images/doc_003_payslip.png",
+      "sha256_pdf": "abdae717273d363fc76e04061c5ae6a86cc829eb3d6157cb6fe2352a2947daae"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_03_act_expirat",
+      "pdf": "PF/data/gigel/cases/case_pf_03_act_expirat/docs/doc_001_identity_document.pdf",
+      "image": "PF/data/gigel/cases/case_pf_03_act_expirat/images/doc_001_identity_document.png",
+      "sha256_pdf": "a23c51b2156e26a5646f81e7fe9e67f1590529911ee1cbbe7bf715fdde91c6d5"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_03_act_expirat",
+      "pdf": "PF/data/gigel/cases/case_pf_03_act_expirat/docs/doc_002_utility_bill.pdf",
+      "image": "PF/data/gigel/cases/case_pf_03_act_expirat/images/doc_002_utility_bill.png",
+      "sha256_pdf": "306ee171751f55bb1193a12be044253ee4e4b8d90516dc69d6ec942f2dfc8060"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_03_act_expirat",
+      "pdf": "PF/data/gigel/cases/case_pf_03_act_expirat/docs/doc_003_payslip.pdf",
+      "image": "PF/data/gigel/cases/case_pf_03_act_expirat/images/doc_003_payslip.png",
+      "sha256_pdf": "0fef396d1fc02aa50e762581adb230be5f8e7a577a740d262dc2231af15b08e5"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_04_nume_factura_diferit",
+      "pdf": "PF/data/gigel/cases/case_pf_04_nume_factura_diferit/docs/doc_001_identity_document.pdf",
+      "image": "PF/data/gigel/cases/case_pf_04_nume_factura_diferit/images/doc_001_identity_document.png",
+      "sha256_pdf": "14e1cbab3676eedc400aa1ca1b241351ab7e8614f0aa99f1e264fd217253ce54"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_04_nume_factura_diferit",
+      "pdf": "PF/data/gigel/cases/case_pf_04_nume_factura_diferit/docs/doc_002_utility_bill.pdf",
+      "image": "PF/data/gigel/cases/case_pf_04_nume_factura_diferit/images/doc_002_utility_bill.png",
+      "sha256_pdf": "ae0501966fb54825de72b3aaaefb72f9b123e2ed1842f27141a05f27d4849ad1"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_04_nume_factura_diferit",
+      "pdf": "PF/data/gigel/cases/case_pf_04_nume_factura_diferit/docs/doc_003_payslip.pdf",
+      "image": "PF/data/gigel/cases/case_pf_04_nume_factura_diferit/images/doc_003_payslip.png",
+      "sha256_pdf": "ef83e879804111dbae0f443a04a24fa92b9f47ae088dd28d28020700cd2ad862"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_05_adresa_factura_diferita",
+      "pdf": "PF/data/gigel/cases/case_pf_05_adresa_factura_diferita/docs/doc_001_identity_document.pdf",
+      "image": "PF/data/gigel/cases/case_pf_05_adresa_factura_diferita/images/doc_001_identity_document.png",
+      "sha256_pdf": "fabc29d2bac429bdedb2b3df79ae77cf11e82bc8a38e9e874d218060e501e014"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_05_adresa_factura_diferita",
+      "pdf": "PF/data/gigel/cases/case_pf_05_adresa_factura_diferita/docs/doc_002_utility_bill.pdf",
+      "image": "PF/data/gigel/cases/case_pf_05_adresa_factura_diferita/images/doc_002_utility_bill.png",
+      "sha256_pdf": "a6e49661890b476c5dae85584092ae6d342d2038413a2c41f03ee510b085e137"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_05_adresa_factura_diferita",
+      "pdf": "PF/data/gigel/cases/case_pf_05_adresa_factura_diferita/docs/doc_003_payslip.pdf",
+      "image": "PF/data/gigel/cases/case_pf_05_adresa_factura_diferita/images/doc_003_payslip.png",
+      "sha256_pdf": "212eac07128fb07ed6153684de0c87219384a6483c781f1f4bc7c8630a4ec441"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_06_nume_fluturas_diferit",
+      "pdf": "PF/data/gigel/cases/case_pf_06_nume_fluturas_diferit/docs/doc_001_identity_document.pdf",
+      "image": "PF/data/gigel/cases/case_pf_06_nume_fluturas_diferit/images/doc_001_identity_document.png",
+      "sha256_pdf": "898a1bb72a8c10b081bd2448422a4a3c716b2e734b176fe4b5828a3ee8f40c08"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_06_nume_fluturas_diferit",
+      "pdf": "PF/data/gigel/cases/case_pf_06_nume_fluturas_diferit/docs/doc_002_utility_bill.pdf",
+      "image": "PF/data/gigel/cases/case_pf_06_nume_fluturas_diferit/images/doc_002_utility_bill.png",
+      "sha256_pdf": "4954654cf201dc16477c91cbfa6e2bf742c1caca0f6949d2d49dd35424b20908"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_06_nume_fluturas_diferit",
+      "pdf": "PF/data/gigel/cases/case_pf_06_nume_fluturas_diferit/docs/doc_003_payslip.pdf",
+      "image": "PF/data/gigel/cases/case_pf_06_nume_fluturas_diferit/images/doc_003_payslip.png",
+      "sha256_pdf": "ec38e807a24bfbb85ff32e2d2c428b36badf0a0d5e47751af75d5c3f39646a49"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_07_cnp_fluturas_diferit",
+      "pdf": "PF/data/gigel/cases/case_pf_07_cnp_fluturas_diferit/docs/doc_001_identity_document.pdf",
+      "image": "PF/data/gigel/cases/case_pf_07_cnp_fluturas_diferit/images/doc_001_identity_document.png",
+      "sha256_pdf": "3866d80047d6f95d50ed7053158a9a6c6260085c6c3335978c35c60538de1c43"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_07_cnp_fluturas_diferit",
+      "pdf": "PF/data/gigel/cases/case_pf_07_cnp_fluturas_diferit/docs/doc_002_utility_bill.pdf",
+      "image": "PF/data/gigel/cases/case_pf_07_cnp_fluturas_diferit/images/doc_002_utility_bill.png",
+      "sha256_pdf": "378f31ac08fc08372fb8833e69b76b8bfd26ca283926b884f2797ee354fdb1e5"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_07_cnp_fluturas_diferit",
+      "pdf": "PF/data/gigel/cases/case_pf_07_cnp_fluturas_diferit/docs/doc_003_payslip.pdf",
+      "image": "PF/data/gigel/cases/case_pf_07_cnp_fluturas_diferit/images/doc_003_payslip.png",
+      "sha256_pdf": "2c7cca498960544820005e974ca6cea99762541915efa89aca5e1c7bfff964ba"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_08_metadate_suspecte",
+      "pdf": "PF/data/gigel/cases/case_pf_08_metadate_suspecte/docs/doc_001_identity_document.pdf",
+      "image": "PF/data/gigel/cases/case_pf_08_metadate_suspecte/images/doc_001_identity_document.png",
+      "sha256_pdf": "fde9f0ebda5ece5411bbf0a230379064554cfa4d05865c9ffd6bfbc4537cb610"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_08_metadate_suspecte",
+      "pdf": "PF/data/gigel/cases/case_pf_08_metadate_suspecte/docs/doc_002_utility_bill.pdf",
+      "image": "PF/data/gigel/cases/case_pf_08_metadate_suspecte/images/doc_002_utility_bill.png",
+      "sha256_pdf": "fe818d7efd747113369ab8fad62c1fd6826632b356aaa2553a64b6077ec9aea7"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_08_metadate_suspecte",
+      "pdf": "PF/data/gigel/cases/case_pf_08_metadate_suspecte/docs/doc_003_payslip.pdf",
+      "image": "PF/data/gigel/cases/case_pf_08_metadate_suspecte/images/doc_003_payslip.png",
+      "sha256_pdf": "cbb8fee9579e8efd83ff5a6ff58b45f62d4878ea69d0ae054af751b8ef70c2ee"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_09_fonturi_amestecate",
+      "pdf": "PF/data/gigel/cases/case_pf_09_fonturi_amestecate/docs/doc_001_identity_document.pdf",
+      "image": "PF/data/gigel/cases/case_pf_09_fonturi_amestecate/images/doc_001_identity_document.png",
+      "sha256_pdf": "ca2cc0f33bc89ca3657a97c5a166156faa77d0ac5be716bae2540524fb206936"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_09_fonturi_amestecate",
+      "pdf": "PF/data/gigel/cases/case_pf_09_fonturi_amestecate/docs/doc_002_utility_bill.pdf",
+      "image": "PF/data/gigel/cases/case_pf_09_fonturi_amestecate/images/doc_002_utility_bill.png",
+      "sha256_pdf": "664deba69d6024665199a3051be98655193be29040495c234c33aea3d883ce1f"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_09_fonturi_amestecate",
+      "pdf": "PF/data/gigel/cases/case_pf_09_fonturi_amestecate/docs/doc_003_payslip.pdf",
+      "image": "PF/data/gigel/cases/case_pf_09_fonturi_amestecate/images/doc_003_payslip.png",
+      "sha256_pdf": "c24453ee1df6fe54dde5528f5edf57eaf01d2d58f87a2e8f92dfe3d901646463"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_10_total_incorect",
+      "pdf": "PF/data/gigel/cases/case_pf_10_total_incorect/docs/doc_001_identity_document.pdf",
+      "image": "PF/data/gigel/cases/case_pf_10_total_incorect/images/doc_001_identity_document.png",
+      "sha256_pdf": "98e97de10f85cc79d3c61593377c4855fcdd4b986bad5c0ec948e258cfe34ff8"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_10_total_incorect",
+      "pdf": "PF/data/gigel/cases/case_pf_10_total_incorect/docs/doc_002_utility_bill.pdf",
+      "image": "PF/data/gigel/cases/case_pf_10_total_incorect/images/doc_002_utility_bill.png",
+      "sha256_pdf": "ac60fd77ad3cb1ddf9fd6493954072c07c412c0501d24e40e76f3bc06126d8d7"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_10_total_incorect",
+      "pdf": "PF/data/gigel/cases/case_pf_10_total_incorect/docs/doc_003_payslip.pdf",
+      "image": "PF/data/gigel/cases/case_pf_10_total_incorect/images/doc_003_payslip.png",
+      "sha256_pdf": "5e6dd2e220304207989226923da93dd95ee8ec9fce79c66e23a6a48b019a0096"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_11_salvare_incrementala",
+      "pdf": "PF/data/gigel/cases/case_pf_11_salvare_incrementala/docs/doc_001_identity_document.pdf",
+      "image": "PF/data/gigel/cases/case_pf_11_salvare_incrementala/images/doc_001_identity_document.png",
+      "sha256_pdf": "b4f610ede1f564824863eb5a37030f14f3af09b8c19e275738f9c065bea92864"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_11_salvare_incrementala",
+      "pdf": "PF/data/gigel/cases/case_pf_11_salvare_incrementala/docs/doc_002_utility_bill.pdf",
+      "image": "PF/data/gigel/cases/case_pf_11_salvare_incrementala/images/doc_002_utility_bill.png",
+      "sha256_pdf": "2a7f864845613199245b9bd7b60c0dfe75692e36e8451c64a2c5c145b57bef76"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_11_salvare_incrementala",
+      "pdf": "PF/data/gigel/cases/case_pf_11_salvare_incrementala/docs/doc_003_payslip.pdf",
+      "image": "PF/data/gigel/cases/case_pf_11_salvare_incrementala/images/doc_003_payslip.png",
+      "sha256_pdf": "e2fefbd45a58119b96ecde76a6bad990bcfc70d8d31707a4db66e265040d8f74"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_12_modificari_combinate",
+      "pdf": "PF/data/gigel/cases/case_pf_12_modificari_combinate/docs/doc_001_identity_document.pdf",
+      "image": "PF/data/gigel/cases/case_pf_12_modificari_combinate/images/doc_001_identity_document.png",
+      "sha256_pdf": "35d3c63d2995c56fdf488b4981fb002bb97ea9c03f6b660c79db18838685ac5f"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_12_modificari_combinate",
+      "pdf": "PF/data/gigel/cases/case_pf_12_modificari_combinate/docs/doc_002_utility_bill.pdf",
+      "image": "PF/data/gigel/cases/case_pf_12_modificari_combinate/images/doc_002_utility_bill.png",
+      "sha256_pdf": "4bb45dfded5342be17ac69c1a180f568cdfc46707992bb83c1f50098d00bd16e"
+    },
+    {
+      "flow": "PF",
+      "case_id": "case_pf_12_modificari_combinate",
+      "pdf": "PF/data/gigel/cases/case_pf_12_modificari_combinate/docs/doc_003_payslip.pdf",
+      "image": "PF/data/gigel/cases/case_pf_12_modificari_combinate/images/doc_003_payslip.png",
+      "sha256_pdf": "4a00aa9e06a64fd9653a47ee0d5a77c633c6d5b020bea93338dfa5a6894c334b"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_00_corect_control",
+      "pdf": "PJ/cases/case_pj_00_corect_control/docs/doc_001_certificat_constatator.pdf",
+      "image": "PJ/cases/case_pj_00_corect_control/images/doc_001_certificat_constatator.png",
+      "sha256_pdf": "bd482af66fdac1cf324a8e011bbb756ee2be6a402e93643ae75898ef8d244e59"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_00_corect_control",
+      "pdf": "PJ/cases/case_pj_00_corect_control/docs/doc_002_act_constitutiv.pdf",
+      "image": "PJ/cases/case_pj_00_corect_control/images/doc_002_act_constitutiv.png",
+      "sha256_pdf": "14e0d81310cccfa60e93e80ef81b32aa1001f8f158b5a72b5c5866334328c027"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_00_corect_control",
+      "pdf": "PJ/cases/case_pj_00_corect_control/docs/doc_003_ubo_declaration.pdf",
+      "image": "PJ/cases/case_pj_00_corect_control/images/doc_003_ubo_declaration.png",
+      "sha256_pdf": "b5ac1f783da0a9cd4773c8728f164f079df19b44a1555d7d3795d65d4522dac1"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_00_corect_control",
+      "pdf": "PJ/cases/case_pj_00_corect_control/docs/doc_004_id_card.pdf",
+      "image": "PJ/cases/case_pj_00_corect_control/images/doc_004_id_card.png",
+      "sha256_pdf": "15fd35e45807601772474ed7492cc2890cc82932c34661181b401bf26005e39b"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_00_corect_control",
+      "pdf": "PJ/cases/case_pj_00_corect_control/docs/doc_005_id_card.pdf",
+      "image": "PJ/cases/case_pj_00_corect_control/images/doc_005_id_card.png",
+      "sha256_pdf": "de827300b697a4eca121998690cd63ae8cf8db86497e36b9c10603ceac386abd"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_00_corect_control",
+      "pdf": "PJ/cases/case_pj_00_corect_control/docs/doc_006_id_card.pdf",
+      "image": "PJ/cases/case_pj_00_corect_control/images/doc_006_id_card.png",
+      "sha256_pdf": "90a075e2693ae2f6f2bf1c04a6caf7ab7b71ee7dadea1b5e08aee043a5480bc7"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_00_corect_control",
+      "pdf": "PJ/cases/case_pj_00_corect_control/docs/doc_007_id_card.pdf",
+      "image": "PJ/cases/case_pj_00_corect_control/images/doc_007_id_card.png",
+      "sha256_pdf": "13d74e80a8a1d1a9675b677dfbbc1b7e661f49459659eba6d9d9df771fa48dd0"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_00_corect_control",
+      "pdf": "PJ/cases/case_pj_00_corect_control/docs/doc_008_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_00_corect_control/images/doc_008_signature_specimen.png",
+      "sha256_pdf": "9e5382a2d9af475ae478a61f493ff29fa91d19733cdd230203abfc5db2458f44"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_00_corect_control",
+      "pdf": "PJ/cases/case_pj_00_corect_control/docs/doc_009_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_00_corect_control/images/doc_009_signature_specimen.png",
+      "sha256_pdf": "e3c1114867af9bc7ca117ecca5ce22b9f4bd1c4b2e7cb0d67910b12785b6d77c"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_01_certificat_lipsa",
+      "pdf": "PJ/cases/case_pj_01_certificat_lipsa/docs/doc_002_act_constitutiv.pdf",
+      "image": "PJ/cases/case_pj_01_certificat_lipsa/images/doc_002_act_constitutiv.png",
+      "sha256_pdf": "14e0d81310cccfa60e93e80ef81b32aa1001f8f158b5a72b5c5866334328c027"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_01_certificat_lipsa",
+      "pdf": "PJ/cases/case_pj_01_certificat_lipsa/docs/doc_003_ubo_declaration.pdf",
+      "image": "PJ/cases/case_pj_01_certificat_lipsa/images/doc_003_ubo_declaration.png",
+      "sha256_pdf": "b5ac1f783da0a9cd4773c8728f164f079df19b44a1555d7d3795d65d4522dac1"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_01_certificat_lipsa",
+      "pdf": "PJ/cases/case_pj_01_certificat_lipsa/docs/doc_004_id_card.pdf",
+      "image": "PJ/cases/case_pj_01_certificat_lipsa/images/doc_004_id_card.png",
+      "sha256_pdf": "15fd35e45807601772474ed7492cc2890cc82932c34661181b401bf26005e39b"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_01_certificat_lipsa",
+      "pdf": "PJ/cases/case_pj_01_certificat_lipsa/docs/doc_005_id_card.pdf",
+      "image": "PJ/cases/case_pj_01_certificat_lipsa/images/doc_005_id_card.png",
+      "sha256_pdf": "de827300b697a4eca121998690cd63ae8cf8db86497e36b9c10603ceac386abd"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_01_certificat_lipsa",
+      "pdf": "PJ/cases/case_pj_01_certificat_lipsa/docs/doc_006_id_card.pdf",
+      "image": "PJ/cases/case_pj_01_certificat_lipsa/images/doc_006_id_card.png",
+      "sha256_pdf": "90a075e2693ae2f6f2bf1c04a6caf7ab7b71ee7dadea1b5e08aee043a5480bc7"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_01_certificat_lipsa",
+      "pdf": "PJ/cases/case_pj_01_certificat_lipsa/docs/doc_007_id_card.pdf",
+      "image": "PJ/cases/case_pj_01_certificat_lipsa/images/doc_007_id_card.png",
+      "sha256_pdf": "13d74e80a8a1d1a9675b677dfbbc1b7e661f49459659eba6d9d9df771fa48dd0"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_01_certificat_lipsa",
+      "pdf": "PJ/cases/case_pj_01_certificat_lipsa/docs/doc_008_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_01_certificat_lipsa/images/doc_008_signature_specimen.png",
+      "sha256_pdf": "9e5382a2d9af475ae478a61f493ff29fa91d19733cdd230203abfc5db2458f44"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_01_certificat_lipsa",
+      "pdf": "PJ/cases/case_pj_01_certificat_lipsa/docs/doc_009_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_01_certificat_lipsa/images/doc_009_signature_specimen.png",
+      "sha256_pdf": "e3c1114867af9bc7ca117ecca5ce22b9f4bd1c4b2e7cb0d67910b12785b6d77c"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_02_certificat_vechi",
+      "pdf": "PJ/cases/case_pj_02_certificat_vechi/docs/doc_001_certificat_constatator.pdf",
+      "image": "PJ/cases/case_pj_02_certificat_vechi/images/doc_001_certificat_constatator.png",
+      "sha256_pdf": "c41a7b77b9ae7c5de8068854fd18580bf60f6f8827e99cc8446e65737d230769"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_02_certificat_vechi",
+      "pdf": "PJ/cases/case_pj_02_certificat_vechi/docs/doc_002_act_constitutiv.pdf",
+      "image": "PJ/cases/case_pj_02_certificat_vechi/images/doc_002_act_constitutiv.png",
+      "sha256_pdf": "14e0d81310cccfa60e93e80ef81b32aa1001f8f158b5a72b5c5866334328c027"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_02_certificat_vechi",
+      "pdf": "PJ/cases/case_pj_02_certificat_vechi/docs/doc_003_ubo_declaration.pdf",
+      "image": "PJ/cases/case_pj_02_certificat_vechi/images/doc_003_ubo_declaration.png",
+      "sha256_pdf": "b5ac1f783da0a9cd4773c8728f164f079df19b44a1555d7d3795d65d4522dac1"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_02_certificat_vechi",
+      "pdf": "PJ/cases/case_pj_02_certificat_vechi/docs/doc_004_id_card.pdf",
+      "image": "PJ/cases/case_pj_02_certificat_vechi/images/doc_004_id_card.png",
+      "sha256_pdf": "15fd35e45807601772474ed7492cc2890cc82932c34661181b401bf26005e39b"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_02_certificat_vechi",
+      "pdf": "PJ/cases/case_pj_02_certificat_vechi/docs/doc_005_id_card.pdf",
+      "image": "PJ/cases/case_pj_02_certificat_vechi/images/doc_005_id_card.png",
+      "sha256_pdf": "de827300b697a4eca121998690cd63ae8cf8db86497e36b9c10603ceac386abd"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_02_certificat_vechi",
+      "pdf": "PJ/cases/case_pj_02_certificat_vechi/docs/doc_006_id_card.pdf",
+      "image": "PJ/cases/case_pj_02_certificat_vechi/images/doc_006_id_card.png",
+      "sha256_pdf": "90a075e2693ae2f6f2bf1c04a6caf7ab7b71ee7dadea1b5e08aee043a5480bc7"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_02_certificat_vechi",
+      "pdf": "PJ/cases/case_pj_02_certificat_vechi/docs/doc_007_id_card.pdf",
+      "image": "PJ/cases/case_pj_02_certificat_vechi/images/doc_007_id_card.png",
+      "sha256_pdf": "13d74e80a8a1d1a9675b677dfbbc1b7e661f49459659eba6d9d9df771fa48dd0"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_02_certificat_vechi",
+      "pdf": "PJ/cases/case_pj_02_certificat_vechi/docs/doc_008_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_02_certificat_vechi/images/doc_008_signature_specimen.png",
+      "sha256_pdf": "9e5382a2d9af475ae478a61f493ff29fa91d19733cdd230203abfc5db2458f44"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_02_certificat_vechi",
+      "pdf": "PJ/cases/case_pj_02_certificat_vechi/docs/doc_009_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_02_certificat_vechi/images/doc_009_signature_specimen.png",
+      "sha256_pdf": "e3c1114867af9bc7ca117ecca5ce22b9f4bd1c4b2e7cb0d67910b12785b6d77c"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_03_act_constitutiv_lipsa",
+      "pdf": "PJ/cases/case_pj_03_act_constitutiv_lipsa/docs/doc_001_certificat_constatator.pdf",
+      "image": "PJ/cases/case_pj_03_act_constitutiv_lipsa/images/doc_001_certificat_constatator.png",
+      "sha256_pdf": "bd482af66fdac1cf324a8e011bbb756ee2be6a402e93643ae75898ef8d244e59"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_03_act_constitutiv_lipsa",
+      "pdf": "PJ/cases/case_pj_03_act_constitutiv_lipsa/docs/doc_003_ubo_declaration.pdf",
+      "image": "PJ/cases/case_pj_03_act_constitutiv_lipsa/images/doc_003_ubo_declaration.png",
+      "sha256_pdf": "b5ac1f783da0a9cd4773c8728f164f079df19b44a1555d7d3795d65d4522dac1"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_03_act_constitutiv_lipsa",
+      "pdf": "PJ/cases/case_pj_03_act_constitutiv_lipsa/docs/doc_004_id_card.pdf",
+      "image": "PJ/cases/case_pj_03_act_constitutiv_lipsa/images/doc_004_id_card.png",
+      "sha256_pdf": "15fd35e45807601772474ed7492cc2890cc82932c34661181b401bf26005e39b"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_03_act_constitutiv_lipsa",
+      "pdf": "PJ/cases/case_pj_03_act_constitutiv_lipsa/docs/doc_005_id_card.pdf",
+      "image": "PJ/cases/case_pj_03_act_constitutiv_lipsa/images/doc_005_id_card.png",
+      "sha256_pdf": "de827300b697a4eca121998690cd63ae8cf8db86497e36b9c10603ceac386abd"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_03_act_constitutiv_lipsa",
+      "pdf": "PJ/cases/case_pj_03_act_constitutiv_lipsa/docs/doc_006_id_card.pdf",
+      "image": "PJ/cases/case_pj_03_act_constitutiv_lipsa/images/doc_006_id_card.png",
+      "sha256_pdf": "90a075e2693ae2f6f2bf1c04a6caf7ab7b71ee7dadea1b5e08aee043a5480bc7"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_03_act_constitutiv_lipsa",
+      "pdf": "PJ/cases/case_pj_03_act_constitutiv_lipsa/docs/doc_007_id_card.pdf",
+      "image": "PJ/cases/case_pj_03_act_constitutiv_lipsa/images/doc_007_id_card.png",
+      "sha256_pdf": "13d74e80a8a1d1a9675b677dfbbc1b7e661f49459659eba6d9d9df771fa48dd0"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_03_act_constitutiv_lipsa",
+      "pdf": "PJ/cases/case_pj_03_act_constitutiv_lipsa/docs/doc_008_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_03_act_constitutiv_lipsa/images/doc_008_signature_specimen.png",
+      "sha256_pdf": "9e5382a2d9af475ae478a61f493ff29fa91d19733cdd230203abfc5db2458f44"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_03_act_constitutiv_lipsa",
+      "pdf": "PJ/cases/case_pj_03_act_constitutiv_lipsa/docs/doc_009_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_03_act_constitutiv_lipsa/images/doc_009_signature_specimen.png",
+      "sha256_pdf": "e3c1114867af9bc7ca117ecca5ce22b9f4bd1c4b2e7cb0d67910b12785b6d77c"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_04_declaratie_ubo_lipsa",
+      "pdf": "PJ/cases/case_pj_04_declaratie_ubo_lipsa/docs/doc_001_certificat_constatator.pdf",
+      "image": "PJ/cases/case_pj_04_declaratie_ubo_lipsa/images/doc_001_certificat_constatator.png",
+      "sha256_pdf": "bd482af66fdac1cf324a8e011bbb756ee2be6a402e93643ae75898ef8d244e59"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_04_declaratie_ubo_lipsa",
+      "pdf": "PJ/cases/case_pj_04_declaratie_ubo_lipsa/docs/doc_002_act_constitutiv.pdf",
+      "image": "PJ/cases/case_pj_04_declaratie_ubo_lipsa/images/doc_002_act_constitutiv.png",
+      "sha256_pdf": "14e0d81310cccfa60e93e80ef81b32aa1001f8f158b5a72b5c5866334328c027"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_04_declaratie_ubo_lipsa",
+      "pdf": "PJ/cases/case_pj_04_declaratie_ubo_lipsa/docs/doc_004_id_card.pdf",
+      "image": "PJ/cases/case_pj_04_declaratie_ubo_lipsa/images/doc_004_id_card.png",
+      "sha256_pdf": "15fd35e45807601772474ed7492cc2890cc82932c34661181b401bf26005e39b"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_04_declaratie_ubo_lipsa",
+      "pdf": "PJ/cases/case_pj_04_declaratie_ubo_lipsa/docs/doc_005_id_card.pdf",
+      "image": "PJ/cases/case_pj_04_declaratie_ubo_lipsa/images/doc_005_id_card.png",
+      "sha256_pdf": "de827300b697a4eca121998690cd63ae8cf8db86497e36b9c10603ceac386abd"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_04_declaratie_ubo_lipsa",
+      "pdf": "PJ/cases/case_pj_04_declaratie_ubo_lipsa/docs/doc_006_id_card.pdf",
+      "image": "PJ/cases/case_pj_04_declaratie_ubo_lipsa/images/doc_006_id_card.png",
+      "sha256_pdf": "90a075e2693ae2f6f2bf1c04a6caf7ab7b71ee7dadea1b5e08aee043a5480bc7"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_04_declaratie_ubo_lipsa",
+      "pdf": "PJ/cases/case_pj_04_declaratie_ubo_lipsa/docs/doc_007_id_card.pdf",
+      "image": "PJ/cases/case_pj_04_declaratie_ubo_lipsa/images/doc_007_id_card.png",
+      "sha256_pdf": "13d74e80a8a1d1a9675b677dfbbc1b7e661f49459659eba6d9d9df771fa48dd0"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_04_declaratie_ubo_lipsa",
+      "pdf": "PJ/cases/case_pj_04_declaratie_ubo_lipsa/docs/doc_008_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_04_declaratie_ubo_lipsa/images/doc_008_signature_specimen.png",
+      "sha256_pdf": "9e5382a2d9af475ae478a61f493ff29fa91d19733cdd230203abfc5db2458f44"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_04_declaratie_ubo_lipsa",
+      "pdf": "PJ/cases/case_pj_04_declaratie_ubo_lipsa/docs/doc_009_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_04_declaratie_ubo_lipsa/images/doc_009_signature_specimen.png",
+      "sha256_pdf": "e3c1114867af9bc7ca117ecca5ce22b9f4bd1c4b2e7cb0d67910b12785b6d77c"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_05_cui_diferit",
+      "pdf": "PJ/cases/case_pj_05_cui_diferit/docs/doc_001_certificat_constatator.pdf",
+      "image": "PJ/cases/case_pj_05_cui_diferit/images/doc_001_certificat_constatator.png",
+      "sha256_pdf": "bd482af66fdac1cf324a8e011bbb756ee2be6a402e93643ae75898ef8d244e59"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_05_cui_diferit",
+      "pdf": "PJ/cases/case_pj_05_cui_diferit/docs/doc_002_act_constitutiv.pdf",
+      "image": "PJ/cases/case_pj_05_cui_diferit/images/doc_002_act_constitutiv.png",
+      "sha256_pdf": "14e0d81310cccfa60e93e80ef81b32aa1001f8f158b5a72b5c5866334328c027"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_05_cui_diferit",
+      "pdf": "PJ/cases/case_pj_05_cui_diferit/docs/doc_003_ubo_declaration.pdf",
+      "image": "PJ/cases/case_pj_05_cui_diferit/images/doc_003_ubo_declaration.png",
+      "sha256_pdf": "89e3298c5e2562df32bdd9ed02cf42cd5dbb8d58fd1247e29efdd27efa950de5"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_05_cui_diferit",
+      "pdf": "PJ/cases/case_pj_05_cui_diferit/docs/doc_004_id_card.pdf",
+      "image": "PJ/cases/case_pj_05_cui_diferit/images/doc_004_id_card.png",
+      "sha256_pdf": "15fd35e45807601772474ed7492cc2890cc82932c34661181b401bf26005e39b"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_05_cui_diferit",
+      "pdf": "PJ/cases/case_pj_05_cui_diferit/docs/doc_005_id_card.pdf",
+      "image": "PJ/cases/case_pj_05_cui_diferit/images/doc_005_id_card.png",
+      "sha256_pdf": "de827300b697a4eca121998690cd63ae8cf8db86497e36b9c10603ceac386abd"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_05_cui_diferit",
+      "pdf": "PJ/cases/case_pj_05_cui_diferit/docs/doc_006_id_card.pdf",
+      "image": "PJ/cases/case_pj_05_cui_diferit/images/doc_006_id_card.png",
+      "sha256_pdf": "90a075e2693ae2f6f2bf1c04a6caf7ab7b71ee7dadea1b5e08aee043a5480bc7"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_05_cui_diferit",
+      "pdf": "PJ/cases/case_pj_05_cui_diferit/docs/doc_007_id_card.pdf",
+      "image": "PJ/cases/case_pj_05_cui_diferit/images/doc_007_id_card.png",
+      "sha256_pdf": "13d74e80a8a1d1a9675b677dfbbc1b7e661f49459659eba6d9d9df771fa48dd0"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_05_cui_diferit",
+      "pdf": "PJ/cases/case_pj_05_cui_diferit/docs/doc_008_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_05_cui_diferit/images/doc_008_signature_specimen.png",
+      "sha256_pdf": "9e5382a2d9af475ae478a61f493ff29fa91d19733cdd230203abfc5db2458f44"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_05_cui_diferit",
+      "pdf": "PJ/cases/case_pj_05_cui_diferit/docs/doc_009_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_05_cui_diferit/images/doc_009_signature_specimen.png",
+      "sha256_pdf": "e3c1114867af9bc7ca117ecca5ce22b9f4bd1c4b2e7cb0d67910b12785b6d77c"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_06_ubo_diferit",
+      "pdf": "PJ/cases/case_pj_06_ubo_diferit/docs/doc_001_certificat_constatator.pdf",
+      "image": "PJ/cases/case_pj_06_ubo_diferit/images/doc_001_certificat_constatator.png",
+      "sha256_pdf": "bd482af66fdac1cf324a8e011bbb756ee2be6a402e93643ae75898ef8d244e59"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_06_ubo_diferit",
+      "pdf": "PJ/cases/case_pj_06_ubo_diferit/docs/doc_002_act_constitutiv.pdf",
+      "image": "PJ/cases/case_pj_06_ubo_diferit/images/doc_002_act_constitutiv.png",
+      "sha256_pdf": "14e0d81310cccfa60e93e80ef81b32aa1001f8f158b5a72b5c5866334328c027"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_06_ubo_diferit",
+      "pdf": "PJ/cases/case_pj_06_ubo_diferit/docs/doc_003_ubo_declaration.pdf",
+      "image": "PJ/cases/case_pj_06_ubo_diferit/images/doc_003_ubo_declaration.png",
+      "sha256_pdf": "c7e2ec5b3d7b99930f3e13326a6788e787706255a33972d069f7f7d2c196099c"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_06_ubo_diferit",
+      "pdf": "PJ/cases/case_pj_06_ubo_diferit/docs/doc_004_id_card.pdf",
+      "image": "PJ/cases/case_pj_06_ubo_diferit/images/doc_004_id_card.png",
+      "sha256_pdf": "15fd35e45807601772474ed7492cc2890cc82932c34661181b401bf26005e39b"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_06_ubo_diferit",
+      "pdf": "PJ/cases/case_pj_06_ubo_diferit/docs/doc_005_id_card.pdf",
+      "image": "PJ/cases/case_pj_06_ubo_diferit/images/doc_005_id_card.png",
+      "sha256_pdf": "de827300b697a4eca121998690cd63ae8cf8db86497e36b9c10603ceac386abd"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_06_ubo_diferit",
+      "pdf": "PJ/cases/case_pj_06_ubo_diferit/docs/doc_006_id_card.pdf",
+      "image": "PJ/cases/case_pj_06_ubo_diferit/images/doc_006_id_card.png",
+      "sha256_pdf": "90a075e2693ae2f6f2bf1c04a6caf7ab7b71ee7dadea1b5e08aee043a5480bc7"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_06_ubo_diferit",
+      "pdf": "PJ/cases/case_pj_06_ubo_diferit/docs/doc_007_id_card.pdf",
+      "image": "PJ/cases/case_pj_06_ubo_diferit/images/doc_007_id_card.png",
+      "sha256_pdf": "13d74e80a8a1d1a9675b677dfbbc1b7e661f49459659eba6d9d9df771fa48dd0"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_06_ubo_diferit",
+      "pdf": "PJ/cases/case_pj_06_ubo_diferit/docs/doc_008_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_06_ubo_diferit/images/doc_008_signature_specimen.png",
+      "sha256_pdf": "9e5382a2d9af475ae478a61f493ff29fa91d19733cdd230203abfc5db2458f44"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_06_ubo_diferit",
+      "pdf": "PJ/cases/case_pj_06_ubo_diferit/docs/doc_009_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_06_ubo_diferit/images/doc_009_signature_specimen.png",
+      "sha256_pdf": "e3c1114867af9bc7ca117ecca5ce22b9f4bd1c4b2e7cb0d67910b12785b6d77c"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_07_procente_diferite",
+      "pdf": "PJ/cases/case_pj_07_procente_diferite/docs/doc_001_certificat_constatator.pdf",
+      "image": "PJ/cases/case_pj_07_procente_diferite/images/doc_001_certificat_constatator.png",
+      "sha256_pdf": "bd482af66fdac1cf324a8e011bbb756ee2be6a402e93643ae75898ef8d244e59"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_07_procente_diferite",
+      "pdf": "PJ/cases/case_pj_07_procente_diferite/docs/doc_002_act_constitutiv.pdf",
+      "image": "PJ/cases/case_pj_07_procente_diferite/images/doc_002_act_constitutiv.png",
+      "sha256_pdf": "14e0d81310cccfa60e93e80ef81b32aa1001f8f158b5a72b5c5866334328c027"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_07_procente_diferite",
+      "pdf": "PJ/cases/case_pj_07_procente_diferite/docs/doc_003_ubo_declaration.pdf",
+      "image": "PJ/cases/case_pj_07_procente_diferite/images/doc_003_ubo_declaration.png",
+      "sha256_pdf": "0d3523e83bd5cac290b0102ac698bba61406cdfd77e3153f7bfac0395a7a1e8d"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_07_procente_diferite",
+      "pdf": "PJ/cases/case_pj_07_procente_diferite/docs/doc_004_id_card.pdf",
+      "image": "PJ/cases/case_pj_07_procente_diferite/images/doc_004_id_card.png",
+      "sha256_pdf": "15fd35e45807601772474ed7492cc2890cc82932c34661181b401bf26005e39b"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_07_procente_diferite",
+      "pdf": "PJ/cases/case_pj_07_procente_diferite/docs/doc_005_id_card.pdf",
+      "image": "PJ/cases/case_pj_07_procente_diferite/images/doc_005_id_card.png",
+      "sha256_pdf": "de827300b697a4eca121998690cd63ae8cf8db86497e36b9c10603ceac386abd"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_07_procente_diferite",
+      "pdf": "PJ/cases/case_pj_07_procente_diferite/docs/doc_006_id_card.pdf",
+      "image": "PJ/cases/case_pj_07_procente_diferite/images/doc_006_id_card.png",
+      "sha256_pdf": "90a075e2693ae2f6f2bf1c04a6caf7ab7b71ee7dadea1b5e08aee043a5480bc7"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_07_procente_diferite",
+      "pdf": "PJ/cases/case_pj_07_procente_diferite/docs/doc_007_id_card.pdf",
+      "image": "PJ/cases/case_pj_07_procente_diferite/images/doc_007_id_card.png",
+      "sha256_pdf": "13d74e80a8a1d1a9675b677dfbbc1b7e661f49459659eba6d9d9df771fa48dd0"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_07_procente_diferite",
+      "pdf": "PJ/cases/case_pj_07_procente_diferite/docs/doc_008_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_07_procente_diferite/images/doc_008_signature_specimen.png",
+      "sha256_pdf": "9e5382a2d9af475ae478a61f493ff29fa91d19733cdd230203abfc5db2458f44"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_07_procente_diferite",
+      "pdf": "PJ/cases/case_pj_07_procente_diferite/docs/doc_009_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_07_procente_diferite/images/doc_009_signature_specimen.png",
+      "sha256_pdf": "e3c1114867af9bc7ca117ecca5ce22b9f4bd1c4b2e7cb0d67910b12785b6d77c"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_08_identitate_ubo_lipsa",
+      "pdf": "PJ/cases/case_pj_08_identitate_ubo_lipsa/docs/doc_001_certificat_constatator.pdf",
+      "image": "PJ/cases/case_pj_08_identitate_ubo_lipsa/images/doc_001_certificat_constatator.png",
+      "sha256_pdf": "bd482af66fdac1cf324a8e011bbb756ee2be6a402e93643ae75898ef8d244e59"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_08_identitate_ubo_lipsa",
+      "pdf": "PJ/cases/case_pj_08_identitate_ubo_lipsa/docs/doc_002_act_constitutiv.pdf",
+      "image": "PJ/cases/case_pj_08_identitate_ubo_lipsa/images/doc_002_act_constitutiv.png",
+      "sha256_pdf": "14e0d81310cccfa60e93e80ef81b32aa1001f8f158b5a72b5c5866334328c027"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_08_identitate_ubo_lipsa",
+      "pdf": "PJ/cases/case_pj_08_identitate_ubo_lipsa/docs/doc_003_ubo_declaration.pdf",
+      "image": "PJ/cases/case_pj_08_identitate_ubo_lipsa/images/doc_003_ubo_declaration.png",
+      "sha256_pdf": "b5ac1f783da0a9cd4773c8728f164f079df19b44a1555d7d3795d65d4522dac1"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_08_identitate_ubo_lipsa",
+      "pdf": "PJ/cases/case_pj_08_identitate_ubo_lipsa/docs/doc_004_id_card.pdf",
+      "image": "PJ/cases/case_pj_08_identitate_ubo_lipsa/images/doc_004_id_card.png",
+      "sha256_pdf": "15fd35e45807601772474ed7492cc2890cc82932c34661181b401bf26005e39b"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_08_identitate_ubo_lipsa",
+      "pdf": "PJ/cases/case_pj_08_identitate_ubo_lipsa/docs/doc_005_id_card.pdf",
+      "image": "PJ/cases/case_pj_08_identitate_ubo_lipsa/images/doc_005_id_card.png",
+      "sha256_pdf": "de827300b697a4eca121998690cd63ae8cf8db86497e36b9c10603ceac386abd"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_08_identitate_ubo_lipsa",
+      "pdf": "PJ/cases/case_pj_08_identitate_ubo_lipsa/docs/doc_007_id_card.pdf",
+      "image": "PJ/cases/case_pj_08_identitate_ubo_lipsa/images/doc_007_id_card.png",
+      "sha256_pdf": "13d74e80a8a1d1a9675b677dfbbc1b7e661f49459659eba6d9d9df771fa48dd0"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_08_identitate_ubo_lipsa",
+      "pdf": "PJ/cases/case_pj_08_identitate_ubo_lipsa/docs/doc_008_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_08_identitate_ubo_lipsa/images/doc_008_signature_specimen.png",
+      "sha256_pdf": "9e5382a2d9af475ae478a61f493ff29fa91d19733cdd230203abfc5db2458f44"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_08_identitate_ubo_lipsa",
+      "pdf": "PJ/cases/case_pj_08_identitate_ubo_lipsa/docs/doc_009_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_08_identitate_ubo_lipsa/images/doc_009_signature_specimen.png",
+      "sha256_pdf": "e3c1114867af9bc7ca117ecca5ce22b9f4bd1c4b2e7cb0d67910b12785b6d77c"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_09_act_administrator_expirat",
+      "pdf": "PJ/cases/case_pj_09_act_administrator_expirat/docs/doc_001_certificat_constatator.pdf",
+      "image": "PJ/cases/case_pj_09_act_administrator_expirat/images/doc_001_certificat_constatator.png",
+      "sha256_pdf": "bd482af66fdac1cf324a8e011bbb756ee2be6a402e93643ae75898ef8d244e59"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_09_act_administrator_expirat",
+      "pdf": "PJ/cases/case_pj_09_act_administrator_expirat/docs/doc_002_act_constitutiv.pdf",
+      "image": "PJ/cases/case_pj_09_act_administrator_expirat/images/doc_002_act_constitutiv.png",
+      "sha256_pdf": "14e0d81310cccfa60e93e80ef81b32aa1001f8f158b5a72b5c5866334328c027"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_09_act_administrator_expirat",
+      "pdf": "PJ/cases/case_pj_09_act_administrator_expirat/docs/doc_003_ubo_declaration.pdf",
+      "image": "PJ/cases/case_pj_09_act_administrator_expirat/images/doc_003_ubo_declaration.png",
+      "sha256_pdf": "b5ac1f783da0a9cd4773c8728f164f079df19b44a1555d7d3795d65d4522dac1"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_09_act_administrator_expirat",
+      "pdf": "PJ/cases/case_pj_09_act_administrator_expirat/docs/doc_004_id_card.pdf",
+      "image": "PJ/cases/case_pj_09_act_administrator_expirat/images/doc_004_id_card.png",
+      "sha256_pdf": "3f826139a056c3fb03d03b307b382716eb9a8ee2703d0c01694e943cf9879094"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_09_act_administrator_expirat",
+      "pdf": "PJ/cases/case_pj_09_act_administrator_expirat/docs/doc_005_id_card.pdf",
+      "image": "PJ/cases/case_pj_09_act_administrator_expirat/images/doc_005_id_card.png",
+      "sha256_pdf": "de827300b697a4eca121998690cd63ae8cf8db86497e36b9c10603ceac386abd"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_09_act_administrator_expirat",
+      "pdf": "PJ/cases/case_pj_09_act_administrator_expirat/docs/doc_006_id_card.pdf",
+      "image": "PJ/cases/case_pj_09_act_administrator_expirat/images/doc_006_id_card.png",
+      "sha256_pdf": "90a075e2693ae2f6f2bf1c04a6caf7ab7b71ee7dadea1b5e08aee043a5480bc7"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_09_act_administrator_expirat",
+      "pdf": "PJ/cases/case_pj_09_act_administrator_expirat/docs/doc_007_id_card.pdf",
+      "image": "PJ/cases/case_pj_09_act_administrator_expirat/images/doc_007_id_card.png",
+      "sha256_pdf": "13d74e80a8a1d1a9675b677dfbbc1b7e661f49459659eba6d9d9df771fa48dd0"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_09_act_administrator_expirat",
+      "pdf": "PJ/cases/case_pj_09_act_administrator_expirat/docs/doc_008_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_09_act_administrator_expirat/images/doc_008_signature_specimen.png",
+      "sha256_pdf": "9e5382a2d9af475ae478a61f493ff29fa91d19733cdd230203abfc5db2458f44"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_09_act_administrator_expirat",
+      "pdf": "PJ/cases/case_pj_09_act_administrator_expirat/docs/doc_009_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_09_act_administrator_expirat/images/doc_009_signature_specimen.png",
+      "sha256_pdf": "e3c1114867af9bc7ca117ecca5ce22b9f4bd1c4b2e7cb0d67910b12785b6d77c"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_10_administrator_diferit",
+      "pdf": "PJ/cases/case_pj_10_administrator_diferit/docs/doc_001_certificat_constatator.pdf",
+      "image": "PJ/cases/case_pj_10_administrator_diferit/images/doc_001_certificat_constatator.png",
+      "sha256_pdf": "848633bc6927dae68f2d7414e8fe80bf627a96528a6c04968610d307e54ab5e4"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_10_administrator_diferit",
+      "pdf": "PJ/cases/case_pj_10_administrator_diferit/docs/doc_002_act_constitutiv.pdf",
+      "image": "PJ/cases/case_pj_10_administrator_diferit/images/doc_002_act_constitutiv.png",
+      "sha256_pdf": "14e0d81310cccfa60e93e80ef81b32aa1001f8f158b5a72b5c5866334328c027"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_10_administrator_diferit",
+      "pdf": "PJ/cases/case_pj_10_administrator_diferit/docs/doc_003_ubo_declaration.pdf",
+      "image": "PJ/cases/case_pj_10_administrator_diferit/images/doc_003_ubo_declaration.png",
+      "sha256_pdf": "b5ac1f783da0a9cd4773c8728f164f079df19b44a1555d7d3795d65d4522dac1"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_10_administrator_diferit",
+      "pdf": "PJ/cases/case_pj_10_administrator_diferit/docs/doc_004_id_card.pdf",
+      "image": "PJ/cases/case_pj_10_administrator_diferit/images/doc_004_id_card.png",
+      "sha256_pdf": "15fd35e45807601772474ed7492cc2890cc82932c34661181b401bf26005e39b"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_10_administrator_diferit",
+      "pdf": "PJ/cases/case_pj_10_administrator_diferit/docs/doc_005_id_card.pdf",
+      "image": "PJ/cases/case_pj_10_administrator_diferit/images/doc_005_id_card.png",
+      "sha256_pdf": "de827300b697a4eca121998690cd63ae8cf8db86497e36b9c10603ceac386abd"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_10_administrator_diferit",
+      "pdf": "PJ/cases/case_pj_10_administrator_diferit/docs/doc_006_id_card.pdf",
+      "image": "PJ/cases/case_pj_10_administrator_diferit/images/doc_006_id_card.png",
+      "sha256_pdf": "90a075e2693ae2f6f2bf1c04a6caf7ab7b71ee7dadea1b5e08aee043a5480bc7"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_10_administrator_diferit",
+      "pdf": "PJ/cases/case_pj_10_administrator_diferit/docs/doc_007_id_card.pdf",
+      "image": "PJ/cases/case_pj_10_administrator_diferit/images/doc_007_id_card.png",
+      "sha256_pdf": "13d74e80a8a1d1a9675b677dfbbc1b7e661f49459659eba6d9d9df771fa48dd0"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_10_administrator_diferit",
+      "pdf": "PJ/cases/case_pj_10_administrator_diferit/docs/doc_008_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_10_administrator_diferit/images/doc_008_signature_specimen.png",
+      "sha256_pdf": "9e5382a2d9af475ae478a61f493ff29fa91d19733cdd230203abfc5db2458f44"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_10_administrator_diferit",
+      "pdf": "PJ/cases/case_pj_10_administrator_diferit/docs/doc_009_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_10_administrator_diferit/images/doc_009_signature_specimen.png",
+      "sha256_pdf": "e3c1114867af9bc7ca117ecca5ce22b9f4bd1c4b2e7cb0d67910b12785b6d77c"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_11_specimen_delegat_lipsa",
+      "pdf": "PJ/cases/case_pj_11_specimen_delegat_lipsa/docs/doc_001_certificat_constatator.pdf",
+      "image": "PJ/cases/case_pj_11_specimen_delegat_lipsa/images/doc_001_certificat_constatator.png",
+      "sha256_pdf": "bd482af66fdac1cf324a8e011bbb756ee2be6a402e93643ae75898ef8d244e59"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_11_specimen_delegat_lipsa",
+      "pdf": "PJ/cases/case_pj_11_specimen_delegat_lipsa/docs/doc_002_act_constitutiv.pdf",
+      "image": "PJ/cases/case_pj_11_specimen_delegat_lipsa/images/doc_002_act_constitutiv.png",
+      "sha256_pdf": "14e0d81310cccfa60e93e80ef81b32aa1001f8f158b5a72b5c5866334328c027"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_11_specimen_delegat_lipsa",
+      "pdf": "PJ/cases/case_pj_11_specimen_delegat_lipsa/docs/doc_003_ubo_declaration.pdf",
+      "image": "PJ/cases/case_pj_11_specimen_delegat_lipsa/images/doc_003_ubo_declaration.png",
+      "sha256_pdf": "b5ac1f783da0a9cd4773c8728f164f079df19b44a1555d7d3795d65d4522dac1"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_11_specimen_delegat_lipsa",
+      "pdf": "PJ/cases/case_pj_11_specimen_delegat_lipsa/docs/doc_004_id_card.pdf",
+      "image": "PJ/cases/case_pj_11_specimen_delegat_lipsa/images/doc_004_id_card.png",
+      "sha256_pdf": "15fd35e45807601772474ed7492cc2890cc82932c34661181b401bf26005e39b"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_11_specimen_delegat_lipsa",
+      "pdf": "PJ/cases/case_pj_11_specimen_delegat_lipsa/docs/doc_005_id_card.pdf",
+      "image": "PJ/cases/case_pj_11_specimen_delegat_lipsa/images/doc_005_id_card.png",
+      "sha256_pdf": "de827300b697a4eca121998690cd63ae8cf8db86497e36b9c10603ceac386abd"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_11_specimen_delegat_lipsa",
+      "pdf": "PJ/cases/case_pj_11_specimen_delegat_lipsa/docs/doc_006_id_card.pdf",
+      "image": "PJ/cases/case_pj_11_specimen_delegat_lipsa/images/doc_006_id_card.png",
+      "sha256_pdf": "90a075e2693ae2f6f2bf1c04a6caf7ab7b71ee7dadea1b5e08aee043a5480bc7"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_11_specimen_delegat_lipsa",
+      "pdf": "PJ/cases/case_pj_11_specimen_delegat_lipsa/docs/doc_007_id_card.pdf",
+      "image": "PJ/cases/case_pj_11_specimen_delegat_lipsa/images/doc_007_id_card.png",
+      "sha256_pdf": "13d74e80a8a1d1a9675b677dfbbc1b7e661f49459659eba6d9d9df771fa48dd0"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_11_specimen_delegat_lipsa",
+      "pdf": "PJ/cases/case_pj_11_specimen_delegat_lipsa/docs/doc_008_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_11_specimen_delegat_lipsa/images/doc_008_signature_specimen.png",
+      "sha256_pdf": "9e5382a2d9af475ae478a61f493ff29fa91d19733cdd230203abfc5db2458f44"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_12_probleme_combinate",
+      "pdf": "PJ/cases/case_pj_12_probleme_combinate/docs/doc_001_certificat_constatator.pdf",
+      "image": "PJ/cases/case_pj_12_probleme_combinate/images/doc_001_certificat_constatator.png",
+      "sha256_pdf": "f587ef5f1142907c2ab3888d59cb52ad8cc5e5db832af0e07acfd36c054cbe5b"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_12_probleme_combinate",
+      "pdf": "PJ/cases/case_pj_12_probleme_combinate/docs/doc_002_act_constitutiv.pdf",
+      "image": "PJ/cases/case_pj_12_probleme_combinate/images/doc_002_act_constitutiv.png",
+      "sha256_pdf": "14e0d81310cccfa60e93e80ef81b32aa1001f8f158b5a72b5c5866334328c027"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_12_probleme_combinate",
+      "pdf": "PJ/cases/case_pj_12_probleme_combinate/docs/doc_003_ubo_declaration.pdf",
+      "image": "PJ/cases/case_pj_12_probleme_combinate/images/doc_003_ubo_declaration.png",
+      "sha256_pdf": "e9fa886dd48a0d251505442c51033aa79d5f409a2e0d503f7906a84519053b5f"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_12_probleme_combinate",
+      "pdf": "PJ/cases/case_pj_12_probleme_combinate/docs/doc_004_id_card.pdf",
+      "image": "PJ/cases/case_pj_12_probleme_combinate/images/doc_004_id_card.png",
+      "sha256_pdf": "7ed62ab5d0e3616d1354114add439df410e9642ca8df4d9fec65cf0bdf82f1d9"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_12_probleme_combinate",
+      "pdf": "PJ/cases/case_pj_12_probleme_combinate/docs/doc_005_id_card.pdf",
+      "image": "PJ/cases/case_pj_12_probleme_combinate/images/doc_005_id_card.png",
+      "sha256_pdf": "de827300b697a4eca121998690cd63ae8cf8db86497e36b9c10603ceac386abd"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_12_probleme_combinate",
+      "pdf": "PJ/cases/case_pj_12_probleme_combinate/docs/doc_006_id_card.pdf",
+      "image": "PJ/cases/case_pj_12_probleme_combinate/images/doc_006_id_card.png",
+      "sha256_pdf": "90a075e2693ae2f6f2bf1c04a6caf7ab7b71ee7dadea1b5e08aee043a5480bc7"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_12_probleme_combinate",
+      "pdf": "PJ/cases/case_pj_12_probleme_combinate/docs/doc_007_id_card.pdf",
+      "image": "PJ/cases/case_pj_12_probleme_combinate/images/doc_007_id_card.png",
+      "sha256_pdf": "13d74e80a8a1d1a9675b677dfbbc1b7e661f49459659eba6d9d9df771fa48dd0"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_12_probleme_combinate",
+      "pdf": "PJ/cases/case_pj_12_probleme_combinate/docs/doc_008_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_12_probleme_combinate/images/doc_008_signature_specimen.png",
+      "sha256_pdf": "9e5382a2d9af475ae478a61f493ff29fa91d19733cdd230203abfc5db2458f44"
+    },
+    {
+      "flow": "PJ",
+      "case_id": "case_pj_12_probleme_combinate",
+      "pdf": "PJ/cases/case_pj_12_probleme_combinate/docs/doc_009_signature_specimen.pdf",
+      "image": "PJ/cases/case_pj_12_probleme_combinate/images/doc_009_signature_specimen.png",
+      "sha256_pdf": "e3c1114867af9bc7ca117ecca5ce22b9f4bd1c4b2e7cb0d67910b12785b6d77c"
+    }
+  ]
+}

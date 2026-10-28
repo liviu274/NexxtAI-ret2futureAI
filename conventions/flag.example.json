@@ -2,6 +2,7 @@
   "flag_id": "flag_001",
   "case_id": "case_0001",
   "rule_id": "R-PF-002",
+  "person_id": null,
   "stage": "validate",
   "severity": "high",
   "title": "ID card expired",

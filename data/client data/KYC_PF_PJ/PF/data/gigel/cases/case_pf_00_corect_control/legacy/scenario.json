@@ -1,0 +1,8 @@
+{
+  "description": "Dosar corect de control",
+  "reference_date": "2026-10-28",
+  "scenario_type": "clean_control",
+  "mutation": null,
+  "expected_rule_ids": [],
+  "synthetic": true
+}

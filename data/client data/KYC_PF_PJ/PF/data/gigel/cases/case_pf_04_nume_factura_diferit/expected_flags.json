@@ -1,0 +1,8 @@
+[
+  {
+    "rule_id": "R-PF-008",
+    "check": "fields_match",
+    "severity": "medium",
+    "description": "Numele clientului trebuie să fie același pe toate documentele."
+  }
+]

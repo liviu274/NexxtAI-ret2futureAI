@@ -177,6 +177,24 @@ def test_pj_person_flow_runs_for_every_ubo(orch):
     assert {f.rule_id for f in out.flags} >= {"R-PF-002"}
 
 
+def test_required_present_checks_every_person_with_the_role(orch):
+    pj = Playbook.model_validate(json.loads((CONVENTIONS / "playbook.example.json").read_text()))
+    pj.playbook_id, pj.customer_type = "pb_kyb_test", "PJ"
+    rule = next(r for r in pj.rules if r.check == "required_present")
+    rule.applies_to, rule.params = "ubo", {"doc_type": "id_card", "min_count": 1}
+    pj.rules = [rule]
+    orch.playbooks = type("PB", (), {"get": lambda self, i: pj})()
+
+    case = load_case()
+    case.playbook_id, case.customer_type = "pb_kyb_test", "PJ"
+    case.persons[0].role = "ubo"
+    case.persons.append(case.persons[0].model_copy(update={"person_id": "p_2", "full_name": "ION IONESCU"}))
+    orch.submit(case)
+    out = orch.process(case.case_id)
+    assert [(f.rule_id, f.person_id) for f in out.flags] == [(rule.rule_id, "p_2")]
+    assert "ION IONESCU" in out.flags[0].title
+
+
 def test_mismatched_customer_type_rejected(orch):
     case = load_case()
     case.customer_type = "PJ"

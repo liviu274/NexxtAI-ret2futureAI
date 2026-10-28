@@ -1,0 +1,10 @@
+{
+  "case_id": "case_pf_06_nume_fluturas_diferit",
+  "flag_count": 1,
+  "rule_ids": [
+    "R-PF-005"
+  ],
+  "risk_level": "high",
+  "status": "review",
+  "decision": null
+}

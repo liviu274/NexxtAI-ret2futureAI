@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1414" width="1000" height="1414" font-family="Arial, sans-serif">
+  <rect width="1000" height="1414" fill="#fff"/>
+  <rect x="0" y="0" width="1000" height="120" fill="#0B6E4F"/>
+  <text x="100" y="78" font-size="38" font-weight="bold" fill="#fff">ELECTRICA FURNIZARE</text>
+  <text x="100" y="200" font-size="30" font-weight="bold" fill="#111">FACTURĂ FISCALĂ nr. EF-7712094</text>
+  <text x="100" y="250" font-size="22" fill="#333">Data emiterii: 05.10.2026 · Scadență: 25.10.2026</text>
+  <text x="100" y="310" font-size="20" fill="#555">Client / Loc de consum:</text>
+  <text x="100" y="352" font-size="26" font-weight="bold" fill="#111">Andrei Popescu, Str. Zambilelor nr. 7, Cluj-Napoca</text>
+  <line x1="100" y1="420" x2="900" y2="420" stroke="#999" stroke-width="2"/>
+  <text x="100" y="480" font-size="24" fill="#111">Energie activă (212 kWh)</text><text x="900" y="480" font-size="24" fill="#111" text-anchor="end">178,40 lei</text>
+  <text x="100" y="540" font-size="24" fill="#111">Taxe și TVA</text><text x="900" y="540" font-size="24" fill="#111" text-anchor="end">41,60 lei</text>
+  <text x="100" y="620" font-size="30" font-weight="bold" fill="#111">Total de plată</text><text x="900" y="620" font-size="30" font-weight="bold" fill="#111" text-anchor="end">220,00 lei</text>
+</svg>

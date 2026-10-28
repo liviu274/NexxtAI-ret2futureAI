@@ -1,8 +1,11 @@
 import type { Case } from "@/types";
+import { updateRequestedStep } from "./document-requests";
+import { isFinalCase } from "./review";
 
 export type ClientStep = 1 | 2 | 3 | 4;
 export type ClientStepState = "current" | "action_needed" | "done";
 export interface ClientCaseStatus {
+  serviceUnavailable?: boolean;
   step: ClientStep;
   state: ClientStepState;
   /** Dates (dd.mm.yyyy) for completed steps, keyed by step number. */
@@ -22,16 +25,15 @@ function day(s: string | undefined): string {
 /** Builds the client-safe view. Never copies flags, screening, risk, officer or rule data. */
 export function toClientCaseStatus(c: Case): ClientCaseStatus {
   const d = day(c.createdAt);
-  const base = { client_messages: [] as string[], decision: null, upload_step: null };
+  const base = { client_messages: [] as string[], decision: null, upload_step: null, ...(c.serviceUnavailable ? { serviceUnavailable: true } : {}) };
   switch (c.status) {
     case "Nou": return { ...base, step: 1, state: "current", dates: {}, upload_step: 1 };
     case "Se verifică": return { ...base, step: 2, state: "current", dates: { 1: d } };
     case "Documente solicitate": {
-      const msgs = [c.officerNote?.trim(), ...c.flags.filter((f) => f.client_fixable === true && f.fix_message && f.status !== "resolved" && f.status !== "dismissed").map((f) => f.fix_message as string)]
+      const pending = updateRequestedStep(c);
+      const msgs = pending.map((r) => r.message)
         .filter((m): m is string => !!m);
-      const docs = c.portalDocuments ?? [];
-      const step = c.requestedStep ?? (Math.max(0, docs.findIndex((x) => x.type === "utility_bill")) + 1);
-      return { step: 2, state: "action_needed", dates: { 1: d }, client_messages: [...new Set(msgs)].slice(0, 3), decision: null, upload_step: step };
+      return { ...base, step: 2, state: "action_needed", dates: { 1: d }, client_messages: [...new Set(msgs)], upload_step: c.requestedStep ?? null };
     }
     case "În analiză": return { ...base, step: 3, state: "current", dates: { 1: d, 2: d } };
     case "Aprobat":
@@ -43,13 +45,15 @@ export function toClientCaseStatus(c: Case): ClientCaseStatus {
 export type ClientPortalStage = "nou" | "verificare" | "documente_solicitate" | "in_analiza" | "finalizat";
 /** What the client portal may load: no flags, risk, extracted fields, evidence or officer data. */
 export interface ClientPortalCase {
+  mutationBlockedReason?: string;
+  canProcess?: boolean;
   id: string;
   customerType: Case["customerType"];
   clientName: string;
   stage: ClientPortalStage;
   stageLabel: string;
   persons: { id: string; name: string; role: Case["persons"][number]["role"] }[];
-  documents: { key: string; type: string; label: string; personId?: string; personName?: string; fileName?: string; ok: boolean }[];
+  documents: { key: string; type: string; label: string; personId?: string; personName?: string; fileName?: string; ok: boolean; processingPending?: boolean }[];
   /** Upload step the bank asked the client to redo, if any (kept after the re-upload, to return to the status page). */
   requestedStep: number | null;
 }
@@ -67,6 +71,8 @@ const stages: Record<Case["status"], [ClientPortalStage, string]> = {
 export function toClientPortalCase(c: Case, documents: NonNullable<Case["portalDocuments"]>): ClientPortalCase {
   const [stage, stageLabel] = stages[c.status];
   return {
+    ...(c.serviceUnavailable ? { mutationBlockedReason: "Serviciul de verificare nu răspunde, iar modificările nu au fost salvate." } : {}),
+    ...(c.source === "backend" ? { canProcess: !c.serviceUnavailable && !isFinalCase(c.status) && documents.some((d) => !!d.fileName) } : {}),
     id: c.id,
     customerType: c.customerType,
     clientName: c.clientName,
@@ -75,6 +81,7 @@ export function toClientPortalCase(c: Case, documents: NonNullable<Case["portalD
     persons: c.persons.map((p) => ({ id: p.id, name: p.name, role: p.role })),
     // officerIssue (a hidden tamper finding) is deliberately left out.
     documents: documents.map((d) => ({ key: d.key, type: d.type, label: d.label, ok: d.ok,
+      ...(d.processingPending ? { processingPending: true } : {}),
       ...(d.personId ? { personId: d.personId } : {}), ...(d.personName ? { personName: d.personName } : {}), ...(d.fileName ? { fileName: d.fileName } : {}) })),
     requestedStep: c.requestedStep ?? null,
   };

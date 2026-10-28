@@ -9,7 +9,7 @@ describe("Hybrid orchestrator client", () => {
     const fetch = vi.fn().mockRejectedValue(new TypeError("offline")); vi.stubGlobal("fetch", fetch);
     const api = await import("@/api/client");
     const c = await api.getCase(id); const list = await api.listCases();
-    expect(c?.id).toBe(id); expect(c?.source).not.toBe("backend"); expect(list.some((c) => c.id === id)).toBe(true);
+    expect(c).toMatchObject({ id, source: "backend", serviceUnavailable: true }); expect(list.some((c) => c.id === id)).toBe(true);
     expect(fetch.mock.calls.filter(([url]) => url === "/api/orch/cases")).toHaveLength(1);
   });
   it("never probes the backend during SSR", async () => {
@@ -31,7 +31,7 @@ describe("Hybrid orchestrator client", () => {
     expect(localStorage.length).toBe(0);
   });
   it("surfaces the backend approval refusal in Romanian without changing demo data", async () => {
-    const fetch = vi.fn().mockResolvedValueOnce(response([])).mockResolvedValueOnce(response({ detail: "cannot approve with unresolved high/critical flags: flag_001" }, 403)); vi.stubGlobal("fetch", fetch);
+    const fetch = vi.fn().mockResolvedValueOnce(response(fixture)).mockResolvedValueOnce(response({ detail: "cannot approve with unresolved high/critical flags: flag_001" }, 403)); vi.stubGlobal("fetch", fetch);
     const api = await import("@/api/client");
     await expect(api.submitDecision(id, "aprobat", "")).rejects.toThrow("Aprobarea este blocată de probleme nerezolvate."); expect(localStorage.length).toBe(0);
   });
@@ -50,7 +50,8 @@ describe("Hybrid orchestrator client", () => {
     await api.dismissFlag(id, "flag_001", " Verificat ");
     expect(fetch).toHaveBeenLastCalledWith(`/api/orch/cases/${id}/flags/flag_001/dismiss`, expect.objectContaining({ headers: { "Content-Type": "application/json", "X-Analyst": "Elena Radu" }, body: JSON.stringify({ note: "Verificat" }) }));
     fetch.mockRejectedValue(new TypeError("stopped"));
-    expect((await api.getCase(id))?.source).not.toBe("backend");
+    expect(await api.getCase(id)).toMatchObject({ source: "backend", serviceUnavailable: true });
+    expect(await api.getAuditLogResult(id)).toMatchObject({ serviceUnavailable: true });
     expect((await api.getAuditLogResult(id)).chain_valid).toBeUndefined();
   });
 });

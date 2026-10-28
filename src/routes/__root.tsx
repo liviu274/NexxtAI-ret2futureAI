@@ -1,3 +1,5 @@
+import { orchestratorAvailable } from "@/api/client";
+import { invalidateCaseQueries, subscribeCaseChanges } from "@/lib/case-cache";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -128,9 +130,8 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   useEffect(() => {
-    const refresh = () => { void queryClient.invalidateQueries({ queryKey: ["cases"] }); void queryClient.invalidateQueries({ queryKey: ["case"] }); void queryClient.invalidateQueries({ queryKey: ["client-status"] }); void queryClient.invalidateQueries({ queryKey: ["portal-case"] }); void queryClient.invalidateQueries({ queryKey: ["my-portal-cases"] }); };
-    window.addEventListener("storage", refresh); window.addEventListener("dosarai-demo-change", refresh);
-    return () => { window.removeEventListener("storage", refresh); window.removeEventListener("dosarai-demo-change", refresh); };
+    const refresh = () => { void orchestratorAvailable(true).then(() => invalidateCaseQueries(queryClient)); };
+    return subscribeCaseChanges(refresh);
   }, [queryClient]);
 
   return (

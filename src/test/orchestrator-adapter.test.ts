@@ -12,6 +12,15 @@ describe("Orchestrator adapter", () => {
     expect(result.bbox?.width).toBeCloseTo(0.7); expect(result.bbox?.height).toBeCloseTo(0.4);
     expect(fromOrchestratorEvidence({ doc_id: "doc", page: 1, bbox: [] }).bbox).toBeUndefined();
   });
+  it("opens OCR evidence on its page without inventing a highlight for an unknown position", () => {
+    const input = structuredClone(raw);
+    for (const doc of input.documents) for (const field of Object.values(doc.fields)) field.source.bbox = [0, 0, 1, 1];
+    input.flags = [{ ...flag, evidence: [{ doc_id: "doc_003", page: 2, bbox: [0, 0, 1, 1], field_id: "doc_003_ubos" }] }];
+    const c = fromOrchestratorCase(input);
+    expect(c.flags[0]?.evidence[0]).toMatchObject({ documentId: "doc_003", page: 1 });
+    expect(c.flags[0]?.evidence[0]).not.toHaveProperty("bbox");
+    expect(c.documents.flatMap((d) => d.extractedFields).every((f) => !f.source.bbox)).toBe(true);
+  });
   it.each([["intake", "Nou"], ["processing", "Se verifică"], ["waiting_client", "Documente solicitate"], ["review", "În analiză"]] as const)("maps %s status", (status, expected) => {
     expect(fromOrchestratorCase({ ...raw, status }).status).toBe(expected);
   });

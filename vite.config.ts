@@ -20,6 +20,8 @@ export default defineConfig({
         "/api/orch": {
           target: "http://localhost:8000",
           changeOrigin: true,
+          timeout: 600_000,
+          proxyTimeout: 600_000,
           rewrite: (path) => path.replace(/^\/api\/orch/, ""),
         },
         "/api/playbook": {

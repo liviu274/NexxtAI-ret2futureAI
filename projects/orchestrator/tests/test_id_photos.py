@@ -64,6 +64,6 @@ def test_older_series_card_is_internally_consistent_but_its_mrz_layout_is_not_su
     line2 = "RX190023<51328002022F13020222378969"
     assert cnp_problems("2800202237896", None, date(2026, 10, 28)) == []
     assert (mrz_check_digit(line2[0:9]), mrz_check_digit(line2[13:19]), mrz_check_digit(line2[21:27])) == (int(line2[9]), int(line2[19]), int(line2[27]))
-    (flag,) = run_photo("Screenshot_2026-10-28_18-54-45.png")
+    (flag,) = run_photo("fake_mirea.png")
     assert flag.rule_id == "R-PF-017" and "neither TD2" in flag.explanation and "(36, 35)" in flag.explanation
     assert "check digit" not in flag.explanation and "differs" not in flag.explanation  # only the layout, no data finding

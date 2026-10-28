@@ -1,56 +1,50 @@
-# Cazuri PF, aliniate la contract și la pb_cont_pf_v1
+# Variante PF greșite, compatibile cu pipeline-ul trimis
 
 Pachetul conține 12 dosare cu probleme intenționate și un dosar corect de control. Toate datele sunt fictive, iar documentele sunt marcate SPECIMEN. Data de referință: 28.10.2026.
 
-## Cazuri și flag-uri așteptate
+## Cazuri și rezultate
 
-ID-urile de reguli sunt cele din `projects/playbook-builder/fallback/pb_cont_pf_v1.json`, generat din procedura PF-ONB-01.
-
-| Dosar | Problemă | Flag-uri așteptate | Clauza din procedură |
+| Dosar | Problemă | Flag-uri așteptate și obținute | Risc calculat de cod |
 |---|---|---|---|
-| `case_pf_00_corect_control` | Dosar corect de control | Niciun flag | |
-| `case_pf_01_factura_lipsa` | Lipsește factura de utilități | R-PF-004 (required_present proof_of_address) | 3.1 |
-| `case_pf_02_numar_act_lipsa` | Numărul actului nu este înscris | Niciun flag, în afara procedurii | 2.4, 2.5 |
-| `case_pf_03_act_expirat` | Act de identitate expirat | R-PF-002 (not_expired) | 2.3 |
-| `case_pf_04_nume_factura_diferit` | Numele din factură diferă de identitate | R-PF-008 (fields_match full_name) | 5.1 |
-| `case_pf_05_adresa_factura_diferita` | Adresa din factură diferă de identitate | R-PF-009 (fields_match address) | 5.2 |
-| `case_pf_06_nume_fluturas_diferit` | Numele angajatului diferă de identitate | R-PF-008 (fields_match full_name) | 5.1 |
-| `case_pf_07_cnp_fluturas_diferit` | CNP-ul angajatului diferă de identitate | Niciun flag, în afara procedurii | 4.3, 5.1 |
-| `case_pf_08_metadate_suspecte` | Fluturaș cu producător PDF suspect | R-PF-010 (pdf_metadata) | 6.1 |
-| `case_pf_09_fonturi_amestecate` | Fonturi amestecate pe linia salariului net | R-PF-011 (font_consistency) | 6.2 |
-| `case_pf_10_total_incorect` | Netul afișat nu corespunde calculului | R-PF-012 (totals_consistency) | 6.3 |
-| `case_pf_11_salvare_incrementala` | PDF salvat incremental, cu două EOF | R-PF-010 (pdf_metadata) | 6.1 |
-| `case_pf_12_modificari_combinate` | Metadate, fonturi, total și salvare incrementală suspecte | R-PF-010, R-PF-011, R-PF-012 | 6.1–6.3 |
+| `case_pf_00_corect_control` | Dosar corect de control | Niciun flag | low |
+| `case_pf_01_factura_lipsa` | Lipsește factura de utilități | R-PF-001 | high |
+| `case_pf_02_numar_act_lipsa` | Numărul actului nu este înscris | R-PF-002 | high |
+| `case_pf_03_act_expirat` | Act de identitate expirat | R-PF-003 | high |
+| `case_pf_04_nume_factura_diferit` | Numele din factură diferă de identitate | R-PF-004 | high |
+| `case_pf_05_adresa_factura_diferita` | Adresa din factură diferă de identitate | R-PF-004 | high |
+| `case_pf_06_nume_fluturas_diferit` | Numele angajatului diferă de identitate | R-PF-005 | high |
+| `case_pf_07_cnp_fluturas_diferit` | CNP-ul angajatului diferă de identitate | R-PF-005 | high |
+| `case_pf_08_metadate_suspecte` | Fluturaș cu producător PDF suspect | R-PF-012 | critical |
+| `case_pf_09_fonturi_amestecate` | Fonturi amestecate pe linia salariului net | R-PF-013 | high |
+| `case_pf_10_total_incorect` | Netul afișat nu corespunde calculului | R-PF-014 | high |
+| `case_pf_11_salvare_incrementala` | PDF salvat incremental, cu două EOF | R-PF-015 | high |
+| `case_pf_12_modificari_combinate` | Metadate, fonturi, total și salvare incrementală suspecte | R-PF-012, R-PF-013, R-PF-014, R-PF-015 | critical |
 
-**În afara procedurii.** Procedura cere doar înregistrarea seriei și numărului actului (2.4); numai un CNP ilizibil oprește cererea (2.5). Procedura nu înregistrează CNP-ul de pe fluturaș (4.3) și compară doar numele (5.1). Playbook-ul nu are voie să adauge cerințe pe care procedura nu le conține, deci aceste două dosare nu au flag așteptat. Ele rămân utile ca limite cunoscute, de arătat analistului.
-
-**Salvarea incrementală** nu are o verificare separată în catalog. Ea este un semn de modificare după emitere (6.1), deci intră în `pdf_metadata`: implementarea acestei verificări trebuie să numere și marcajele `%%EOF`, nu doar să citească producătorul.
+Risc `high` pentru orice flag necritic și `critical` pentru metadate suspecte reprezintă comportamentul exact al funcției build_risk_draft din codul trimis. Nu este un model de risc bancar validat.
 
 ## Ce găsești în fiecare dosar
 
-- `docs/`: documentele PDF. Cazul factură lipsă are intenționat numai două documente; celelalte au trei. Numele fișierelor păstrează vechile tipuri (`identity_document`, `utility_bill`); tipul valabil este cel din `case_file.extracted.json`.
+- `docs/`: documentele PDF. Cazul factură lipsă are intenționat numai două documente; celelalte au trei.
 - `images/`: aceleași documente în PNG, randate la 150 dpi. Încarcă PDF-ul sau imaginea, nu ambele ca documente distincte.
-- `case_file.extracted.json`: dosarul în formatul contractului, cu câmpurile cerute de playbook, valori normalizate și bounding box. Se încarcă direct în orchestrator.
-- `truth.json`: toate câmpurile adevărate, cu tipurile și numele din contract; câmpurile pe care playbook-ul nu le cere (de exemplu `cas`, `cass`, `income_tax`, CNP-ul de pe fluturaș) sunt păstrate cu numele originale.
-- `scenario.json`: modificarea intenționată; `legacy_expected_rule_ids` păstrează vechile ID-uri.
-- `expected_flags.json` și `expected_result.json`: rezultatul așteptat pentru pb_cont_pf_v1.
-- `legacy/`: fișierele pentru pipeline-ul anterior, inclusiv `pipeline_result.json`.
+- `truth.json`: câmpurile și bounding box-urile pentru documentele prezente în acel dosar.
+- `scenario.json`: modificarea intenționată.
+- `expected_flags.json` și `expected_result.json`: rezultatul de referință, stabilit înaintea rulării.
+- `pipeline_result.json`: rezultatul efectiv obținut prin rularea pipeline-ului.
 
-## Corespondența cu formatul vechi
+## Cum le folosești
 
-| Vechi | Contract |
-|---|---|
-| `identity_document` | `id_card` |
-| `utility_bill` | `proof_of_address` |
-| `last_name` + `first_name` | `full_name` (bbox-ul cuprinde ambele rânduri) |
-| `birth_date` | `date_of_birth` |
-| `doc_number` | `series_number` |
-| `customer_name`, `employee_name` | `full_name` |
-| `cas` + `cass` + `income_tax` | `deductions` (suma) |
-| `period.end` (fluturaș) | `period_end` |
+Dosarele sunt în `data/gigel/cases/`. Copiază unul sau toate în poziția echivalentă din proiect. Rulează scriptul pipeline-ului cu calea dosarului ales. `rules/rules.json` este copia nemodificată a regulilor reale găsite în arhiva proiectului. `data/mock-screening/lists.json` are structura cerută de cod și alte persoane fictive, astfel încât screening-ul nu introduce probleme suplimentare în aceste cazuri.
 
-Pentru a regenera fișierele: `python convert_to_contract.py` din acest dosar. Scriptul citește mereu din `legacy/`, deci poate fi rulat de mai multe ori.
+Cele 11 cazuri simple izolează câte o problemă; ultimul combină cele patru semnale de modificare a fluturașului. Nu am schimbat codul de validare pentru ca testele să treacă. Au fost configurate doar căile fișierelor de intrare pentru rularea locală.
 
-## Limite
+## Ce se schimbă efectiv în documente
 
-Câmpurile sunt luate din truth.json (`extracted_by: mock_ground_truth_v1`); OCR-ul nu a fost rulat. Orchestratorul implementează azi doar `required_present` și `not_expired`; restul flag-urilor așteptate vor apărea când sunt implementate celelalte verificări. Cazul fonturilor are efectiv două fonturi pe linia netului, iar cazul metadatelor are `Producer=Adobe Photoshop 25.1`, o metadată simulată. `data/mock-screening/lists.json` nu conține persoanele din dosare, deci screening-ul nu adaugă flag-uri.
+Numele, adresa, CNP-ul, data expirării, câmpul omis și suma netă sunt schimbate și în PDF/PNG, și în truth.json. În cazul câmpului lipsă, numărul actului nu este imprimat pe document. CNP-ul diferit este tot un identificator sintetic, cu cifră de control validă; problema este că diferă între documente.
+
+Cazul metadatelor are efectiv `Producer=Adobe Photoshop 25.1`. Aceasta este o metadată simulată, nu o afirmație că s-a folosit acel program. Cazul fonturilor are efectiv două fonturi pe linia netului. Cazul salvării incrementale este un PDF valid cu două revizii și două marcaje EOF, nu doar un text „EOF” adăugat. Cazul combinat le conține pe toate, plus netul greșit.
+
+## Limitele pipeline-ului
+
+Extractorul citește truth.json; testele nu demonstrează funcționarea OCR-ului. Detecția fonturilor din acest cod citește eticheta `font_mix_net_line` din `mutations`; fonturile reale din PDF sunt verificate separat la generare. Bounding box-urile sunt validate separat pe PDF-uri; pipeline-ul nu le verifică. Acest set testează numai PF. Nu am inclus cazuri PJ sau potriviri de screening, pentru că nu sunt implementate ca validări complete în scriptul primit.
+
+`verification/results.json` și `verification/validation.json` conțin sumarul verificărilor. Sunt 38 PDF-uri și 38 PNG-uri. Dosarul corect anterior este păstrat în arhiva lui separată.

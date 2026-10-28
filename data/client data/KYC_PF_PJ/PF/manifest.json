@@ -4,7 +4,7 @@
     {
       "case_id": "case_pf_00_corect_control",
       "doc_id": "doc_001",
-      "doc_type": "id_card",
+      "doc_type": "identity_document",
       "pdf": "data/gigel/cases/case_pf_00_corect_control/docs/doc_001_identity_document.pdf",
       "image": "data/gigel/cases/case_pf_00_corect_control/images/doc_001_identity_document.png",
       "sha256": "f1aff1212ff94827814178827ed00f4ecdd148640e21805aff77e29f8cbb4437",
@@ -13,7 +13,7 @@
     {
       "case_id": "case_pf_00_corect_control",
       "doc_id": "doc_002",
-      "doc_type": "proof_of_address",
+      "doc_type": "utility_bill",
       "pdf": "data/gigel/cases/case_pf_00_corect_control/docs/doc_002_utility_bill.pdf",
       "image": "data/gigel/cases/case_pf_00_corect_control/images/doc_002_utility_bill.png",
       "sha256": "c29ec42e22bba93c3650773bccbfb39545cbdc7842a01b26f8b7da35afcd9f19",
@@ -31,7 +31,7 @@
     {
       "case_id": "case_pf_01_factura_lipsa",
       "doc_id": "doc_001",
-      "doc_type": "id_card",
+      "doc_type": "identity_document",
       "pdf": "data/gigel/cases/case_pf_01_factura_lipsa/docs/doc_001_identity_document.pdf",
       "image": "data/gigel/cases/case_pf_01_factura_lipsa/images/doc_001_identity_document.png",
       "sha256": "d3870c67744977eec1df35ac47b82f091b0f79fcda2acf07a5d9a4bc55263c38",
@@ -49,7 +49,7 @@
     {
       "case_id": "case_pf_02_numar_act_lipsa",
       "doc_id": "doc_001",
-      "doc_type": "id_card",
+      "doc_type": "identity_document",
       "pdf": "data/gigel/cases/case_pf_02_numar_act_lipsa/docs/doc_001_identity_document.pdf",
       "image": "data/gigel/cases/case_pf_02_numar_act_lipsa/images/doc_001_identity_document.png",
       "sha256": "8f6ec49ae7f647ebab5d5d378b85049694d6c4f6561383bf276a30f327f9a9ba",
@@ -58,7 +58,7 @@
     {
       "case_id": "case_pf_02_numar_act_lipsa",
       "doc_id": "doc_002",
-      "doc_type": "proof_of_address",
+      "doc_type": "utility_bill",
       "pdf": "data/gigel/cases/case_pf_02_numar_act_lipsa/docs/doc_002_utility_bill.pdf",
       "image": "data/gigel/cases/case_pf_02_numar_act_lipsa/images/doc_002_utility_bill.png",
       "sha256": "598172a3c934dd6a6ca6dcbd520c3bd000f9a32ace2655943f544bff1846c74b",
@@ -76,7 +76,7 @@
     {
       "case_id": "case_pf_03_act_expirat",
       "doc_id": "doc_001",
-      "doc_type": "id_card",
+      "doc_type": "identity_document",
       "pdf": "data/gigel/cases/case_pf_03_act_expirat/docs/doc_001_identity_document.pdf",
       "image": "data/gigel/cases/case_pf_03_act_expirat/images/doc_001_identity_document.png",
       "sha256": "a23c51b2156e26a5646f81e7fe9e67f1590529911ee1cbbe7bf715fdde91c6d5",
@@ -85,7 +85,7 @@
     {
       "case_id": "case_pf_03_act_expirat",
       "doc_id": "doc_002",
-      "doc_type": "proof_of_address",
+      "doc_type": "utility_bill",
       "pdf": "data/gigel/cases/case_pf_03_act_expirat/docs/doc_002_utility_bill.pdf",
       "image": "data/gigel/cases/case_pf_03_act_expirat/images/doc_002_utility_bill.png",
       "sha256": "306ee171751f55bb1193a12be044253ee4e4b8d90516dc69d6ec942f2dfc8060",
@@ -103,7 +103,7 @@
     {
       "case_id": "case_pf_04_nume_factura_diferit",
       "doc_id": "doc_001",
-      "doc_type": "id_card",
+      "doc_type": "identity_document",
       "pdf": "data/gigel/cases/case_pf_04_nume_factura_diferit/docs/doc_001_identity_document.pdf",
       "image": "data/gigel/cases/case_pf_04_nume_factura_diferit/images/doc_001_identity_document.png",
       "sha256": "14e1cbab3676eedc400aa1ca1b241351ab7e8614f0aa99f1e264fd217253ce54",
@@ -112,7 +112,7 @@
     {
       "case_id": "case_pf_04_nume_factura_diferit",
       "doc_id": "doc_002",
-      "doc_type": "proof_of_address",
+      "doc_type": "utility_bill",
       "pdf": "data/gigel/cases/case_pf_04_nume_factura_diferit/docs/doc_002_utility_bill.pdf",
       "image": "data/gigel/cases/case_pf_04_nume_factura_diferit/images/doc_002_utility_bill.png",
       "sha256": "ae0501966fb54825de72b3aaaefb72f9b123e2ed1842f27141a05f27d4849ad1",
@@ -130,7 +130,7 @@
     {
       "case_id": "case_pf_05_adresa_factura_diferita",
       "doc_id": "doc_001",
-      "doc_type": "id_card",
+      "doc_type": "identity_document",
       "pdf": "data/gigel/cases/case_pf_05_adresa_factura_diferita/docs/doc_001_identity_document.pdf",
       "image": "data/gigel/cases/case_pf_05_adresa_factura_diferita/images/doc_001_identity_document.png",
       "sha256": "fabc29d2bac429bdedb2b3df79ae77cf11e82bc8a38e9e874d218060e501e014",
@@ -139,7 +139,7 @@
     {
       "case_id": "case_pf_05_adresa_factura_diferita",
       "doc_id": "doc_002",
-      "doc_type": "proof_of_address",
+      "doc_type": "utility_bill",
       "pdf": "data/gigel/cases/case_pf_05_adresa_factura_diferita/docs/doc_002_utility_bill.pdf",
       "image": "data/gigel/cases/case_pf_05_adresa_factura_diferita/images/doc_002_utility_bill.png",
       "sha256": "a6e49661890b476c5dae85584092ae6d342d2038413a2c41f03ee510b085e137",
@@ -157,7 +157,7 @@
     {
       "case_id": "case_pf_06_nume_fluturas_diferit",
       "doc_id": "doc_001",
-      "doc_type": "id_card",
+      "doc_type": "identity_document",
       "pdf": "data/gigel/cases/case_pf_06_nume_fluturas_diferit/docs/doc_001_identity_document.pdf",
       "image": "data/gigel/cases/case_pf_06_nume_fluturas_diferit/images/doc_001_identity_document.png",
       "sha256": "898a1bb72a8c10b081bd2448422a4a3c716b2e734b176fe4b5828a3ee8f40c08",
@@ -166,7 +166,7 @@
     {
       "case_id": "case_pf_06_nume_fluturas_diferit",
       "doc_id": "doc_002",
-      "doc_type": "proof_of_address",
+      "doc_type": "utility_bill",
       "pdf": "data/gigel/cases/case_pf_06_nume_fluturas_diferit/docs/doc_002_utility_bill.pdf",
       "image": "data/gigel/cases/case_pf_06_nume_fluturas_diferit/images/doc_002_utility_bill.png",
       "sha256": "4954654cf201dc16477c91cbfa6e2bf742c1caca0f6949d2d49dd35424b20908",
@@ -184,7 +184,7 @@
     {
       "case_id": "case_pf_07_cnp_fluturas_diferit",
       "doc_id": "doc_001",
-      "doc_type": "id_card",
+      "doc_type": "identity_document",
       "pdf": "data/gigel/cases/case_pf_07_cnp_fluturas_diferit/docs/doc_001_identity_document.pdf",
       "image": "data/gigel/cases/case_pf_07_cnp_fluturas_diferit/images/doc_001_identity_document.png",
       "sha256": "3866d80047d6f95d50ed7053158a9a6c6260085c6c3335978c35c60538de1c43",
@@ -193,7 +193,7 @@
     {
       "case_id": "case_pf_07_cnp_fluturas_diferit",
       "doc_id": "doc_002",
-      "doc_type": "proof_of_address",
+      "doc_type": "utility_bill",
       "pdf": "data/gigel/cases/case_pf_07_cnp_fluturas_diferit/docs/doc_002_utility_bill.pdf",
       "image": "data/gigel/cases/case_pf_07_cnp_fluturas_diferit/images/doc_002_utility_bill.png",
       "sha256": "378f31ac08fc08372fb8833e69b76b8bfd26ca283926b884f2797ee354fdb1e5",
@@ -211,7 +211,7 @@
     {
       "case_id": "case_pf_08_metadate_suspecte",
       "doc_id": "doc_001",
-      "doc_type": "id_card",
+      "doc_type": "identity_document",
       "pdf": "data/gigel/cases/case_pf_08_metadate_suspecte/docs/doc_001_identity_document.pdf",
       "image": "data/gigel/cases/case_pf_08_metadate_suspecte/images/doc_001_identity_document.png",
       "sha256": "fde9f0ebda5ece5411bbf0a230379064554cfa4d05865c9ffd6bfbc4537cb610",
@@ -220,7 +220,7 @@
     {
       "case_id": "case_pf_08_metadate_suspecte",
       "doc_id": "doc_002",
-      "doc_type": "proof_of_address",
+      "doc_type": "utility_bill",
       "pdf": "data/gigel/cases/case_pf_08_metadate_suspecte/docs/doc_002_utility_bill.pdf",
       "image": "data/gigel/cases/case_pf_08_metadate_suspecte/images/doc_002_utility_bill.png",
       "sha256": "fe818d7efd747113369ab8fad62c1fd6826632b356aaa2553a64b6077ec9aea7",
@@ -238,7 +238,7 @@
     {
       "case_id": "case_pf_09_fonturi_amestecate",
       "doc_id": "doc_001",
-      "doc_type": "id_card",
+      "doc_type": "identity_document",
       "pdf": "data/gigel/cases/case_pf_09_fonturi_amestecate/docs/doc_001_identity_document.pdf",
       "image": "data/gigel/cases/case_pf_09_fonturi_amestecate/images/doc_001_identity_document.png",
       "sha256": "ca2cc0f33bc89ca3657a97c5a166156faa77d0ac5be716bae2540524fb206936",
@@ -247,7 +247,7 @@
     {
       "case_id": "case_pf_09_fonturi_amestecate",
       "doc_id": "doc_002",
-      "doc_type": "proof_of_address",
+      "doc_type": "utility_bill",
       "pdf": "data/gigel/cases/case_pf_09_fonturi_amestecate/docs/doc_002_utility_bill.pdf",
       "image": "data/gigel/cases/case_pf_09_fonturi_amestecate/images/doc_002_utility_bill.png",
       "sha256": "664deba69d6024665199a3051be98655193be29040495c234c33aea3d883ce1f",
@@ -265,7 +265,7 @@
     {
       "case_id": "case_pf_10_total_incorect",
       "doc_id": "doc_001",
-      "doc_type": "id_card",
+      "doc_type": "identity_document",
       "pdf": "data/gigel/cases/case_pf_10_total_incorect/docs/doc_001_identity_document.pdf",
       "image": "data/gigel/cases/case_pf_10_total_incorect/images/doc_001_identity_document.png",
       "sha256": "98e97de10f85cc79d3c61593377c4855fcdd4b986bad5c0ec948e258cfe34ff8",
@@ -274,7 +274,7 @@
     {
       "case_id": "case_pf_10_total_incorect",
       "doc_id": "doc_002",
-      "doc_type": "proof_of_address",
+      "doc_type": "utility_bill",
       "pdf": "data/gigel/cases/case_pf_10_total_incorect/docs/doc_002_utility_bill.pdf",
       "image": "data/gigel/cases/case_pf_10_total_incorect/images/doc_002_utility_bill.png",
       "sha256": "ac60fd77ad3cb1ddf9fd6493954072c07c412c0501d24e40e76f3bc06126d8d7",
@@ -292,7 +292,7 @@
     {
       "case_id": "case_pf_11_salvare_incrementala",
       "doc_id": "doc_001",
-      "doc_type": "id_card",
+      "doc_type": "identity_document",
       "pdf": "data/gigel/cases/case_pf_11_salvare_incrementala/docs/doc_001_identity_document.pdf",
       "image": "data/gigel/cases/case_pf_11_salvare_incrementala/images/doc_001_identity_document.png",
       "sha256": "b4f610ede1f564824863eb5a37030f14f3af09b8c19e275738f9c065bea92864",
@@ -301,7 +301,7 @@
     {
       "case_id": "case_pf_11_salvare_incrementala",
       "doc_id": "doc_002",
-      "doc_type": "proof_of_address",
+      "doc_type": "utility_bill",
       "pdf": "data/gigel/cases/case_pf_11_salvare_incrementala/docs/doc_002_utility_bill.pdf",
       "image": "data/gigel/cases/case_pf_11_salvare_incrementala/images/doc_002_utility_bill.png",
       "sha256": "2a7f864845613199245b9bd7b60c0dfe75692e36e8451c64a2c5c145b57bef76",
@@ -319,7 +319,7 @@
     {
       "case_id": "case_pf_12_modificari_combinate",
       "doc_id": "doc_001",
-      "doc_type": "id_card",
+      "doc_type": "identity_document",
       "pdf": "data/gigel/cases/case_pf_12_modificari_combinate/docs/doc_001_identity_document.pdf",
       "image": "data/gigel/cases/case_pf_12_modificari_combinate/images/doc_001_identity_document.png",
       "sha256": "35d3c63d2995c56fdf488b4981fb002bb97ea9c03f6b660c79db18838685ac5f",
@@ -328,7 +328,7 @@
     {
       "case_id": "case_pf_12_modificari_combinate",
       "doc_id": "doc_002",
-      "doc_type": "proof_of_address",
+      "doc_type": "utility_bill",
       "pdf": "data/gigel/cases/case_pf_12_modificari_combinate/docs/doc_002_utility_bill.pdf",
       "image": "data/gigel/cases/case_pf_12_modificari_combinate/images/doc_002_utility_bill.png",
       "sha256": "4bb45dfded5342be17ac69c1a180f568cdfc46707992bb83c1f50098d00bd16e",
@@ -343,6 +343,5 @@
       "sha256": "4a00aa9e06a64fd9653a47ee0d5a77c633c6d5b020bea93338dfa5a6894c334b",
       "eof_markers": 2
     }
-  ],
-  "playbook_id": "pb_cont_pf_v1"
+  ]
 }

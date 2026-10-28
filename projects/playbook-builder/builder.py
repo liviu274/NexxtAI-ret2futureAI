@@ -57,6 +57,7 @@ CATALOG_DOC = """\
 | pdf_metadata | tamper | {} | editing software or modification date after issue (runs on every document) |
 | font_consistency | tamper | {} | mixed fonts inside one field or line (runs on every document) |
 | totals_consistency | tamper | {doc_type} | lines do not add up to stated totals |
+| id_integrity | tamper | {} | the CNP or the MRZ of the identity document is internally inconsistent: checksum, birth date, county, MRZ check digits (runs on identity documents) |
 | sanctions | screening | {list: "mock_sanctions_v1"} | name matches a sanctions list |
 | pep | screening | {list: "mock_pep_v1"} | person is a PEP, family member or close associate |
 | adverse_media | screening | {} | negative news hit |

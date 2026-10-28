@@ -5,3 +5,5 @@ httpx
 pytest
 python-multipart
 pypdf
+pdfminer.six
+pillow

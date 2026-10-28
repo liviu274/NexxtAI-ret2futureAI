@@ -16,7 +16,7 @@ export interface ClientCaseStatus {
 function day(s: string | undefined): string {
   const m = s?.match(/(\d{2})\.(\d{2})\.(\d{4})/) ?? s?.match(/(\d{4})-(\d{2})-(\d{2})/);
   if (!m) return "28.10.2026";
-  return m[1].length === 4 ? `${m[3]}.${m[2]}.${m[1]}` : `${m[1]}.${m[2]}.${m[3]}`;
+  return m[1]?.length === 4 ? `${m[3]}.${m[2]}.${m[1]}` : `${m[1]}.${m[2]}.${m[3]}`;
 }
 
 /** Builds the client-safe view. Never copies flags, screening, risk, officer or rule data. */

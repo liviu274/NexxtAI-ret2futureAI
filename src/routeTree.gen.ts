@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuditRouteImport } from './routes/audit'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as CasesIndexRouteImport } from './routes/cases.index'
 import { Route as PlaybooksIdRouteImport } from './routes/playbooks.$id'
@@ -19,6 +20,11 @@ import { Route as CasesIdAuditRouteImport } from './routes/cases.$id.audit'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuditRoute = AuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UploadRoute = UploadRouteImport.update({
@@ -49,6 +55,7 @@ const CasesIdAuditRoute = CasesIdAuditRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/audit': typeof AuditRoute
   '/upload': typeof UploadRoute
   '/playbooks/$id': typeof PlaybooksIdRoute
   '/cases/': typeof CasesIndexRoute
@@ -57,6 +64,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/audit': typeof AuditRoute
   '/upload': typeof UploadRoute
   '/playbooks/$id': typeof PlaybooksIdRoute
   '/cases': typeof CasesIndexRoute
@@ -66,6 +74,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/audit': typeof AuditRoute
   '/upload': typeof UploadRoute
   '/playbooks/$id': typeof PlaybooksIdRoute
   '/cases/': typeof CasesIndexRoute
@@ -76,6 +85,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/audit'
     | '/upload'
     | '/playbooks/$id'
     | '/cases/'
@@ -84,6 +94,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/audit'
     | '/upload'
     | '/playbooks/$id'
     | '/cases'
@@ -92,6 +103,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/audit'
     | '/upload'
     | '/playbooks/$id'
     | '/cases/'
@@ -101,6 +113,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuditRoute: typeof AuditRoute
   UploadRoute: typeof UploadRoute
   PlaybooksIdRoute: typeof PlaybooksIdRoute
   CasesIndexRoute: typeof CasesIndexRoute
@@ -115,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/audit': {
+      id: '/audit'
+      path: '/audit'
+      fullPath: '/audit'
+      preLoaderRoute: typeof AuditRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/upload': {
@@ -157,6 +177,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuditRoute: AuditRoute,
   UploadRoute: UploadRoute,
   PlaybooksIdRoute: PlaybooksIdRoute,
   CasesIndexRoute: CasesIndexRoute,

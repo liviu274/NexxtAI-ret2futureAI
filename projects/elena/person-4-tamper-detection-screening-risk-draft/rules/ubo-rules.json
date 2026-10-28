@@ -1,0 +1,213 @@
+{
+  "schema_version": 1,
+  "ruleset_id": "ubo-pj-v1",
+  "version": 1,
+  "reference_date": "2026-10-28",
+  "ownership_threshold_percent": 25.0,
+  "rules": [
+    {
+      "rule_id": "R-UBO-001",
+      "stage": "validate",
+      "check": "company_status",
+      "severity": "high",
+      "description": "Compania trebuie să aibă statusul Activ.",
+      "condition": {
+        "field": "status",
+        "equals": "Activ"
+      },
+      "flag_message": "Compania nu este activă."
+    },
+    {
+      "rule_id": "R-UBO-002",
+      "stage": "validate",
+      "check": "shareholder_total",
+      "severity": "high",
+      "description": "Procentele tuturor acționarilor trebuie să însumeze exact 100.0%.",
+      "condition": {
+        "collection": "actionari",
+        "sum_field": "procent_detinere",
+        "equals": 100.0,
+        "tolerance": 0.01
+      },
+      "flag_message": "Procentele acționarilor nu însumează 100.0%."
+    },
+    {
+      "rule_id": "R-UBO-003",
+      "stage": "validate",
+      "check": "shareholder_reference_exists",
+      "severity": "high",
+      "description": "Orice acționar PJ trebuie să aibă un CUI și compania indicată trebuie să existe în registru.",
+      "condition": {
+        "shareholder_type": "PJ",
+        "required_fields": ["cui_actionar", "denumire_companie"],
+        "reference_collection": "companies",
+        "reference_key": "cui_actionar"
+      },
+      "flag_message": "Acționarul PJ nu există sau nu are un CUI valid în registru."
+    },
+    {
+      "rule_id": "R-UBO-004",
+      "stage": "validate",
+      "check": "natural_person_fields",
+      "severity": "high",
+      "description": "Orice acționar PF trebuie să aibă nume și CNP.",
+      "condition": {
+        "shareholder_type": "PF",
+        "required_fields": ["nume", "cnp"]
+      },
+      "flag_message": "Acționarul PF nu are nume sau CNP."
+    },
+    {
+      "rule_id": "R-UBO-005",
+      "stage": "validate",
+      "check": "ownership_percentage_range",
+      "severity": "high",
+      "description": "Fiecare procent de deținere trebuie să fie între 0 și 100.",
+      "condition": {
+        "field": "procent_detinere",
+        "minimum": 0.0,
+        "maximum": 100.0
+      },
+      "flag_message": "Procentul de deținere este în afara intervalului permis."
+    },
+    {
+      "rule_id": "R-UBO-006",
+      "stage": "ownership_graph",
+      "check": "cycle_detection",
+      "severity": "critical",
+      "description": "Lanțul de acționariat nu trebuie să conțină cicluri.",
+      "condition": {
+        "graph": "company_ownership",
+        "must_be_acyclic": true
+      },
+      "flag_message": "A fost găsit un ciclu în structura de acționariat."
+    },
+    {
+      "rule_id": "R-UBO-007",
+      "stage": "ownership_graph",
+      "check": "ubo_resolution",
+      "severity": "high",
+      "description": "Lanțul trebuie urmărit până la cel puțin o persoană fizică.",
+      "condition": {
+        "start": "company",
+        "end": "PF",
+        "max_depth": 10
+      },
+      "flag_message": "Beneficiarul real nu poate fi determinat până la o persoană fizică."
+    },
+    {
+      "rule_id": "R-UBO-008",
+      "stage": "ownership_graph",
+      "check": "direct_control",
+      "severity": "high",
+      "description": "O persoană PF care deține cel puțin pragul configurat este beneficiar real direct.",
+      "condition": {
+        "shareholder_type": "PF",
+        "minimum_percent_from_config": "ownership_threshold_percent"
+      },
+      "flag_message": "A fost identificat un beneficiar real direct."
+    },
+    {
+      "rule_id": "R-UBO-009",
+      "stage": "ownership_graph",
+      "check": "indirect_control",
+      "severity": "high",
+      "description": "Controlul indirect se calculează înmulțind procentele de pe fiecare legătură din lanț.",
+      "condition": {
+        "formula": "product_of_ownership_percentages",
+        "minimum_percent_from_config": "ownership_threshold_percent"
+      },
+      "flag_message": "A fost identificat un beneficiar real prin control indirect."
+    },
+    {
+      "rule_id": "R-UBO-010",
+      "stage": "cross_check",
+      "check": "declared_ubo_match",
+      "severity": "critical",
+      "description": "UBO-ul calculat trebuie să corespundă cu beneficiarul real declarat.",
+      "condition": {
+        "compare": ["calculated_ubo", "declared_ubo"],
+        "mode": "normalized"
+      },
+      "flag_message": "Beneficiarul real calculat nu corespunde cu cel declarat."
+    },
+    {
+      "rule_id": "R-UBO-011",
+      "stage": "cross_check",
+      "check": "declared_ubo_completeness",
+      "severity": "high",
+      "description": "Toate persoanele care depășesc pragul de control trebuie să apară în declarație.",
+      "condition": {
+        "calculated_set": "ubo_candidates",
+        "declared_set": "declared_ubo",
+        "relation": "calculated_subset_of_declared"
+      },
+      "flag_message": "Declarația UBO nu conține toate persoanele identificate."
+    },
+    {
+      "rule_id": "R-UBO-012",
+      "stage": "screening",
+      "check": "sanctions_screening",
+      "severity": "critical",
+      "description": "Fiecare UBO și persoană relevantă trebuie verificată în lista de sancțiuni.",
+      "condition": {
+        "subjects": ["ubo", "administrator", "shareholder"],
+        "source": "sanctions_list",
+        "match_mode": "fuzzy",
+        "potential_match_threshold": 0.85
+      },
+      "flag_message": "A fost găsită o posibilă potrivire în lista de sancțiuni."
+    },
+    {
+      "rule_id": "R-UBO-013",
+      "stage": "screening",
+      "check": "pep_screening",
+      "severity": "high",
+      "description": "Fiecare UBO și administrator trebuie verificat în lista PEP.",
+      "condition": {
+        "subjects": ["ubo", "administrator"],
+        "source": "pep_list",
+        "match_mode": "fuzzy",
+        "potential_match_threshold": 0.85
+      },
+      "flag_message": "A fost găsită o posibilă potrivire PEP."
+    },
+    {
+      "rule_id": "R-UBO-014",
+      "stage": "screening",
+      "check": "adverse_media_screening",
+      "severity": "medium",
+      "description": "UBO și administratorii trebuie verificați în sursa simulată de adverse media.",
+      "condition": {
+        "subjects": ["ubo", "administrator"],
+        "source": "adverse_media_stub",
+        "match_mode": "fuzzy"
+      },
+      "flag_message": "A fost găsit un rezultat potențial negativ în adverse media."
+    },
+    {
+      "rule_id": "R-UBO-015",
+      "stage": "risk",
+      "check": "risk_factors",
+      "severity": "info",
+      "description": "Risk draft-ul trebuie să includă motive pentru țară, ocupație, cod CAEN și rezultate de screening.",
+      "condition": {
+        "factors": ["country", "occupation", "caen_code", "pep", "sanctions", "adverse_media", "ownership"]
+      },
+      "flag_message": "A fost creat un risk draft cu motive explicite."
+    },
+    {
+      "rule_id": "R-UBO-016",
+      "stage": "risk",
+      "check": "human_decision_required",
+      "severity": "critical",
+      "description": "Risk draft-ul nu poate fi folosit ca decizie automată.",
+      "condition": {
+        "risk_draft_field": "is_draft",
+        "must_equal": true,
+        "decision_writer": "human_only"
+      },
+      "flag_message": "Cazul trebuie trimis unui analist pentru decizia finală."
+    }
+  ]
+}

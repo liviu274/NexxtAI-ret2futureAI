@@ -22,7 +22,7 @@ function CasePage() {
  const flag = c.flags.find((f) => f.id === selected) ?? c.flags[0]; const doc = c.documents.find((d) => d.id === (docId ?? flag?.evidence[0]?.documentId)) ?? c.documents[0] ?? null;
  const highlights = flag?.evidence.filter((e) => e.documentId === doc?.id && e.page === page).map((e) => e.bbox).filter((b): b is BBox => b !== undefined) ?? [];
  const screening = flag && isScreeningFlag(flag);
- const passed = Math.max(0, 100 - (c.screeningSummary?.matches ?? 0));
+ const passed = c.screeningSummary ? c.screeningSummary.sanctions + c.screeningSummary.pep + c.screeningSummary.news - c.screeningSummary.matches : 0;
  return <div className="min-h-screen bg-beige"><AnalystHeader /><main className="mx-auto max-w-[1392px] px-[18px] pb-6 pt-6">
   <div className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="flex items-center gap-2 text-2xl font-semibold text-ink">{c.clientName}<TypeBadge type={c.customerType} /></h1><p className="mt-2 break-all text-[11px] text-ink-muted">Dosar {c.id} · {c.cui ? `CUI ${c.cui} · CAEN ${c.company?.caen} · ` : ""}Creat {c.createdAt} · Propunere de risc: <span className={c.riskDraft.level === "critical" ? "text-sev-high" : ""}>{riskLabels[c.riskDraft.level]}</span></p></div><DecisionBar caseId={c.id} /></div>
   {c.customerType === "PJ" && <div className="mt-4 flex gap-6 border-b border-border text-xs"><span className="border-b-2 border-brand pb-3 font-semibold">Probleme</span><Link to="/cases/$id/audit" params={{ id }} className="text-ink-muted">Audit log</Link></div>}

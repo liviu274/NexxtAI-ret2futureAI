@@ -62,7 +62,7 @@ export async function getScreeningMatch(caseId: string, flagId: string): Promise
   const entry = lists.screeningLists.find((item) => item.key === evidence.list_entry_key);
   const person = c?.persons.find((item) => item.id === flag?.screeningPersonId);
   if (!entry || !person) return null;
-  return { entry: structuredClone(entry), score: evidence.score, client: { name: person.name, birthYear: person.birthYear, citizenship: person.citizenship, identityDocument: person.identityDocument } };
+  return { entry: structuredClone(entry), score: evidence.score, client: { name: person.name, ...(person.birthYear !== undefined ? { birthYear: person.birthYear } : {}), ...(person.citizenship ? { citizenship: person.citizenship } : {}), ...(person.identityDocument ? { identityDocument: person.identityDocument } : {}) } };
 }
 
 export async function resolveScreeningMatch(caseId: string, flagId: string, resolution: "confirmed" | "dismissed", reason = "") {

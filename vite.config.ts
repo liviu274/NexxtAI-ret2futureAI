@@ -12,4 +12,24 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    server: {
+      // Local dev only: /api/playbook/* goes to the playbook builder (uvicorn server:app --port 8002).
+      // Deployed builds set VITE_PLAYBOOK_URL instead.
+      proxy: {
+        "/api/orch": {
+          target: "http://localhost:8000",
+          changeOrigin: true,
+          timeout: 600_000,
+          proxyTimeout: 600_000,
+          rewrite: (path) => path.replace(/^\/api\/orch/, ""),
+        },
+        "/api/playbook": {
+          target: "http://localhost:8002",
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/playbook/, ""),
+        },
+      },
+    },
+  },
 });

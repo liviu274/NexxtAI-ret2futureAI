@@ -2,15 +2,7 @@ import type { Flag } from "@/types";
 import { SeverityBadge } from "./badges";
 import { cn } from "@/lib/utils";
 
-export function FlagCard({
-  flag,
-  active,
-  onSelect,
-}: {
-  flag: Flag;
-  active?: boolean;
-  onSelect?: () => void;
-}) {
+export function FlagCard({ flag, active, onSelect }: { flag: Flag; active?: boolean; onSelect?: () => void }) {
   return (
     <button
       type="button"

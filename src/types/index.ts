@@ -1,8 +1,7 @@
 import type { ScreeningEvidence, ScreeningFlagExtension, ScreeningSummary } from "./extensions";
 export type CustomerType = "PF" | "PJ";
 export type Severity = "critical" | "high" | "medium" | "low";
-export type CaseStatus =
-  "Nou" | "Se verifică" | "În analiză" | "Documente solicitate" | "Aprobat" | "Respins";
+export type CaseStatus = "Nou" | "Se verifică" | "În analiză" | "Documente solicitate" | "Aprobat" | "Respins";
 export type DocumentStatus = "valid" | "cu-probleme" | "se-verifica" | "lipsa";
 export type RiskLevel = "low" | "medium" | "high" | "critical";
 
@@ -49,6 +48,8 @@ export interface Flag extends ScreeningFlagExtension {
   explanation: string;
   clientFixMessage: string;
   status?: "open" | "sent_to_client" | "resolved" | "dismissed";
+  /** Backend `person_id`: whose document or screening subject the flag is about. */
+  personId?: string;
   client_fixable?: boolean;
   fix_message?: string | null;
   dismissedBy?: string;
@@ -78,6 +79,9 @@ export interface Person {
 }
 
 export interface Case {
+  source?: "backend" | "mock";
+  serviceUnavailable?: boolean;
+  documentRequests?: { key?: string | undefined; flagId?: string; message: string; resolved?: boolean }[];
   id: string;
   customerType: CustomerType;
   clientName: string;
@@ -94,25 +98,12 @@ export interface Case {
   ownership?: { registry: OwnershipPerson[]; declared: OwnershipPerson[] };
   screeningSummary?: ScreeningSummary;
   executedRuleIds?: string[];
-  portalDocuments?: {
-    key: string;
-    type: string;
-    label: string;
-    personId?: string;
-    personName?: string;
-    fileName?: string;
-    ok: boolean;
-    officerIssue?: boolean;
-  }[];
+  portalDocuments?: { key: string; type: string; label: string; personId?: string; personName?: string; fileName?: string; ok: boolean; officerIssue?: boolean; documentId?: string; processingPending?: boolean; issue?: "unrecognized" | "wrong_type"; clientMessage?: string }[];
   officerNote?: string;
   requestedStep?: number;
 }
 
-export interface OwnershipPerson {
-  id: string;
-  name: string;
-  pct: number;
-}
+export interface OwnershipPerson { id: string; name: string; pct: number }
 
 export interface PlaybookRule {
   id: string;
@@ -132,12 +123,12 @@ export interface Playbook {
   requiredDocuments?: string[];
   sourceName?: string;
   sourceDate?: string;
-  clauses?: {
-    number: string;
-    text: string;
-    status: "Automatizată" | "Acoperită" | "Manuală" | "Context" | "Neverificată";
-    ruleIds: string[];
-  }[];
+  clauses?: { number: string; text: string; status: "Automatizată" | "Acoperită" | "Manuală" | "Context" | "Neverificată"; ruleIds: string[]; reason?: string | null }[];
+  /** From the builder report: share of real requirements the agent enforces. */
+  coverage?: number;
+  generatedBy?: "llm" | "llm_repaired" | "fallback" | "mock" | "mock_repaired";
+  buildSeconds?: number;
+  fallbackReason?: string | null;
 }
 
 export interface AuditEntry {

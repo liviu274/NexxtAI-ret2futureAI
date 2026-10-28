@@ -1,23 +1,9 @@
 import { Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export const STAGES = [
-  "Clasificare",
-  "Extragere",
-  "Validare",
-  "Verificare încrucișată",
-  "Detecție alterare",
-  "Screening",
-  "Propunere de risc",
-];
+export const STAGES = ["Clasificare", "Extragere", "Validare", "Verificare încrucișată", "Detecție alterare", "Screening", "Propunere de risc"];
 
-export function StageStepper({
-  current = STAGES.length,
-  stages = STAGES,
-}: {
-  current?: number;
-  stages?: string[];
-}) {
+export function StageStepper({ current = STAGES.length, stages = STAGES }: { current?: number; stages?: string[] }) {
   return (
     <ol className="flex items-center gap-2">
       {stages.map((s, i) => {
@@ -33,17 +19,9 @@ export function StageStepper({
                 !done && !active && "border-line text-line",
               )}
             >
-              {done ? (
-                <Check className="h-3.5 w-3.5" />
-              ) : active ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                i + 1
-              )}
+              {done ? <Check className="h-3.5 w-3.5" /> : active ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : i + 1}
             </span>
-            <span className={cn("text-xs", done || active ? "text-ink" : "text-ink-muted")}>
-              {s}
-            </span>
+            <span className={cn("text-xs", done || active ? "text-ink" : "text-ink-muted")}>{s}</span>
             {i < stages.length - 1 && <span className="h-px flex-1 bg-border" />}
           </li>
         );

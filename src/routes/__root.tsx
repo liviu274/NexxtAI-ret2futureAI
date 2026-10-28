@@ -1,3 +1,5 @@
+import { orchestratorAvailable } from "@/api/client";
+import { invalidateCaseQueries, subscribeCaseChanges } from "@/lib/case-cache";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -11,24 +13,25 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
+import { THEME_KEY } from "@/lib/theme";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-screen items-center justify-center bg-beige px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
+        <h2 className="mt-4 text-xl font-semibold text-foreground">Pagina nu a fost găsită</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
+          Pagina căutată nu există sau a fost mutată.
         </p>
         <div className="mt-6">
           <Link
             to="/"
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Go home
+            Înapoi la pagina principală
           </Link>
         </div>
       </div>
@@ -44,13 +47,13 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   }, [error]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-screen items-center justify-center bg-beige px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+          Pagina nu s-a încărcat
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+          A apărut o eroare. Încearcă să reîncarci pagina sau întoarce-te la pagina principală.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
@@ -60,13 +63,13 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
             }}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Try again
+            Încearcă din nou
           </button>
           <a
             href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            className="inline-flex items-center justify-center rounded-md border border-input bg-card px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-accent"
           >
-            Go home
+            Înapoi la pagina principală
           </a>
         </div>
       </div>
@@ -79,9 +82,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "DosarAI" },
+      { title: "Raif2Future" },
       { name: "description", content: "Onboarding KYC/KYB asistat de AI pentru bănci." },
-      { property: "og:title", content: "DosarAI" },
+      { property: "og:title", content: "Raif2Future" },
       { property: "og:description", content: "Onboarding KYC/KYB asistat de AI pentru bănci." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -94,10 +97,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
-      },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
   }),
@@ -107,10 +107,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
+// Before first paint: applies the saved theme (or the system one), and decides whether the landing intro plays
+// (on every full load of the home page, refresh included; not on in-app navigation back home).
+const THEME_INIT = `try{var t=localStorage.getItem("${THEME_KEY}");var d=t?t==="dark":window.matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.classList.toggle("dark",d)}catch(e){}try{if(location.pathname==="/")document.documentElement.dataset.intro="play"}catch(e){}`;
+
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="ro">
+    // The theme class is set by THEME_INIT before React hydrates, so the server markup cannot match it.
+    <html lang="ro" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
         <HeadContent />
       </head>
       <body>
@@ -124,17 +130,8 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   useEffect(() => {
-    const refresh = () => {
-      void queryClient.invalidateQueries({ queryKey: ["cases"] });
-      void queryClient.invalidateQueries({ queryKey: ["case"] });
-      void queryClient.invalidateQueries({ queryKey: ["client-status"] });
-    };
-    window.addEventListener("storage", refresh);
-    window.addEventListener("dosarai-demo-change", refresh);
-    return () => {
-      window.removeEventListener("storage", refresh);
-      window.removeEventListener("dosarai-demo-change", refresh);
-    };
+    const refresh = () => { void orchestratorAvailable(true).then(() => invalidateCaseQueries(queryClient)); };
+    return subscribeCaseChanges(refresh);
   }, [queryClient]);
 
   return (

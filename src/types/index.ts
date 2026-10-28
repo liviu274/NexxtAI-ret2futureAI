@@ -1,7 +1,8 @@
 import type { ScreeningEvidence, ScreeningFlagExtension, ScreeningSummary } from "./extensions";
 export type CustomerType = "PF" | "PJ";
 export type Severity = "critical" | "high" | "medium" | "low";
-export type CaseStatus = "Nou" | "Se verifică" | "În analiză" | "Documente solicitate" | "Aprobat" | "Respins";
+export type CaseStatus =
+  "Nou" | "Se verifică" | "În analiză" | "Documente solicitate" | "Aprobat" | "Respins";
 export type DocumentStatus = "valid" | "cu-probleme" | "se-verifica" | "lipsa";
 export type RiskLevel = "low" | "medium" | "high" | "critical";
 
@@ -93,12 +94,25 @@ export interface Case {
   ownership?: { registry: OwnershipPerson[]; declared: OwnershipPerson[] };
   screeningSummary?: ScreeningSummary;
   executedRuleIds?: string[];
-  portalDocuments?: { key: string; type: string; label: string; personId?: string; personName?: string; fileName?: string; ok: boolean; officerIssue?: boolean }[];
+  portalDocuments?: {
+    key: string;
+    type: string;
+    label: string;
+    personId?: string;
+    personName?: string;
+    fileName?: string;
+    ok: boolean;
+    officerIssue?: boolean;
+  }[];
   officerNote?: string;
   requestedStep?: number;
 }
 
-export interface OwnershipPerson { id: string; name: string; pct: number }
+export interface OwnershipPerson {
+  id: string;
+  name: string;
+  pct: number;
+}
 
 export interface PlaybookRule {
   id: string;
@@ -118,7 +132,12 @@ export interface Playbook {
   requiredDocuments?: string[];
   sourceName?: string;
   sourceDate?: string;
-  clauses?: { number: string; text: string; status: "Automatizată" | "Acoperită" | "Manuală" | "Context" | "Neverificată"; ruleIds: string[] }[];
+  clauses?: {
+    number: string;
+    text: string;
+    status: "Automatizată" | "Acoperită" | "Manuală" | "Context" | "Neverificată";
+    ruleIds: string[];
+  }[];
 }
 
 export interface AuditEntry {

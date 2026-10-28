@@ -94,7 +94,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
   }),
@@ -121,9 +124,17 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   useEffect(() => {
-    const refresh = () => { void queryClient.invalidateQueries({ queryKey: ["cases"] }); void queryClient.invalidateQueries({ queryKey: ["case"] }); void queryClient.invalidateQueries({ queryKey: ["client-status"] }); };
-    window.addEventListener("storage", refresh); window.addEventListener("dosarai-demo-change", refresh);
-    return () => { window.removeEventListener("storage", refresh); window.removeEventListener("dosarai-demo-change", refresh); };
+    const refresh = () => {
+      void queryClient.invalidateQueries({ queryKey: ["cases"] });
+      void queryClient.invalidateQueries({ queryKey: ["case"] });
+      void queryClient.invalidateQueries({ queryKey: ["client-status"] });
+    };
+    window.addEventListener("storage", refresh);
+    window.addEventListener("dosarai-demo-change", refresh);
+    return () => {
+      window.removeEventListener("storage", refresh);
+      window.removeEventListener("dosarai-demo-change", refresh);
+    };
   }, [queryClient]);
 
   return (

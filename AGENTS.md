@@ -10,7 +10,9 @@
 <!-- LOVABLE:END -->
 
 ## Architecture rules
-- All data access goes through `src/api/client.ts` (USE_MOCK flag; mocks loaded lazily from `src/mocks/`). Components never import mocks — keeps the swap to a real REST backend a one-line change.
+- All data access goes through `src/api/client.ts`. `VITE_USE_MOCK=false` + `VITE_API_BASE_URL` switch it from the mocks (loaded lazily from `src/mocks/`) to the orchestrator API; see `.env.example`. Components never import mocks or API shapes.
+- The orchestrator speaks the NexxtAI contract (`conventions/CONTRACTS.md`); `src/api/contract.ts` holds those shapes and the pure mappings to `@/types`, covered by `src/test/contract.test.ts`. `src/test/live-api.test.ts` runs the real client against a running orchestrator (opt-in, `LIVE_API_URL`).
+- The client portal reads only `getPortalCase`/`getClientCaseStatus` (the server's client view), never the analyst's case file.
 - Design tokens (brand, ink, line, beige, teal, sev-*) live in `src/styles.css` `@theme inline` (Tailwind v4, no tailwind.config) — the single source for colors.
 - Routing is TanStack Router file routes (React Router is not supported on this stack).
 - Mock documents use per-case PNG pages with PDF fallback; normalized top-left evidence boxes resolve through the API from per-case truth fixtures, never guessed coordinates.

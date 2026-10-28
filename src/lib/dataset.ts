@@ -33,6 +33,7 @@ export function findTruthBBox(truth: unknown, documentId: string, field: string)
 }
 
 export function resolveEvidence(e: Evidence, flag: Flag, truth: unknown): Evidence {
+  if ("list_entry_key" in e) return e;
   if (e.bbox) return e;
   const field = e.field ?? ["net_salary", "expiry_date", "address", "gross_salary", "cui"].find((key) => flag.explanation.includes(key));
   const bbox = field ? findTruthBBox(truth, e.documentId, field) : undefined;

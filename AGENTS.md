@@ -17,3 +17,4 @@
 - Direct PJ ownership comparisons are derived from case.company and case.ownership, with React Flow rendered client-side to keep SSR browser-safe.
 - Screenshot-mapped content routes share focused presentation components; /upload remains a client-portal alias to preserve its existing address.
 - SPECIMEN dataset is generated into src/mocks/specimen.json (assets in public/mocks/<case>/) from the user's archive; regenerate rather than hand-edit, so data stays faithful to the source.
+- Mock-only screening types live in `src/types/extensions.ts`; list fixtures and officer resolutions are accessed only through the API client, so screening evidence never masquerades as document coordinates or alters the existing REST contract.

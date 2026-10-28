@@ -84,4 +84,4 @@ class CheckContext:
 
 
 def load_stubs() -> None:
-    from . import stubs, screening, registry
+    from . import stubs, screening, registry, cross_check, validate

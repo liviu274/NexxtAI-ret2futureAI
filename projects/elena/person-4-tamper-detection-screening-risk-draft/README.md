@@ -1,4 +1,4 @@
-# Person 4 — Tamper Detection, Screening & Risk Draft
+# Elena — Person 4: Tamper Detection, Screening & Risk Draft
 
 This folder contains Elena's contribution to the NexxtAI challenge.
 
@@ -18,7 +18,7 @@ Person 4 owns the second row of diagram stage 3:
 ## Contents
 
 ```text
-person-4-tamper-screening-risk-draft/
+elena/person-4-tamper-detection-screening-risk-draft/
 ├── data/
 │   ├── gigel/
 │   │   ├── cases/
@@ -48,13 +48,13 @@ review; this work must never make an autonomous banking decision.
 From the repository root:
 
 ```sh
-python3 projects/person-4-tamper-screening-risk-draft/rules/validate_rules.py
+python3 projects/elena/person-4-tamper-detection-screening-risk-draft/rules/validate_rules.py
 ```
 
 ## Run the Featherless client
 
 ```sh
-cd projects/person-4-tamper-screening-risk-draft/featherless-ai-client
+cd projects/elena/person-4-tamper-detection-screening-risk-draft/featherless-ai-client
 npm start -- "Describe the tamper signals in a payslip"
 ```
 

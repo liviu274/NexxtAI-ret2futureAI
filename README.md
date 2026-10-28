@@ -13,11 +13,12 @@ NexxtAI-ret2futureAI/
 │   ├── brief-raiffeisen-bank.pdf
 │   └── source-code-security-day4.pdf
 └── projects/
-    └── person-4-tamper-screening-risk-draft/
-        ├── data/
-        ├── rules/
-        ├── featherless-ai-client/
-        └── README.md
+    └── elena/
+        └── person-4-tamper-detection-screening-risk-draft/
+            ├── data/
+            ├── rules/
+            ├── featherless-ai-client/
+            └── README.md
 ```
 
 `docs/` contains challenge and reference material. Each implementation lives
@@ -27,7 +28,7 @@ mixing their files.
 ## Person 4 project
 
 ```sh
-cd projects/person-4-tamper-screening-risk-draft/featherless-ai-client
+cd projects/elena/person-4-tamper-detection-screening-risk-draft/featherless-ai-client
 npm start -- "Describe the tamper signals in a payslip"
 ```
 
@@ -36,7 +37,8 @@ already present. Secrets and dependencies are ignored at the repository level.
 
 The Person 4 scope, synthetic Gigel fixture, declarative rules, tamper checks,
 screening placeholders, and risk-draft boundary are documented in
-[`projects/person-4-tamper-screening-risk-draft/README.md`](./projects/person-4-tamper-screening-risk-draft/README.md).
+[`projects/elena/person-4-tamper-detection-screening-risk-draft/README.md`](./projects/elena/person-4-tamper-detection-screening-risk-draft/README.md).
 
-Additional colleagues can add sibling folders under `projects/` without
+Additional colleagues can add their own named folders under `projects/`
+without
 mixing ownership or implementation files.

@@ -4,7 +4,11 @@
   "scenario_type": "negative",
   "mutation": "missing_bill",
   "expected_rule_ids": [
-    "R-PF-001"
+    "R-PF-004"
   ],
-  "synthetic": true
+  "synthetic": true,
+  "playbook_id": "pb_cont_pf_v1",
+  "legacy_expected_rule_ids": [
+    "R-PF-001"
+  ]
 }

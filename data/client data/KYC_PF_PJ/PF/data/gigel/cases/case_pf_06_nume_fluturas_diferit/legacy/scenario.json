@@ -1,0 +1,10 @@
+{
+  "description": "Numele angajatului diferă de identitate",
+  "reference_date": "2026-10-28",
+  "scenario_type": "negative",
+  "mutation": "pay_name",
+  "expected_rule_ids": [
+    "R-PF-005"
+  ],
+  "synthetic": true
+}

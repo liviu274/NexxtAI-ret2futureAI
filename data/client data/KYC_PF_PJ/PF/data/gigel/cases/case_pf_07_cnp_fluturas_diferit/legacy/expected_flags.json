@@ -1,0 +1,7 @@
+[
+  {
+    "rule_id": "R-PF-005",
+    "check": "fields_match",
+    "severity": "medium"
+  }
+]

@@ -1,7 +1,8 @@
 [
   {
-    "rule_id": "R-PF-014",
+    "rule_id": "R-PF-012",
     "check": "totals_consistency",
-    "severity": "high"
+    "severity": "critical",
+    "description": "Pe fluturaș, salariul brut minus reținerile trebuie să fie egal cu salariul net."
   }
 ]

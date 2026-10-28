@@ -4,5 +4,7 @@
   "scenario_type": "clean_control",
   "mutation": null,
   "expected_rule_ids": [],
-  "synthetic": true
+  "synthetic": true,
+  "playbook_id": "pb_cont_pf_v1",
+  "legacy_expected_rule_ids": []
 }

@@ -20,7 +20,7 @@
   "documents": [
     {
       "doc_id": "doc_001",
-      "doc_type": "identity_document",
+      "doc_type": "id_card",
       "owner_person_id": "p_pf",
       "file": "docs/doc_001_identity_document.pdf",
       "fields": {
@@ -57,7 +57,7 @@
             0.356341
           ]
         },
-        "birth_date": {
+        "date_of_birth": {
           "value": "1992-03-12",
           "raw_text": "1992-03-12",
           "page": 1,
@@ -79,7 +79,7 @@
             0.446614
           ]
         },
-        "doc_number": {
+        "series_number": {
           "value": "DX 900811",
           "raw_text": "DX 900811",
           "page": 1,
@@ -128,11 +128,11 @@
     },
     {
       "doc_id": "doc_002",
-      "doc_type": "utility_bill",
+      "doc_type": "proof_of_address",
       "owner_person_id": "p_pf",
       "file": "docs/doc_002_utility_bill.pdf",
       "fields": {
-        "customer_name": {
+        "full_name": {
           "value": "Mara Exemplu",
           "raw_text": "Mara Exemplu",
           "page": 1,
@@ -213,7 +213,7 @@
       "owner_person_id": "p_pf",
       "file": "docs/doc_003_payslip.pdf",
       "fields": {
-        "employee_name": {
+        "full_name": {
           "value": "Eliza Probă",
           "raw_text": "Eliza Probă",
           "page": 1,
@@ -355,5 +355,6 @@
       },
       "mutations": []
     }
-  ]
+  ],
+  "playbook_id": "pb_cont_pf_v1"
 }

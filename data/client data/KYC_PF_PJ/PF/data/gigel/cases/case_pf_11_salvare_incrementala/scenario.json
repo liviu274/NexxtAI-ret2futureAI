@@ -4,7 +4,11 @@
   "scenario_type": "negative",
   "mutation": "incremental",
   "expected_rule_ids": [
-    "R-PF-015"
+    "R-PF-010"
   ],
-  "synthetic": true
+  "synthetic": true,
+  "playbook_id": "pb_cont_pf_v1",
+  "legacy_expected_rule_ids": [
+    "R-PF-015"
+  ]
 }

@@ -1,0 +1,10 @@
+{
+  "case_id": "case_pf_02_numar_act_lipsa",
+  "flag_count": 1,
+  "rule_ids": [
+    "R-PF-002"
+  ],
+  "risk_level": "high",
+  "status": "review",
+  "decision": null
+}

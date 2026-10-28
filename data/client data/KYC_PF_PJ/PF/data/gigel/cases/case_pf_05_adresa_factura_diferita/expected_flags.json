@@ -1,7 +1,8 @@
 [
   {
-    "rule_id": "R-PF-004",
+    "rule_id": "R-PF-009",
     "check": "fields_match",
-    "severity": "medium"
+    "severity": "medium",
+    "description": "Adresa din actul de identitate trebuie să corespundă cu dovada adresei."
   }
 ]

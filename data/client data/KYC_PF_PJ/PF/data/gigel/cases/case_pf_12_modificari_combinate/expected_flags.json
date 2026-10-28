@@ -1,22 +1,20 @@
 [
   {
-    "rule_id": "R-PF-012",
+    "rule_id": "R-PF-010",
     "check": "pdf_metadata",
-    "severity": "critical"
+    "severity": "critical",
+    "description": "Documentele cu semne de modificare ulterioară emiterii se escaladează la conformitate."
   },
   {
-    "rule_id": "R-PF-013",
+    "rule_id": "R-PF-011",
     "check": "font_consistency",
-    "severity": "high"
+    "severity": "critical",
+    "description": "Fonturile diferite în același câmp sau rând indică o posibilă alterare."
   },
   {
-    "rule_id": "R-PF-014",
+    "rule_id": "R-PF-012",
     "check": "totals_consistency",
-    "severity": "high"
-  },
-  {
-    "rule_id": "R-PF-015",
-    "check": "incremental_save",
-    "severity": "medium"
+    "severity": "critical",
+    "description": "Pe fluturaș, salariul brut minus reținerile trebuie să fie egal cu salariul net."
   }
 ]

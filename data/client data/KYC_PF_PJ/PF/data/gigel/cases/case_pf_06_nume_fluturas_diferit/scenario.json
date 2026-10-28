@@ -4,7 +4,11 @@
   "scenario_type": "negative",
   "mutation": "pay_name",
   "expected_rule_ids": [
-    "R-PF-005"
+    "R-PF-008"
   ],
-  "synthetic": true
+  "synthetic": true,
+  "playbook_id": "pb_cont_pf_v1",
+  "legacy_expected_rule_ids": [
+    "R-PF-005"
+  ]
 }

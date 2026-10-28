@@ -1,7 +1,1 @@
-[
-  {
-    "rule_id": "R-PF-002",
-    "check": "required_fields",
-    "severity": "high"
-  }
-]
+[]

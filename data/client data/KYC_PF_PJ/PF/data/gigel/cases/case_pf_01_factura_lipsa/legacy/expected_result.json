@@ -1,0 +1,10 @@
+{
+  "case_id": "case_pf_01_factura_lipsa",
+  "flag_count": 1,
+  "rule_ids": [
+    "R-PF-001"
+  ],
+  "risk_level": "high",
+  "status": "review",
+  "decision": null
+}

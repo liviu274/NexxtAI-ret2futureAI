@@ -1,10 +1,11 @@
 {
   "case_id": "case_pf_08_metadate_suspecte",
-  "flag_count": 1,
+  "playbook_id": "pb_cont_pf_v1",
   "rule_ids": [
-    "R-PF-012"
+    "R-PF-010"
   ],
-  "risk_level": "critical",
-  "status": "review",
-  "decision": null
+  "flag_count": 1,
+  "decision": null,
+  "project_pipeline_run": false,
+  "expected_result_kind": "Scenario expectation for pb_cont_pf_v1, derived from procedure PF-ONB-01."
 }

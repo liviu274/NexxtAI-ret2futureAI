@@ -1,14 +1,23 @@
 # PF pipeline
 
-Run the complete deterministic flow against a synthetic case:
+Run the complete deterministic flow against a synthetic case.
+
+From the repository root:
 
 ```sh
-python3 pipeline/pf_pipeline.py \
-  data/gigel/cases/case_0001_pf_gigel_curat
+python3 projects/elena/person-4-tamper-detection-screening-risk-draft/pipeline/pf_pipeline.py \
+  projects/elena/person-4-tamper-detection-screening-risk-draft/data/gigel/cases/case_0001_pf_gigel_curat
 
-python3 pipeline/pf_pipeline.py \
-  data/gigel/cases/case_0006_pf_gigel_fluturas_talcioc \
+python3 projects/elena/person-4-tamper-detection-screening-risk-draft/pipeline/pf_pipeline.py \
+  projects/elena/person-4-tamper-detection-screening-risk-draft/data/gigel/cases/case_0006_pf_gigel_fluturas_talcioc \
   --output /tmp/gigel-review.json
+```
+
+Or, after changing into this project folder:
+
+```sh
+cd projects/elena/person-4-tamper-detection-screening-risk-draft
+python3 pipeline/pf_pipeline.py data/gigel/cases/case_0006_pf_gigel_fluturas_talcioc --output /tmp/gigel-review.json
 ```
 
 The flow is:

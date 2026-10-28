@@ -17,6 +17,7 @@ import { Route as SecuritateRouteImport } from './routes/securitate'
 import { Route as StatisticiRouteImport } from './routes/statistici'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as CasesIndexRouteImport } from './routes/cases.index'
+import { Route as ContNouRouteImport } from './routes/cont.nou'
 import { Route as PlaybooksIndexRouteImport } from './routes/playbooks.index'
 import { Route as PlaybooksIdRouteImport } from './routes/playbooks.$id'
 import { Route as PortalIndexRouteImport } from './routes/portal.index'
@@ -25,6 +26,8 @@ import { Route as PortalDosareRouteImport } from './routes/portal.dosare'
 import { Route as CasesIdIndexRouteImport } from './routes/cases.$id.index'
 import { Route as CasesIdAuditRouteImport } from './routes/cases.$id.audit'
 import { Route as PortalCaseIdIndexRouteImport } from './routes/portal.$caseId.index'
+import { Route as PortalCaseIdAcordRouteImport } from './routes/portal.$caseId.acord'
+import { Route as PortalCaseIdIdentitateRouteImport } from './routes/portal.$caseId.identitate'
 import { Route as PortalCaseIdRezumatRouteImport } from './routes/portal.$caseId.rezumat'
 import { Route as PortalCaseIdTrimisRouteImport } from './routes/portal.$caseId.trimis'
 import { Route as PortalCaseIdPasNRouteImport } from './routes/portal.$caseId.pas.$n'
@@ -69,6 +72,11 @@ const CasesIndexRoute = CasesIndexRouteImport.update({
   path: '/cases/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContNouRoute = ContNouRouteImport.update({
+  id: '/cont/nou',
+  path: '/cont/nou',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlaybooksIndexRoute = PlaybooksIndexRouteImport.update({
   id: '/playbooks/',
   path: '/playbooks/',
@@ -109,6 +117,16 @@ const PortalCaseIdIndexRoute = PortalCaseIdIndexRouteImport.update({
   path: '/portal/$caseId/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PortalCaseIdAcordRoute = PortalCaseIdAcordRouteImport.update({
+  id: '/portal/$caseId/acord',
+  path: '/portal/$caseId/acord',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalCaseIdIdentitateRoute = PortalCaseIdIdentitateRouteImport.update({
+  id: '/portal/$caseId/identitate',
+  path: '/portal/$caseId/identitate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PortalCaseIdRezumatRoute = PortalCaseIdRezumatRouteImport.update({
   id: '/portal/$caseId/rezumat',
   path: '/portal/$caseId/rezumat',
@@ -133,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/securitate': typeof SecuritateRoute
   '/statistici': typeof StatisticiRoute
   '/upload': typeof UploadRoute
+  '/cont/nou': typeof ContNouRoute
   '/playbooks/$id': typeof PlaybooksIdRoute
   '/portal/ajutor': typeof PortalAjutorRoute
   '/portal/dosare': typeof PortalDosareRoute
@@ -140,6 +159,8 @@ export interface FileRoutesByFullPath {
   '/playbooks/': typeof PlaybooksIndexRoute
   '/portal/': typeof PortalIndexRoute
   '/cases/$id/audit': typeof CasesIdAuditRoute
+  '/portal/$caseId/acord': typeof PortalCaseIdAcordRoute
+  '/portal/$caseId/identitate': typeof PortalCaseIdIdentitateRoute
   '/portal/$caseId/rezumat': typeof PortalCaseIdRezumatRoute
   '/portal/$caseId/trimis': typeof PortalCaseIdTrimisRoute
   '/cases/$id/': typeof CasesIdIndexRoute
@@ -154,6 +175,7 @@ export interface FileRoutesByTo {
   '/securitate': typeof SecuritateRoute
   '/statistici': typeof StatisticiRoute
   '/upload': typeof UploadRoute
+  '/cont/nou': typeof ContNouRoute
   '/playbooks/$id': typeof PlaybooksIdRoute
   '/portal/ajutor': typeof PortalAjutorRoute
   '/portal/dosare': typeof PortalDosareRoute
@@ -161,6 +183,8 @@ export interface FileRoutesByTo {
   '/playbooks': typeof PlaybooksIndexRoute
   '/portal': typeof PortalIndexRoute
   '/cases/$id/audit': typeof CasesIdAuditRoute
+  '/portal/$caseId/acord': typeof PortalCaseIdAcordRoute
+  '/portal/$caseId/identitate': typeof PortalCaseIdIdentitateRoute
   '/portal/$caseId/rezumat': typeof PortalCaseIdRezumatRoute
   '/portal/$caseId/trimis': typeof PortalCaseIdTrimisRoute
   '/cases/$id': typeof CasesIdIndexRoute
@@ -176,6 +200,7 @@ export interface FileRoutesById {
   '/securitate': typeof SecuritateRoute
   '/statistici': typeof StatisticiRoute
   '/upload': typeof UploadRoute
+  '/cont/nou': typeof ContNouRoute
   '/playbooks/$id': typeof PlaybooksIdRoute
   '/portal/ajutor': typeof PortalAjutorRoute
   '/portal/dosare': typeof PortalDosareRoute
@@ -183,6 +208,8 @@ export interface FileRoutesById {
   '/playbooks/': typeof PlaybooksIndexRoute
   '/portal/': typeof PortalIndexRoute
   '/cases/$id/audit': typeof CasesIdAuditRoute
+  '/portal/$caseId/acord': typeof PortalCaseIdAcordRoute
+  '/portal/$caseId/identitate': typeof PortalCaseIdIdentitateRoute
   '/portal/$caseId/rezumat': typeof PortalCaseIdRezumatRoute
   '/portal/$caseId/trimis': typeof PortalCaseIdTrimisRoute
   '/cases/$id/': typeof CasesIdIndexRoute
@@ -199,6 +226,7 @@ export interface FileRouteTypes {
     | '/securitate'
     | '/statistici'
     | '/upload'
+    | '/cont/nou'
     | '/playbooks/$id'
     | '/portal/ajutor'
     | '/portal/dosare'
@@ -206,6 +234,8 @@ export interface FileRouteTypes {
     | '/playbooks/'
     | '/portal/'
     | '/cases/$id/audit'
+    | '/portal/$caseId/acord'
+    | '/portal/$caseId/identitate'
     | '/portal/$caseId/rezumat'
     | '/portal/$caseId/trimis'
     | '/cases/$id/'
@@ -220,6 +250,7 @@ export interface FileRouteTypes {
     | '/securitate'
     | '/statistici'
     | '/upload'
+    | '/cont/nou'
     | '/playbooks/$id'
     | '/portal/ajutor'
     | '/portal/dosare'
@@ -227,6 +258,8 @@ export interface FileRouteTypes {
     | '/playbooks'
     | '/portal'
     | '/cases/$id/audit'
+    | '/portal/$caseId/acord'
+    | '/portal/$caseId/identitate'
     | '/portal/$caseId/rezumat'
     | '/portal/$caseId/trimis'
     | '/cases/$id'
@@ -241,6 +274,7 @@ export interface FileRouteTypes {
     | '/securitate'
     | '/statistici'
     | '/upload'
+    | '/cont/nou'
     | '/playbooks/$id'
     | '/portal/ajutor'
     | '/portal/dosare'
@@ -248,6 +282,8 @@ export interface FileRouteTypes {
     | '/playbooks/'
     | '/portal/'
     | '/cases/$id/audit'
+    | '/portal/$caseId/acord'
+    | '/portal/$caseId/identitate'
     | '/portal/$caseId/rezumat'
     | '/portal/$caseId/trimis'
     | '/cases/$id/'
@@ -263,6 +299,7 @@ export interface RootRouteChildren {
   SecuritateRoute: typeof SecuritateRoute
   StatisticiRoute: typeof StatisticiRoute
   UploadRoute: typeof UploadRoute
+  ContNouRoute: typeof ContNouRoute
   PlaybooksIdRoute: typeof PlaybooksIdRoute
   PortalAjutorRoute: typeof PortalAjutorRoute
   PortalDosareRoute: typeof PortalDosareRoute
@@ -270,6 +307,8 @@ export interface RootRouteChildren {
   PlaybooksIndexRoute: typeof PlaybooksIndexRoute
   PortalIndexRoute: typeof PortalIndexRoute
   CasesIdAuditRoute: typeof CasesIdAuditRoute
+  PortalCaseIdAcordRoute: typeof PortalCaseIdAcordRoute
+  PortalCaseIdIdentitateRoute: typeof PortalCaseIdIdentitateRoute
   PortalCaseIdRezumatRoute: typeof PortalCaseIdRezumatRoute
   PortalCaseIdTrimisRoute: typeof PortalCaseIdTrimisRoute
   CasesIdIndexRoute: typeof CasesIdIndexRoute
@@ -335,6 +374,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CasesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cont/nou': {
+      id: '/cont/nou'
+      path: '/cont/nou'
+      fullPath: '/cont/nou'
+      preLoaderRoute: typeof ContNouRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/playbooks/': {
       id: '/playbooks/'
       path: '/playbooks'
@@ -391,6 +437,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortalCaseIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/portal/$caseId/acord': {
+      id: '/portal/$caseId/acord'
+      path: '/portal/$caseId/acord'
+      fullPath: '/portal/$caseId/acord'
+      preLoaderRoute: typeof PortalCaseIdAcordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal/$caseId/identitate': {
+      id: '/portal/$caseId/identitate'
+      path: '/portal/$caseId/identitate'
+      fullPath: '/portal/$caseId/identitate'
+      preLoaderRoute: typeof PortalCaseIdIdentitateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/portal/$caseId/rezumat': {
       id: '/portal/$caseId/rezumat'
       path: '/portal/$caseId/rezumat'
@@ -423,6 +483,7 @@ const rootRouteChildren: RootRouteChildren = {
   SecuritateRoute: SecuritateRoute,
   StatisticiRoute: StatisticiRoute,
   UploadRoute: UploadRoute,
+  ContNouRoute: ContNouRoute,
   PlaybooksIdRoute: PlaybooksIdRoute,
   PortalAjutorRoute: PortalAjutorRoute,
   PortalDosareRoute: PortalDosareRoute,
@@ -430,6 +491,8 @@ const rootRouteChildren: RootRouteChildren = {
   PlaybooksIndexRoute: PlaybooksIndexRoute,
   PortalIndexRoute: PortalIndexRoute,
   CasesIdAuditRoute: CasesIdAuditRoute,
+  PortalCaseIdAcordRoute: PortalCaseIdAcordRoute,
+  PortalCaseIdIdentitateRoute: PortalCaseIdIdentitateRoute,
   PortalCaseIdRezumatRoute: PortalCaseIdRezumatRoute,
   PortalCaseIdTrimisRoute: PortalCaseIdTrimisRoute,
   CasesIdIndexRoute: CasesIdIndexRoute,

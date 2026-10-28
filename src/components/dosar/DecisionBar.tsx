@@ -18,7 +18,8 @@ const LABELS: Record<D, { title: string; desc: string; cta: string }> = {
   documente: { title: "Soliciți documente suplimentare?", desc: "Clientul va primi mesajele de corectare asociate flag-urilor.", cta: "Trimite solicitarea" },
 };
 
-export function DecisionBar({ caseId, flags = [] }: { caseId: string; flags?: Flag[] }) {
+/** `pending`: the client has not sent the case yet, so no check has run and approval is not possible. */
+export function DecisionBar({ caseId, flags = [], pending = false }: { caseId: string; flags?: Flag[]; pending?: boolean }) {
   const locked = useCaseLocked(caseId);
   const blocked = blockingFlags(flags).length;
   const qc = useQueryClient();
@@ -46,8 +47,8 @@ export function DecisionBar({ caseId, flags = [] }: { caseId: string; flags?: Fl
         <div className="flex flex-wrap justify-end gap-2">
           <Button disabled={locked} variant="outline" className="h-8 border-ink bg-card px-3 text-xs" onClick={() => setOpen("documente")}>Solicită documente</Button>
           <Button disabled={locked} variant="outline" className="h-8 border-ink bg-card px-3 text-xs" onClick={() => setOpen("respins")}>Respinge</Button>
-          <Button disabled={locked || blocked > 0} className="h-8 px-4 text-xs disabled:bg-beige-dark disabled:text-ink-muted disabled:opacity-100" onClick={() => setOpen("aprobat")}>Aprobă</Button>
-        </div><span className="max-w-80 text-right text-[10px] text-ink-muted">{blocked ? `Aprobarea e blocată de ${problemLabel(blocked)}. ${blocked === 1 ? "Rezolv-o sau ignor-o" : "Rezolvă-le sau ignoră-le"} cu motiv.` : "Decizia finală aparține analistului."}</span>
+          <Button disabled={locked || pending || blocked > 0} className="h-8 px-4 text-xs disabled:bg-beige-dark disabled:text-ink-muted disabled:opacity-100" onClick={() => setOpen("aprobat")}>Aprobă</Button>
+        </div><span className="max-w-80 text-right text-[10px] text-ink-muted">{pending ? "Clientul nu a trimis încă dosarul. Verificările rulează după trimitere." : blocked ? `Aprobarea e blocată de ${problemLabel(blocked)}. ${blocked === 1 ? "Rezolv-o sau ignor-o" : "Rezolvă-le sau ignoră-le"} cu motiv.` : "Decizia finală aparține analistului."}</span>
       </div>
       <Dialog open={!!open} onOpenChange={(o) => !o && setOpen(null)}>
         <DialogContent>

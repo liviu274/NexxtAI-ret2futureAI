@@ -53,7 +53,9 @@ export interface ClientPortalCase {
   stage: ClientPortalStage;
   stageLabel: string;
   persons: { id: string; name: string; role: Case["persons"][number]["role"] }[];
-  documents: { key: string; type: string; label: string; personId?: string; personName?: string; fileName?: string; ok: boolean; processingPending?: boolean }[];
+  documents: { key: string; type: string; label: string; personId?: string; personName?: string; fileName?: string; ok: boolean; processingPending?: boolean; issue?: "unrecognized" | "wrong_type";
+    /** Fix message of a client-fixable flag on this document (never tamper, screening or risk). */
+    clientMessage?: string }[];
   /** Upload step the bank asked the client to redo, if any (kept after the re-upload, to return to the status page). */
   requestedStep: number | null;
 }
@@ -81,7 +83,7 @@ export function toClientPortalCase(c: Case, documents: NonNullable<Case["portalD
     persons: c.persons.map((p) => ({ id: p.id, name: p.name, role: p.role })),
     // officerIssue (a hidden tamper finding) is deliberately left out.
     documents: documents.map((d) => ({ key: d.key, type: d.type, label: d.label, ok: d.ok,
-      ...(d.processingPending ? { processingPending: true } : {}),
+      ...(d.processingPending ? { processingPending: true } : {}), ...(d.issue ? { issue: d.issue } : {}), ...(d.clientMessage ? { clientMessage: d.clientMessage } : {}),
       ...(d.personId ? { personId: d.personId } : {}), ...(d.personName ? { personName: d.personName } : {}), ...(d.fileName ? { fileName: d.fileName } : {}) })),
     requestedStep: c.requestedStep ?? null,
   };

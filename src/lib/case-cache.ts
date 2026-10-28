@@ -1,5 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
-export const caseQueryKeys = ["case", "cases", "client-status", "portal-case", "my-portal-cases", "audit", "screening"];
+export const caseQueryKeys = ["case", "cases", "client-status", "portal-case", "my-portal-cases", "audit", "screening", "onboarding"];
 export function invalidateCaseQueries(client: QueryClient) {
   return Promise.all(caseQueryKeys.map((key) => client.invalidateQueries({ queryKey: [key] })));
 }

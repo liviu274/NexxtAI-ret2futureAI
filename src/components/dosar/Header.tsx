@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen, ClipboardCheck, Folder, UserRound, ChartNoAxesColumn, House, CircleHelp, FileText, LayoutGrid } from "lucide-react";
-import { listCases } from "@/api/client";
+import { listCases, signOut } from "@/api/client";
+import { useClientSession } from "./useClientSession";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { Logo } from "./Logo";
@@ -46,12 +47,13 @@ const active = { className: "bg-brand !text-on-brand" };
 const bar = "staff-header flex min-h-16 items-center justify-between gap-4 px-[max(18px,env(safe-area-inset-left,0px))]";
 
 export function ClientHeader() {
+  const { session } = useClientSession();
   return <header className="border-b border-border bg-card"><div className={bar}>
     <Logo /><nav className="staff-nav flex items-center gap-1 rounded-full bg-beige-dark p-1 text-[13px] font-medium text-ink-muted">
       <Link to="/portal" className={pill} activeProps={active} activeOptions={{ exact: true }}><Folder className="h-3.5 w-3.5" />Dosar nou</Link>
       <Link to="/portal/dosare" className={pill} activeProps={active}><FileText className="h-3.5 w-3.5" />Dosarul meu</Link>
       <Link to="/portal/ajutor" className={pill} activeProps={active}><CircleHelp className="h-3.5 w-3.5" />Ajutor</Link>
-    </nav><div className="flex items-center gap-3"><ThemeToggle className="h-9 w-9 justify-center bg-beige-dark text-ink" /><Link to="/" className="text-sm font-medium text-ink-muted hover:text-ink">Ieși</Link></div>
+    </nav><div className="flex items-center gap-3"><ThemeToggle className="h-9 w-9 justify-center bg-beige-dark text-ink" />{session ? <><span className="max-w-40 truncate text-xs text-ink-muted max-md:hidden" title={session.email}>{session.email}</span><Link to="/" onClick={() => signOut()} className="text-sm font-medium text-ink-muted hover:text-ink">Ieși</Link></> : <Link to="/cont/nou" className="text-sm font-medium text-ink-muted hover:text-ink">Creează cont</Link>}</div>
   </div></header>;
 }
 

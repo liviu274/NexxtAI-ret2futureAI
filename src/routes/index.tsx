@@ -35,7 +35,7 @@ function Landing() {
     <main className="mx-auto w-full max-w-[1000px] flex-1 px-6 py-16">
       <h1 className="max-w-3xl text-4xl font-semibold leading-tight max-sm:text-3xl">Deschiderea contului, verificată în minute, nu în zile</h1>
       <div className="mt-12 grid grid-cols-2 gap-6 max-md:grid-cols-1">
-        {[{ to: "/portal" as const, title: "Sunt client – Deschide un cont", Icon: UserRound }, { to: "/panou" as const, title: "Sunt ofițer KYC – Analizează dosare", Icon: ClipboardCheck }].map(({ to, title, Icon }) => (
+        {[{ to: "/cont/nou" as const, title: "Sunt client – Deschide un cont", Icon: UserRound }, { to: "/panou" as const, title: "Sunt ofițer KYC – Analizează dosare", Icon: ClipboardCheck }].map(({ to, title, Icon }) => (
           <div key={to} className="rounded-[22px] bg-card shadow-card p-8"><Icon className="mb-8 h-10 w-10 text-teal" /><Button asChild variant="link" className="h-auto w-full justify-between whitespace-normal p-0 text-left text-lg text-ink"><Link to={to}>{title}<ArrowRight className="h-5 w-5 shrink-0" /></Link></Button></div>
         ))}
       </div>

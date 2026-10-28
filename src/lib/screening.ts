@@ -1,8 +1,9 @@
 import type { Flag } from "@/types";
 import type { ScreeningMatch } from "@/types/extensions";
+import { isTamper } from "./review";
 
 export const isScreeningFlag = (flag: Flag) => flag.stage === "screening";
-export const canCopyClientMessage = (flag: Flag) => !isScreeningFlag(flag);
+export const canCopyClientMessage = (flag: Flag) => !isScreeningFlag(flag) && !isTamper(flag) && flag.client_fixable === true && flag.fix_message != null;
 
 export function screeningRows(match: ScreeningMatch) {
   if (!("id_sursa" in match.entry)) return [];

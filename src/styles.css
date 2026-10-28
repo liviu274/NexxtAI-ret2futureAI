@@ -172,6 +172,15 @@
 
 /* Stitch screen proportions and the direct ownership diagram. */
 body { letter-spacing: 0; }
+.portal-progress { appearance: none; background: var(--border); }
+.portal-progress::-webkit-progress-bar { background: var(--border); }
+.portal-progress::-webkit-progress-value { background: var(--brand); }
+.portal-progress::-moz-progress-bar { background: var(--brand); }
+.staff-nav { flex-shrink: 0; }
+@media (max-width: 800px) {
+  .staff-header { flex-wrap: wrap; padding-top: 10px; padding-bottom: 10px; }
+  .staff-nav { order: 3; width: 100%; justify-content: center; }
+}
 .ownership-match .react-flow__edge-path { stroke: var(--line); }
 .ownership-mismatch .react-flow__edge-path { stroke: var(--sev-high); }
 .react-flow__edge-text { fill: var(--ink-muted); font-size: 10px; }

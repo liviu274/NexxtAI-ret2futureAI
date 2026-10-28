@@ -12,16 +12,17 @@ export function DocumentViewer({ document, page = 0, highlights = [], onPageChan
   const [zoom, setZoom] = useState(1);
   const scroller = useRef<HTMLDivElement>(null);
   const first = highlights[0];
-  useEffect(() => {
+  const centerHighlight = () => {
     const el = scroller.current;
-    if (!el || !first) return;
-    const t = setTimeout(() => {
-      const inner = el.firstElementChild as HTMLElement | null;
-      if (!inner) return;
-      const top = inner.offsetTop + first.y * inner.offsetHeight - el.clientHeight / 2;
-      el.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
-    }, 50);
+    const inner = el?.firstElementChild as HTMLElement | null;
+    if (!el || !inner || !first) return;
+    const top = inner.offsetTop + first.y * inner.offsetHeight - el.clientHeight / 2;
+    el.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+  };
+  useEffect(() => {
+    const t = setTimeout(centerHighlight, 50);
     return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [first?.x, first?.y, zoom, document?.id]);
   if (!document)
     return (
@@ -50,7 +51,7 @@ export function DocumentViewer({ document, page = 0, highlights = [], onPageChan
       </div>
       <div ref={scroller} className="relative max-h-[560px] overflow-auto rounded-lg bg-beige-dark p-4">
         <div className="relative mx-auto shadow-card" style={{ width: `${zoom * 100}%` }}>
-          <img src={document.pageImages[page]} alt={`${document.type}, pagina ${page + 1}`} className="block w-full" />
+          <img src={document.pageImages[page]} alt={`${document.type}, pagina ${page + 1}`} className="block w-full" onLoad={centerHighlight} />
           {highlights.map((b, i) => (
             <div
               key={i}

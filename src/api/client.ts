@@ -121,7 +121,16 @@ export async function submitDecision(caseId: string, decision: "aprobat" | "resp
   if (source) {
     source.status = decision === "aprobat" ? "Aprobat" : decision === "respins" ? "Respins" : "Documente solicitate";
     if (decision === "documente") for (const f of source.flags) if (f.status === "open" && f.client_fixable) f.status = "sent_to_client";
-    if (decision === "documente") { source.officerNote = comment; source.requestedStep = Math.max(1, (source.portalDocuments ?? []).findIndex((d) => d.type === "utility_bill") + 1); }
+    if (decision === "documente") {
+      const p = m.playbooks.find((p) => p.id === source.playbookId);
+      source.portalDocuments ??= portalDocumentPlan(source.customerType, p?.requiredDocuments ?? [], source.persons);
+      source.officerNote = comment;
+      const requestedFlag = source.flags.find((f) => f.client_fixable && f.status === "sent_to_client");
+      const requestedDocument = source.documents.find((d) => d.id === requestedFlag?.evidence[0]?.documentId);
+      const requestedType = requestedDocument?.id === "doc_001" && source.customerType === "PF" ? "identity_document" : requestedDocument?.id === "doc_003" && source.customerType === "PF" ? "payslip" : "utility_bill";
+      source.requestedStep = Math.max(1, source.portalDocuments.findIndex((d) => d.type === requestedType) + 1);
+      const requested = source.portalDocuments[source.requestedStep - 1]; if (requested) requested.ok = false;
+    }
   }
   writeDemoCases(store);
   return { ok: true };

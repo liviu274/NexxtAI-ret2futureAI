@@ -1,24 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  beforeLoad: () => {
+    throw redirect({ to: "/cases" });
+  },
+  head: () => ({
+    meta: [
+      { title: "DosarAI · Onboarding KYC asistat de AI" },
+      { name: "description", content: "DosarAI verifică documentele clienților față de playbook-ul băncii și semnalează problemele cu dovezi." },
+      { property: "og:title", content: "DosarAI · Onboarding KYC asistat de AI" },
+      { property: "og:description", content: "Verificare KYC/KYB asistată de AI, cu decizia finală la analist." },
+    ],
+  }),
 });
-
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
-}

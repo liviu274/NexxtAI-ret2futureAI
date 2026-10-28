@@ -6,6 +6,7 @@ import { blockingFlags } from "@/lib/review";
 import { readDemoCases, writeDemoCases } from "./demo-store";
 import { portalDocumentPlan, simulatePortalResult } from "@/lib/portal";
 import type { CustomerType, Person } from "@/types";
+import { toClientCaseStatus, type ClientCaseStatus } from "@/lib/client-status";
 
 export const USE_MOCK = true;
 const BASE = import.meta.env["VITE_API_BASE_URL"] ?? "";
@@ -155,6 +156,15 @@ export async function createPortalCase(type: CustomerType, persons: Person[]): P
  if (!base) throw new Error("Dosarul nu poate fi început.");
  const c: Case = { ...structuredClone(base), id: `demo_${type.toLowerCase()}_${Date.now()}`, clientName: type === "PF" ? "Mara Exemplu" : base.clientName, status: "Nou", persons, documents: [], flags: [], portalDocuments: portalDocumentPlan(type, p.requiredDocuments ?? [], persons) };
  const store = readDemoCases(m.cases); store.push(c); writeDemoCases(store); return c;
+}
+
+/** Client portal only: returns a safe status object, never the full case. */
+export async function getClientCaseStatus(caseId: string): Promise<ClientCaseStatus | null> {
+  if (!USE_MOCK) return http(`/cases/${caseId}/client-status`);
+  const m = await mocks();
+  await delay(300);
+  const c = readDemoCases(m.cases).find((x) => x.id === caseId);
+  return c ? toClientCaseStatus(c) : null;
 }
 
 export async function listMyPortalCases(): Promise<Case[]> {

@@ -121,7 +121,7 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   useEffect(() => {
-    const refresh = () => { void queryClient.invalidateQueries({ queryKey: ["cases"] }); void queryClient.invalidateQueries({ queryKey: ["case"] }); };
+    const refresh = () => { void queryClient.invalidateQueries({ queryKey: ["cases"] }); void queryClient.invalidateQueries({ queryKey: ["case"] }); void queryClient.invalidateQueries({ queryKey: ["client-status"] }); };
     window.addEventListener("storage", refresh); window.addEventListener("dosarai-demo-change", refresh);
     return () => { window.removeEventListener("storage", refresh); window.removeEventListener("dosarai-demo-change", refresh); };
   }, [queryClient]);

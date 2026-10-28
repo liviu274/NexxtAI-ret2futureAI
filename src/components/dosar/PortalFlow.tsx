@@ -3,7 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Upload, Loader2, Check } from "lucide-react";
 import { toast } from "sonner";
-import { getCase, getPlaybook, checkPortalDocument, submitPortalCase } from "@/api/client";
+import { getCase, getClientCaseStatus, getPlaybook, checkPortalDocument, submitPortalCase } from "@/api/client";
 import { portalDocumentPlan } from "@/lib/portal";
 import { ClientHeader } from "./Header";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ export function PortalStep({ caseId, step }: { caseId: string; step: number }) {
   if (!file) return; setHelp(false);
   if (file.size > 10 * 1024 * 1024 || !/\.(pdf|png|jpe?g)$/i.test(file.name)) { setResult({ok:false,message:"Alege un fișier PDF, JPG sau PNG de cel mult 10 MB."}); return; }
   setBusy(true); setResult(null);
-  try { const r = await checkPortalDocument(caseId, step, file); setResult(r); await qc.invalidateQueries({queryKey:["case",caseId]}); }
+  try { const r = await checkPortalDocument(caseId, step, file); setResult(r); await qc.invalidateQueries({queryKey:["case",caseId]}); await qc.invalidateQueries({queryKey:["client-status",caseId]}); }
   catch { setResult({ok:false,message:"Documentul nu a putut fi primit. Încearcă din nou."}); }
   finally { setBusy(false); }
  }
@@ -46,8 +46,27 @@ export function PortalSummary({ caseId }: { caseId: string }) {
  return <PortalLayout><h1 className="text-[22px] font-semibold">Verifică documentele</h1><div className="mt-6 divide-y divide-border">{docs.map((d,i)=><div key={d.key} className="flex items-start gap-3 py-4 text-xs"><CheckCircle2 className={`h-4 w-4 shrink-0 ${d.ok?"text-sev-ok":"text-ink-muted"}`}/><div className="min-w-0 flex-1"><p className="font-semibold">{d.label}{d.personName && ` · ${d.personName}`}</p><p className="mt-1 break-all text-ink-muted">{d.fileName??"Document neîncărcat"}</p></div><Link to="/portal/$caseId/pas/$n" params={{caseId,n:String(i+1)}} className="text-teal">Schimbă</Link></div>)}</div><Button className="mt-6 w-full" disabled={busy||!c||!docs.length||!docs.every((d)=>d.ok)} onClick={submit}>Trimite dosarul</Button></PortalLayout>;
 }
 export function PortalSent({ caseId }: { caseId: string }) {return <PortalLayout><CheckCircle2 className="mb-6 h-14 w-14 text-sev-ok"/><h1 className="text-[22px] font-semibold">Dosarul tău a fost trimis</h1><p className="mt-4 text-sm leading-6 text-ink-muted">Îl verifică un ofițer al băncii. Te anunțăm în 1–2 zile lucrătoare.</p><Link to="/portal/$caseId" params={{caseId}} className="mt-6 inline-block text-xs text-teal">Vezi starea dosarului</Link></PortalLayout>;}
+const CLIENT_STEPS = ["Documente primite", "Verificare documente", "Analiză la bancă", "Decizie"];
 export function PortalStatus({ caseId }: { caseId: string }) {
- const {c,docs,isLoading}=usePortalCase(caseId); if(isLoading)return <PortalLayout><Loader2 className="h-5 w-5 animate-spin"/></PortalLayout>; if(!c)return <PortalLayout>Dosarul nu a fost găsit.</PortalLayout>;
- const waiting=c.status==="Documente solicitate"; const decided=["Aprobat","Respins"].includes(c.status); const current=decided?3:c.status==="În analiză"||waiting?2:c.status==="Se verifică"?1:0;
- return <PortalLayout><h1 className="text-[22px] font-semibold">Dosarul meu</h1><p className="mt-2 text-xs text-ink-muted">{c.clientName}</p><ol className="mt-7">{["Documente încărcate","Verificare automată",waiting?"Avem nevoie de ceva de la tine":"În analiză la bancă","Finalizat"].map((label,i)=><li key={i} className="flex items-start gap-4 pb-6 text-sm"><span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${i<=current?"border-sev-ok text-sev-ok":"border-border text-ink-muted"}`}>{i<current?<Check className="h-3 w-3"/>:<span className="text-xs">{i+1}</span>}</span><span className={i===current?"font-semibold":"text-ink-muted"}>{label}</span></li>)}</ol>{waiting&&<div className="rounded-md border border-border border-l-2 border-l-sev-medium bg-card p-[18px]"><p className="text-xs leading-6">Banca îți cere: {c.officerNote || c.flags.find((f)=>f.client_fixable)?.fix_message || "Încarcă documentul solicitat."}</p><Button asChild className="mt-4 h-8 text-xs"><Link to="/portal/$caseId/pas/$n" params={{caseId,n:String(c.requestedStep??Math.max(1,docs.findIndex((d)=>d.type==="utility_bill")+1))}}>Încarcă documentul</Link></Button></div>}{decided&&<p className="text-sm leading-6">{c.status==="Aprobat"?"Contul tău a fost aprobat":"Cererea ta nu a putut fi aprobată. Te contactăm telefonic."}</p>}{c.status==="Nou"&&<Button asChild><Link to="/portal/$caseId/pas/$n" params={{caseId,n:"1"}}>Continuă încărcarea</Link></Button>}</PortalLayout>;
+ const { data: s, isLoading } = useQuery({ queryKey: ["client-status", caseId], queryFn: () => getClientCaseStatus(caseId) });
+ if (isLoading) return <PortalLayout><Loader2 className="h-5 w-5 animate-spin"/></PortalLayout>;
+ if (!s) return <PortalLayout>Dosarul nu a fost găsit.</PortalLayout>;
+ return <PortalLayout><h1 className="text-[22px] font-semibold">Dosarul meu</h1>
+  <ol aria-label="Progresul dosarului" className="mt-8 grid grid-cols-4">{CLIENT_STEPS.map((label, i) => {
+   const n = (i + 1) as 1|2|3|4; const done = n < s.step || (n === s.step && s.state === "done"); const action = n === s.step && s.state === "action_needed"; const current = n === s.step && s.state === "current";
+   return <li key={label} aria-current={current||action ? "step" : undefined} className="relative flex flex-col items-center px-1 text-center">
+    {i > 0 && <span aria-hidden className={`absolute right-1/2 top-3 h-0.5 w-full -translate-x-3 ${n <= s.step ? "bg-sev-ok" : "bg-border"}`} style={{width:"calc(100% - 24px)"}}/>}
+    <span className={`relative z-10 flex h-6 w-6 items-center justify-center rounded-full border text-xs font-semibold ${done ? "border-sev-ok bg-sev-ok text-card" : action ? "border-sev-medium bg-sev-medium text-card" : current ? "border-brand bg-brand text-ink" : "border-border bg-card text-ink-muted"}`}>{done ? <Check className="h-3.5 w-3.5"/> : action ? "!" : current ? "" : n}</span>
+    <span className={`mt-2 text-[11px] leading-4 ${current||action ? "font-semibold text-ink" : done ? "text-ink" : "text-ink-muted"}`}>{label}</span>
+    {done && s.dates[n] && <span className="mt-1 text-[10px] text-ink-muted">{s.dates[n]}</span>}
+    {action && <span className="mt-1 text-[10px] leading-4 text-sev-medium">Avem nevoie de ceva de la tine</span>}
+   </li>; })}</ol>
+  <div className="mt-8">
+   {s.state === "action_needed" && <div className="rounded-md border border-border border-l-2 border-l-sev-medium bg-card p-[18px]"><p className="text-xs font-semibold">Banca îți cere:</p><ul className="mt-2 space-y-1 text-xs leading-6">{(s.client_messages.length ? s.client_messages : ["Încarcă documentul solicitat."]).map((m) => <li key={m}>{m}</li>)}</ul>{s.upload_step && <Button asChild className="mt-4 h-8 text-xs"><Link to="/portal/$caseId/pas/$n" params={{caseId,n:String(s.upload_step)}}>Încarcă documentul</Link></Button>}</div>}
+   {s.step === 1 && <div className="rounded-md border border-border bg-card p-[18px]"><p className="text-xs leading-6">Încarcă toate documentele ca să putem începe verificarea.</p>{s.upload_step && <Button asChild className="mt-4 h-8 text-xs"><Link to="/portal/$caseId/pas/$n" params={{caseId,n:String(s.upload_step)}}>Continuă încărcarea</Link></Button>}</div>}
+   {s.step === 2 && s.state === "current" && <p className="text-sm leading-6 text-ink-muted">Verificăm documentele primite.</p>}
+   {s.step === 3 && <p className="text-sm leading-6 text-ink-muted">Un ofițer al băncii analizează dosarul. De obicei durează 1–2 zile lucrătoare.</p>}
+   {s.decision === "approved" && <p className="text-sm font-semibold leading-6">Contul tău a fost aprobat</p>}
+   {s.decision === "rejected" && <p className="text-sm leading-6">Nu am putut aproba cererea. Te contactăm telefonic.</p>}
+  </div></PortalLayout>;
 }

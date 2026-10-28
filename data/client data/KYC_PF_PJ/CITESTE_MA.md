@@ -18,7 +18,7 @@ Dosarele sunt în `PJ/cases/` și acoperă certificat lipsă sau prea vechi, act
 
 Documentele sunt complete în fiecare dosar, în afara celor marcate intenționat drept lipsă. Modificările sunt prezente în PDF, imagine și JSON. Cazul procentelor păstrează suma 100%, dar declarația este 50% / 50%, iar registrul mock este 60% / 40%. Cazul identității UBO verifică explicit documentele fiecărei persoane, nu doar dacă există orice act pentru rolul UBO.
 
-`PJ/fixtures/onrc_mock.json` este sursa oficială simulată pentru toate dosarele PJ. `PJ/reference/playbook_pj_original.json` este copia playbook-ului PJ din arhiva proiectului; ID-urile flag-urilor provin din acesta, nu sunt inventate.
+`data/mock_registries/onrc_registry.json` (în rădăcina repo-ului, lângă listele de sancțiuni și PEP) este sursa oficială simulată pentru toate dosarele PJ; verificarea `registry_vs_declaration` din orchestrator o citește după CUI. `PJ/reference/playbook_pj_original.json` este copia playbook-ului PJ din arhiva proiectului; ID-urile flag-urilor provin din acesta, nu sunt inventate.
 
 **PJ nu a fost rulat într-un pipeline al proiectului:** codul trimis implementează doar PF. Pentru PJ am verificat separat coerența datelor, prezența diferențelor intenționate, textul și bounding box-urile din PDF-uri. `fixture_audit.json` reprezintă această verificare de date; nu este un rezultat al aplicației. `expected_flags.json` descrie ce ar trebui să detecteze implementarea PJ.
 

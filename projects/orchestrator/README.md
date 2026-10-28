@@ -45,7 +45,7 @@ def pdf_metadata(ctx: CheckContext):
 
 `ctx.flag()` copies severity, rule id and client message from the playbook rule. Do not set them yourself; the orchestrator overwrites them anyway.
 `risk_factors` returns a `RiskDraft` instead of flags. Classify and extract plug in with `orchestrator.set_ingest(classify=..., extract=...)`.
-Today only `required_present` and `not_expired` are implemented (reference versions); everything else in the catalog is a no-op stub in `checks/stubs.py`.
+Implemented today: `required_present` and `not_expired` (reference versions, `checks/stubs.py`), `sanctions` and `pep` (`checks/screening.py`), and `registry_vs_declaration` (`checks/registry.py`: looks up the company's CUI in `data/mock_registries/onrc_registry.json` and compares its UBOs and percentages with the UBO declaration; an unknown company or an unreadable declaration is flagged, never passed). Everything else in the catalog is a no-op stub in `checks/stubs.py`.
 
 ## Guardrails (enforced in code, covered by tests)
 

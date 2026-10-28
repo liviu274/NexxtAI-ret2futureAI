@@ -1,254 +1,73 @@
-import type { AuditEntry, BBox, Case, OwnershipEdge, OwnershipNode, Playbook } from "@/types";
+import type { AuditEntry, Case, Document, Flag, Playbook, PlaybookRule, Severity } from "@/types";
 
-const A4 = { w: 1000, h: 1414 };
-const ID = { w: 1000, h: 630 };
-const bb = (x: number, y: number, w: number, h: number, page = A4): BBox => ({
-  x: x / page.w,
-  y: y / page.h,
-  width: w / page.w,
-  height: h / page.h,
-});
-
-const DOCS = "/mocks/docs";
-
-export const casePF: Case = {
-  id: "PF-2026-0142",
-  customerType: "PF",
-  clientName: "Andrei Popescu",
-  status: "În analiză",
-  createdAt: "27.10.2026",
-  processingMs: 48200,
-  persons: [{ id: "p1", name: "Andrei Popescu", role: "titular", cnp: "1850312400125" }],
-  documents: [
-    {
-      id: "d-ci",
-      type: "Carte de identitate",
-      ownerPersonId: "p1",
-      fileName: "CI_Popescu_Andrei.jpg",
-      pageImages: [`${DOCS}/carte-identitate.svg`],
-      status: "cu-probleme",
-      extractedFields: [
-        { name: "Nume", value: "POPESCU", confidence: 0.99, source: { documentId: "d-ci", page: 0, bbox: bb(340, 145, 200, 40, ID) } },
-        { name: "Prenume", value: "ANDREI", confidence: 0.99, source: { documentId: "d-ci", page: 0, bbox: bb(340, 215, 200, 40, ID) } },
-        { name: "CNP", value: "1850312400125", confidence: 0.97, source: { documentId: "d-ci", page: 0, bbox: bb(340, 285, 260, 40, ID) } },
-        { name: "Domiciliu", value: "Str. Lalelelor nr. 14, Sector 3, București", confidence: 0.93, source: { documentId: "d-ci", page: 0, bbox: bb(340, 355, 560, 40, ID) } },
-        { name: "Valabil până la", value: "12.03.2026", confidence: 0.98, source: { documentId: "d-ci", page: 0, bbox: bb(340, 500, 380, 45, ID) } },
-      ],
-    },
-    {
-      id: "d-flu",
-      type: "Fluturaș de salariu",
-      ownerPersonId: "p1",
-      fileName: "fluturas_iunie_2026.pdf",
-      pageImages: [`${DOCS}/fluturas-salariu.svg`],
-      status: "cu-probleme",
-      extractedFields: [
-        { name: "Angajator", value: "TEHNOSOFT SOLUTIONS SRL", confidence: 0.96, source: { documentId: "d-flu", page: 0, bbox: bb(90, 165, 760, 34) } },
-        { name: "Luna", value: "Iunie 2026", confidence: 0.95, source: { documentId: "d-flu", page: 0, bbox: bb(90, 300, 520, 42) } },
-        { name: "Total net", value: "9.371 lei", confidence: 0.71, source: { documentId: "d-flu", page: 0, bbox: bb(680, 905, 225, 50) } },
-      ],
-    },
-    {
-      id: "d-fact",
-      type: "Factură utilități",
-      ownerPersonId: "p1",
-      fileName: "factura_electrica_oct.pdf",
-      pageImages: [`${DOCS}/factura-utilitati.svg`],
-      status: "cu-probleme",
-      extractedFields: [
-        { name: "Data emiterii", value: "05.10.2026", confidence: 0.97, source: { documentId: "d-fact", page: 0, bbox: bb(90, 225, 600, 34) } },
-        { name: "Adresă loc de consum", value: "Str. Zambilelor nr. 7, Cluj-Napoca", confidence: 0.94, source: { documentId: "d-fact", page: 0, bbox: bb(90, 325, 780, 40) } },
-      ],
-    },
-  ],
-  flags: [
-    {
-      id: "f1",
-      severity: "high",
-      title: "Cartea de identitate este expirată",
-      ruleId: "R-02",
-      ruleText: "Actul de identitate trebuie să fie valabil la data deschiderii dosarului.",
-      evidence: [{ documentId: "d-ci", page: 0, bbox: bb(340, 500, 380, 45, ID) }],
-      explanation: "Data de valabilitate extrasă este 12.03.2026, anterioară datei dosarului (27.10.2026). Actul a expirat de 229 de zile.",
-      clientFixMessage: "Cartea ta de identitate a expirat. Te rugăm să încarci o carte de identitate valabilă.",
-    },
-    {
-      id: "f2",
-      severity: "high",
-      title: "Posibilă modificare a totalului net pe fluturaș",
-      ruleId: "R-07",
-      ruleText: "Documentele de venit nu trebuie să prezinte semne de alterare.",
-      evidence: [{ documentId: "d-flu", page: 0, bbox: bb(680, 905, 225, 50) }],
-      explanation: "Suma recalculată din componente este 7.371 lei, dar documentul afișează 9.371 lei. Fontul și fundalul zonei diferă de restul documentului (font serif peste un dreptunghi alb suprapus).",
-      clientFixMessage: "Nu am putut confirma suma de pe fluturaș. Te rugăm să încarci documentul original primit de la angajator.",
-    },
-    {
-      id: "f3",
-      severity: "medium",
-      title: "Fluturașul de salariu este mai vechi de 30 de zile",
-      ruleId: "R-04",
-      ruleText: "Dovada de venit trebuie emisă cu cel mult 30 de zile înainte de deschiderea dosarului.",
-      evidence: [{ documentId: "d-flu", page: 0, bbox: bb(90, 300, 520, 42) }],
-      explanation: "Fluturașul este emis la 30.06.2026, cu 119 zile înainte de data dosarului.",
-      clientFixMessage: "Avem nevoie de un fluturaș de salariu din ultima lună. Te rugăm să încarci unul mai recent.",
-    },
-    {
-      id: "f4",
-      severity: "medium",
-      title: "Adresa diferă între CI și factura de utilități",
-      ruleId: "R-05",
-      ruleText: "Adresa de domiciliu trebuie confirmată de un document de utilități sau o declarație de reședință.",
-      evidence: [
-        { documentId: "d-ci", page: 0, bbox: bb(340, 355, 560, 40, ID) },
-        { documentId: "d-fact", page: 0, bbox: bb(90, 325, 780, 40) },
-      ],
-      explanation: "CI: „Str. Lalelelor nr. 14, Sector 3, București”. Factură: „Str. Zambilelor nr. 7, Cluj-Napoca”. Poate fi o reședință diferită — necesită confirmare.",
-      clientFixMessage: "Adresa de pe factură nu coincide cu cea din buletin. Dacă locuiești la altă adresă, încarcă o declarație de reședință.",
-    },
-  ],
-  riskDraft: {
-    level: "mediu",
-    reasons: [
-      { factor: "Suspiciune de alterare document", value: "Fluturaș salariu (R-07)", impact: "crește" },
-      { factor: "Act de identitate expirat", value: "12.03.2026", impact: "crește" },
-      { factor: "Ocupație", value: "Inginer software, angajat", impact: "scade" },
-      { factor: "Screening PEP / sancțiuni", value: "Fără potriviri", impact: "scade" },
-      { factor: "Venit declarat", value: "7.000 – 10.000 lei / lună", impact: "neutru" },
-    ],
-  },
+const pfRules: [string, PlaybookRule["kind"], string, Severity][] = [
+  ["001", "document-obligatoriu", "Toate cele trei documente necesare trebuie să fie încărcate.", "high"],
+  ["002", "document-obligatoriu", "Fiecare document trebuie să conțină toate câmpurile declarate pentru tipul său.", "high"],
+  ["003", "valabilitate", "Documentul de identitate trebuie să fie valabil la data de referință.", "high"],
+  ["004", "potrivire", "Numele și adresa din dovada de adresă trebuie să corespundă cu identitatea.", "medium"],
+  ["005", "potrivire", "Fluturașul trebuie să aparțină aceleiași persoane ca documentul de identitate.", "medium"],
+  ["012", "prag", "Metadatele fluturașului indică un editor sau o resalvare suspectă.", "critical"],
+  ["013", "potrivire", "Valorile salariale din același rând trebuie să folosească stiluri de font coerente.", "high"],
+  ["014", "prag", "Netul trebuie să fie brutul minus CAS, CASS și impozitul.", "high"],
+  ["015", "prag", "Un PDF final nu ar trebui să conțină mai multe marcaje EOF.", "medium"],
+];
+const pjKnown: Record<string, string> = {
+  "002": "Certificatul constatator trebuie să fie emis în ultimele 30 de zile.",
+  "006": "Beneficiarii reali din declarație trebuie să corespundă registrului ONRC.",
+  "010": "Actul de identitate al administratorului trebuie să fie valabil.",
+  "011": "Administratorul trebuie să corespundă datelor din registru.",
+  "013": "Delegatul trebuie să prezinte un specimen de semnătură.",
+  "016": "CUI-ul trebuie să corespundă între documente.",
 };
-
-export const casePJ: Case = {
-  id: "PJ-2026-0087",
-  customerType: "PJ",
-  clientName: "Delta Agro Logistic SRL",
-  cui: "40118273",
-  status: "În analiză",
-  createdAt: "26.10.2026",
-  processingMs: 91400,
-  persons: [
-    { id: "u1", name: "Ioana Marinescu", role: "UBO", ownershipPct: 45 },
-    { id: "u2", name: "Radu Constantinescu", role: "UBO", ownershipPct: 30 },
-    { id: "a1", name: "Mihai Dumitrescu", role: "administrator", cnp: "1780921410034" },
-  ],
-  documents: [
-    {
-      id: "d-onrc",
-      type: "Certificat constatator ONRC",
-      ownerPersonId: "company",
-      fileName: "certificat_constatator_ONRC.pdf",
-      pageImages: [`${DOCS}/certificat-onrc.svg`],
-      status: "cu-probleme",
-      extractedFields: [
-        { name: "UBO", value: "Vlad Stan – 25%", confidence: 0.95, source: { documentId: "d-onrc", page: 0, bbox: bb(90, 575, 300, 35) } },
-      ],
-    },
-    {
-      id: "d-ext",
-      type: "Extras de cont",
-      ownerPersonId: "company",
-      fileName: "extras_sept_2026.pdf",
-      pageImages: [`${DOCS}/extras-cont.svg`],
-      status: "valid",
-      extractedFields: [],
-    },
-  ],
-  flags: [
-    {
-      id: "pf1",
-      severity: "high",
-      title: "Beneficiar real nedeclarat: Vlad Stan (25%)",
-      ruleId: "R-11",
-      ruleText: "Toți beneficiarii reali (≥25%) trebuie declarați și identificați.",
-      evidence: [
-        { documentId: "d-onrc", page: 0, bbox: bb(90, 575, 300, 35) },
-        { documentId: "d-ext", page: 0, bbox: bb(90, 437, 820, 32) },
-      ],
-      explanation: "Registrul ONRC indică 3 asociați, dar declarația clientului menționează doar 2. Vlad Stan deține 25% și a primit un transfer de 95.000 lei.",
-      clientFixMessage: "Te rugăm să completezi declarația de beneficiari reali cu toți asociații care dețin cel puțin 25%.",
-    },
-    {
-      id: "pf2",
-      severity: "medium",
-      title: "Potrivire parțială PEP: Mihai Dumitrescu",
-      ruleId: "R-14",
-      ruleText: "Administratorii și UBO se verifică în listele PEP și de sancțiuni.",
-      evidence: [{ documentId: "d-onrc", page: 0, bbox: bb(90, 715, 560, 35) }],
-      explanation: "Nume identic cu un fost consilier județean (scor 0,78). Data nașterii nu a putut fi confirmată — necesită verificare manuală.",
-      clientFixMessage: "Este posibil să te contactăm pentru câteva informații suplimentare despre administrator.",
-    },
-  ],
-  riskDraft: {
-    level: "ridicat",
-    reasons: [
-      { factor: "UBO nedeclarat", value: "Vlad Stan, 25%", impact: "crește" },
-      { factor: "Potrivire PEP parțială", value: "Scor 0,78", impact: "crește" },
-      { factor: "Domeniu de activitate", value: "CAEN 4941 – transport marfă", impact: "neutru" },
-    ],
-  },
-};
-
-export const caseClean: Case = {
-  id: "PF-2026-0139",
-  customerType: "PF",
-  clientName: "Elena Vasilescu",
-  status: "În analiză",
-  createdAt: "25.10.2026",
-  processingMs: 31800,
-  persons: [{ id: "e1", name: "Elena Vasilescu", role: "titular", cnp: "2900714125847" }],
-  documents: [
-    { id: "e-ci", type: "Carte de identitate", ownerPersonId: "e1", fileName: "CI_Vasilescu.jpg", pageImages: [`${DOCS}/carte-identitate.svg`], status: "valid", extractedFields: [] },
-    { id: "e-fact", type: "Factură utilități", ownerPersonId: "e1", fileName: "factura_enel.pdf", pageImages: [`${DOCS}/factura-utilitati.svg`], status: "valid", extractedFields: [] },
-  ],
-  flags: [],
-  riskDraft: {
-    level: "scăzut",
-    reasons: [
-      { factor: "Documente complete și valide", value: "2 / 2", impact: "scade" },
-      { factor: "Screening PEP / sancțiuni", value: "Fără potriviri", impact: "scade" },
-    ],
-  },
-};
-
-export const cases: Case[] = [casePF, casePJ, caseClean];
-
-export const ownershipPJ: { nodes: OwnershipNode[]; edges: OwnershipEdge[] } = {
-  nodes: [
-    { id: "c", label: "Delta Agro Logistic SRL", kind: "companie", declared: true },
-    { id: "u1", label: "Ioana Marinescu", kind: "persoană", declared: true },
-    { id: "u2", label: "Radu Constantinescu", kind: "persoană", declared: true },
-    { id: "u3", label: "Vlad Stan", kind: "persoană", declared: false },
-  ],
-  edges: [
-    { from: "u1", to: "c", pct: 45 },
-    { from: "u2", to: "c", pct: 30 },
-    { from: "u3", to: "c", pct: 25 },
-  ],
-};
-
 export const playbooks: Playbook[] = [
-  {
-    id: "popriri",
-    processName: "Popriri – deschidere cont curent",
-    customerType: "PF",
-    sourceDocumentText:
-      "Procedura P-KYC-12. La deschiderea contului, clientul prezintă un act de identitate valabil. Dovada venitului se acceptă dacă este emisă în ultimele 30 de zile. Adresa de domiciliu se confirmă prin factură de utilități sau declarație de reședință. Documentele care prezintă semne de alterare se resping.",
-    rules: [
-      { id: "R-02", kind: "valabilitate", text: "Act de identitate valabil la data dosarului", params: { document: "CI", campData: "valabilPana" }, sourceSentence: "clientul prezintă un act de identitate valabil." },
-      { id: "R-04", kind: "vechime", text: "Dovada de venit emisă în ultimele 30 de zile", params: { document: "fluturaș", maxZile: 30 }, sourceSentence: "Dovada venitului se acceptă dacă este emisă în ultimele 30 de zile." },
-      { id: "R-05", kind: "potrivire", text: "Adresa CI confirmată prin factură sau declarație", params: { campuri: "domiciliu ↔ adresă factură" }, sourceSentence: "Adresa de domiciliu se confirmă prin factură de utilități sau declarație de reședință.", warning: "Formularea nu precizează vechimea maximă a facturii." },
-      { id: "R-07", kind: "prag", text: "Fără semne de alterare a documentelor", params: { pragTamper: 0.6 }, sourceSentence: "Documentele care prezintă semne de alterare se resping." },
-    ],
-  },
+  { id: "pb_kyc_pf_v1", processName: "Verificare KYC · Persoană fizică", customerType: "PF",
+    sourceDocumentText: pfRules.map((r) => r[2]).join("\n\n"),
+    rules: pfRules.map(([id, kind, text, severity]) => ({ id: `R-PF-${id}`, kind, text, params: { severitate: severity, referinta: "28.10.2026" }, sourceSentence: text })) },
+  { id: "pb_cont_pj_v1", processName: "Deschidere cont · Persoană juridică", customerType: "PJ",
+    sourceDocumentText: Object.values(pjKnown).join("\n\n"),
+    rules: Array.from({ length: 27 }, (_, i) => { const n = String(i + 1).padStart(3, "0"); const text = pjKnown[n]; return { id: `R-PJ-${n}`, kind: n === "002" ? "vechime" : "potrivire", text: text ?? "Descriere în așteptarea fișierului sursă.", params: {}, sourceSentence: text ?? "", ...(text ? {} : { warning: "Sursa regulii nu a fost încă furnizată." }) }; }) },
 ];
-
-const t = (s: number) => `27.10.2026 10:14:${String(s).padStart(2, "0")}`;
-export const auditLog: AuditEntry[] = [
-  { id: "a1", caseId: "PF-2026-0142", timestamp: t(2), actor: "ai", stage: "Clasificare", action: "3 documente clasificate", status: "ok", durationMs: 2100, input: "3 fișiere", output: "CI, fluturaș, factură" },
-  { id: "a2", caseId: "PF-2026-0142", timestamp: t(9), actor: "ai", stage: "Extragere", action: "10 câmpuri extrase", status: "ok", durationMs: 7400, input: "3 documente", output: "10 câmpuri, încredere medie 0,93" },
-  { id: "a3", caseId: "PF-2026-0142", timestamp: t(15), actor: "ai", stage: "Validare", action: "CI expirată, fluturaș vechi", status: "avertisment", durationMs: 5300, input: "Playbook Popriri", output: "2 flag-uri" },
-  { id: "a4", caseId: "PF-2026-0142", timestamp: t(22), actor: "ai", stage: "Verificare încrucișată", action: "Adresă neconcordantă", status: "avertisment", durationMs: 6800, input: "CI ↔ factură", output: "1 flag" },
-  { id: "a5", caseId: "PF-2026-0142", timestamp: t(38), actor: "ai", stage: "Detecție alterare", action: "Zonă alterată pe fluturaș", status: "eroare", durationMs: 15200, input: "fluturas_iunie_2026.pdf", output: "Scor alterare 0,87" },
-  { id: "a6", caseId: "PF-2026-0142", timestamp: t(44), actor: "ai", stage: "Screening", action: "Fără potriviri PEP/sancțiuni", status: "ok", durationMs: 4600, input: "Andrei Popescu", output: "0 potriviri" },
-  { id: "a7", caseId: "PF-2026-0142", timestamp: t(50), actor: "ai", stage: "Propunere de risc", action: "Propunere: mediu", status: "ok", durationMs: 6800, input: "4 flag-uri", output: "Risc mediu" },
+const labels: Record<string, string> = { identity_document: "Act de identitate", utility_bill: "Factură utilități", payslip: "Fluturaș salariu", certificat_constatator: "Certificat constatator", act_constitutiv: "Act constitutiv", ubo_declaration: "Declarație beneficiar real", id_card: "Act de identitate", signature_specimen: "Specimen de semnătură" };
+function doc(caseId: string, id: string, kind: string, owner: string): Document {
+  const file = `${id}_${kind}`;
+  return { id, type: labels[kind] ?? kind, ownerPersonId: owner, fileName: `${file}.pdf`, pageImages: [`/mocks/${caseId}/images/${file}.png`], pdfUrl: `/mocks/${caseId}/${file}.pdf`, status: "valid", extractedFields: [] };
+}
+function flag(caseId: string, ruleId: string, severity: Severity, explanation: string, documentId?: string, field?: string): Flag {
+  const rule = playbooks.flatMap((p) => p.rules).find((r) => r.id === ruleId);
+  return { id: `${caseId}-${ruleId}`, severity, title: rule?.text ?? ruleId, ruleId, ruleText: rule?.text ?? "Regulă în așteptarea sursei.", explanation, evidence: documentId ? [{ documentId, page: 0, ...(field ? { field } : {}) }] : [], clientFixMessage: "Te rugăm să încarci documentul original și să clarifici neconcordanța semnalată." };
+}
+function pf(suffix: string, specs: [string, Severity, string, string?, string?][], waiting = false): Case {
+  const id = `case_pf_${suffix}`;
+  const flags = specs.map(([r, s, e, d, f]) => flag(id, `R-PF-${r}`, s, e, d, f));
+  if (suffix.startsWith("05") && flags[0]) flags[0].evidence.push({ documentId: "doc_001", page: 0, field: "address" });
+  const documents = [doc(id, "doc_001", "identity_document", "p_person"), ...(suffix.startsWith("01") ? [] : [doc(id, "doc_002", "utility_bill", "p_person")]), doc(id, "doc_003", "payslip", "p_person")];
+  documents.forEach((d) => { if (flags.some((f) => f.evidence.some((e) => e.documentId === d.id))) d.status = "cu-probleme"; });
+  return { id, customerType: "PF", clientName: "Mara Exemplu", status: waiting ? "Documente solicitate" : "În analiză", createdAt: "28.10.2026", processingMs: 48200, persons: [{ id: "p_person", name: "Mara Exemplu", role: "titular" }], documents, flags, playbookId: "pb_kyc_pf_v1", riskDraft: { level: flags.some((f) => f.severity === "critical") ? "critical" : flags.some((f) => f.severity === "high") ? "high" : flags.length ? "medium" : "low", reasons: flags.map((f) => ({ factor: f.ruleId, value: f.explanation, impact: "crește" })) } };
+}
+const registry = [{ id: "p_ubo_1", name: "Tudor Exemplu", pct: 60 }, { id: "p_ubo_2", name: "Irina Model", pct: 40 }];
+function pj(suffix: string, ruleIds: string[]): Case {
+  const id = `case_pj_${suffix}`;
+  const changed = suffix.startsWith("07") || suffix.startsWith("12");
+  const declared = changed ? registry.map((p) => ({ ...p, pct: 50 })) : suffix.startsWith("06") ? [registry[0], { id: "p_sign", name: "Victor Test", pct: 40 }].filter((p) => p !== undefined) : registry.map((p) => ({ ...p }));
+  const flags = ruleIds.map((r) => flag(id, `R-PJ-${r}`, r === "002" ? "medium" : "high", r === "006" ? changed ? "Declarația indică 50% / 50%; registrul ONRC indică Tudor Exemplu 60% și Irina Model 40%." : "Un beneficiar real declarat diferă de registrul ONRC." : r === "002" ? "Certificatul constatator este mai vechi de 30 de zile." : r === "010" ? "Actul de identitate al administratorului a expirat." : r === "016" ? "CUI-ul diferă între documente." : "Neconcordanță semnalată; detaliile sunt în așteptarea fișierului sursă.", r === "006" ? "doc_003" : r === "010" ? "doc_004" : "doc_001"));
+  const documents = [doc(id, "doc_001", "certificat_constatator", "company"), doc(id, "doc_002", "act_constitutiv", "company"), doc(id, "doc_003", "ubo_declaration", "company"), ...["p_admin", "p_ubo_1", "p_ubo_2", "p_sign"].map((p, i) => doc(id, `doc_00${i + 4}`, "id_card", p)), doc(id, "doc_008", "signature_specimen", "p_admin"), doc(id, "doc_009", "signature_specimen", "p_sign")];
+  documents.forEach((d) => { if (flags.some((f) => f.evidence.some((e) => e.documentId === d.id))) d.status = "cu-probleme"; });
+  return { id, customerType: "PJ", clientName: "Atelier Exemplu Demo SRL", cui: "987654310", status: "În analiză", createdAt: "28.10.2026", processingMs: 91400, persons: [{ id: "p_admin", name: "Daria Model", role: "administrator" }, { id: "p_ubo_1", name: "Tudor Exemplu", role: "UBO", ownershipPct: 60 }, { id: "p_ubo_2", name: "Irina Model", role: "UBO", ownershipPct: 40 }, { id: "p_sign", name: "Victor Test", role: "semnatar" }], documents, flags, playbookId: "pb_cont_pj_v1", company: { name: "Atelier Exemplu Demo SRL", cui: "987654310", registration: "J40/99999/2026", caen: "6201", address: "Str. Modelului nr. 24, București" }, ownership: { registry: registry.map((p) => ({ ...p })), declared }, riskDraft: { level: flags.length ? "high" : "low", reasons: flags.map((f) => ({ factor: f.ruleId, value: f.explanation, impact: "crește" })) } };
+}
+export const cases: Case[] = [
+  pf("12_modificari_combinate", [["012", "critical", "Metadate suspecte: adobe photoshop.", "doc_003"], ["013", "high", "Linia salarială folosește fonturi diferite.", "doc_003", "net_salary"], ["014", "high", "Net calculat: 4680.00 RON; net afișat: 7480.00 RON.", "doc_003", "net_salary"], ["015", "medium", "PDF-ul conține 2 marcaje %%EOF.", "doc_003"]]),
+  pj("07_procente_diferite", ["006"]),
+  pf("05_adresa_factura_diferita", [["004", "medium", "Datele nu corespund cu documentul de identitate.", "doc_002", "address"]]),
+  pf("03_act_expirat", [["003", "high", "Documentul a expirat la 2025-01-15.", "doc_001", "expiry_date"]], true),
+  pf("01_factura_lipsa", [["001", "high", "Factura de utilități lipsește."]], true),
+  pf("00_corect_control", []),
+  pj("06_ubo_diferit", ["006"]),
+  pj("12_probleme_combinate", ["002", "005", "006", "010", "016"]),
+  pj("00_corect_control", []),
 ];
+export const auditLog: AuditEntry[] = cases.flatMap((c) => [
+  { id: `${c.id}-intake`, caseId: c.id, timestamp: "28.10.2026 10:14:03.218", actor: "ai", stage: "Primire documente", action: `${c.documents.length} documente primite`, status: "ok", durationMs: 400, input: `${c.documents.length} fișiere SPECIMEN`, output: c.documents.map((d) => d.type).join(", ") },
+  ...c.flags.map((f, i) => ({ id: `${f.id}-audit`, caseId: c.id, timestamp: `28.10.2026 10:14:${String(10 + i * 3).padStart(2, "0")}.015`, actor: "ai" as const, stage: f.ruleId.includes("012") || f.ruleId.includes("013") || f.ruleId.includes("014") || f.ruleId.includes("015") ? "Detectare falsificare" : "Verificare încrucișată", action: f.explanation, status: "avertisment" as const, durationMs: 1200, input: JSON.stringify({ rule: f.ruleId, documents: f.evidence.map((e) => e.documentId) }, null, 2), output: JSON.stringify({ severity: f.severity, evidence: f.evidence }, null, 2) })),
+  { id: `${c.id}-risk`, caseId: c.id, timestamp: "28.10.2026 10:14:39.220", actor: "ai", stage: "Propunere de risc", action: `${c.flags.length} probleme semnalate`, status: "ok", durationMs: 2100, input: `${c.flags.length} flag-uri`, output: c.riskDraft.level },
+  { id: `${c.id}-ready`, caseId: c.id, timestamp: "28.10.2026 10:14:41.330", actor: "ai", stage: "Dosar pregătit", action: "Trimis spre analiză umană", status: "ok", durationMs: 100, input: "Dosar SPECIMEN", output: "Decizia finală aparține analistului." },
+]);

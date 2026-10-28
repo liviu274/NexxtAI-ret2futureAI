@@ -225,5 +225,3 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# Real/personal ID photos used for local testing: never commit
-data/id_photos/

@@ -1,0 +1,15 @@
+{
+  "_note": "Hand-transcribed from the fake ID photos (no OCR available). Local only: this folder is gitignored.",
+  "random.png": {
+    "cnp": "1790513400158", "series_number": "MZ 300493", "expiry_date": "2024-05-13",
+    "mrz": "IDROUMERIUTA<<VITALIE<<<<<<<<<<<<<<<<<<<\nMZ300493<8ROU7905137M240513714001583"
+  },
+  "brad_pitt.png": {
+    "cnp": "1820311410618", "series_number": "RB 219594", "expiry_date": "2029-05-14",
+    "mrz": "IDROUPITT<<BRAD<<<<<<<<<<<<<<<<<<<<<<<<<<<<\nRB219594<8ROU6312187M29051431410618 7"
+  },
+  "putin.png": {
+    "cnp": "182031114", "series_number": "RP 219594", "expiry_date": "2025-04-15",
+    "mrz": "IDROU<<<<<PUTINA<<<VLAD<<<<<<<<<<<<<<<<<<<<<<\nRB219594<8ROU0312187M25041541321068219UTINC"
+  }
+}

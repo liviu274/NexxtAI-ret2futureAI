@@ -1,0 +1,22 @@
+[
+  {
+    "rule_id": "R-PF-014",
+    "check": "totals_consistency",
+    "severity": "high",
+    "doc_id": "doc_003",
+    "field": "net_salary"
+  },
+  {
+    "rule_id": "R-PF-013",
+    "check": "font_consistency",
+    "severity": "high",
+    "doc_id": "doc_003",
+    "field": "net_salary"
+  },
+  {
+    "rule_id": "R-PF-012",
+    "check": "pdf_metadata",
+    "severity": "critical",
+    "doc_id": "doc_003"
+  }
+]

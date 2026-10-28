@@ -1,0 +1,145 @@
+{
+  "case_id": "case_0001",
+  "playbook_id": "pb_kyc_pf_v1",
+  "customer_type": "PF",
+  "status": "review",
+  "created_at": "2026-10-28T12:00:00+02:00",
+  "updated_at": "2026-10-28T12:05:30+02:00",
+  "company": null,
+  "persons": [
+    { "person_id": "p_1", "role": "applicant", "full_name": "ANDREI POPESCU" }
+  ],
+  "documents": [
+    {
+      "doc_id": "doc_001",
+      "file": "cases/case_0001/id_card.pdf",
+      "mime_type": "application/pdf",
+      "pages": 1,
+      "uploaded_at": "2026-10-28T12:01:10+02:00",
+      "doc_type": "id_card",
+      "classification_confidence": 0.98,
+      "owner_person_id": "p_1",
+      "fields": {
+        "full_name": {
+          "field_id": "fld_001",
+          "name": "full_name",
+          "value": "ANDREI POPESCU",
+          "value_type": "string",
+          "raw_text": "POPESCU ANDREI",
+          "confidence": 0.99,
+          "source": { "doc_id": "doc_001", "page": 1, "bbox": [0.40, 0.30, 0.80, 0.34] },
+          "extracted_by": "extractor_v1"
+        },
+        "cnp": {
+          "field_id": "fld_002",
+          "name": "cnp",
+          "value": "1900514123456",
+          "value_type": "cnp",
+          "raw_text": "1900514123456",
+          "confidence": 0.97,
+          "source": { "doc_id": "doc_001", "page": 1, "bbox": [0.40, 0.22, 0.70, 0.26] },
+          "extracted_by": "extractor_v1"
+        },
+        "address": {
+          "field_id": "fld_003",
+          "name": "address",
+          "value": "Str. Exemplului nr. 10, Sector 3, Bucuresti",
+          "value_type": "address",
+          "raw_text": "Mun.Bucuresti Sec.3 Str.Exemplului nr.10",
+          "confidence": 0.91,
+          "source": { "doc_id": "doc_001", "page": 1, "bbox": [0.40, 0.52, 0.95, 0.58] },
+          "extracted_by": "extractor_v1"
+        },
+        "expiry_date": {
+          "field_id": "fld_006",
+          "name": "expiry_date",
+          "value": "2025-03-14",
+          "value_type": "date",
+          "raw_text": "14.03.2025",
+          "confidence": 0.96,
+          "source": { "doc_id": "doc_001", "page": 1, "bbox": [0.62, 0.71, 0.88, 0.75] },
+          "extracted_by": "extractor_v1"
+        }
+      }
+    },
+    {
+      "doc_id": "doc_002",
+      "file": "cases/case_0001/payslip_2026_09.pdf",
+      "mime_type": "application/pdf",
+      "pages": 1,
+      "uploaded_at": "2026-10-28T12:02:40+02:00",
+      "doc_type": "payslip",
+      "classification_confidence": 0.95,
+      "owner_person_id": "p_1",
+      "fields": {
+        "net_salary": {
+          "field_id": "fld_010",
+          "name": "net_salary",
+          "value": { "amount": 6500, "currency": "RON" },
+          "value_type": "money",
+          "raw_text": "6.500,00 lei",
+          "confidence": 0.94,
+          "source": { "doc_id": "doc_002", "page": 1, "bbox": [0.70, 0.80, 0.92, 0.84] },
+          "extracted_by": "extractor_v1"
+        },
+        "period_end": {
+          "field_id": "fld_011",
+          "name": "period_end",
+          "value": "2026-09-30",
+          "value_type": "date",
+          "raw_text": "Septembrie 2026",
+          "confidence": 0.90,
+          "source": { "doc_id": "doc_002", "page": 1, "bbox": [0.10, 0.12, 0.40, 0.16] },
+          "extracted_by": "extractor_v1"
+        }
+      }
+    }
+  ],
+  "flags": [
+    {
+      "flag_id": "flag_001",
+      "case_id": "case_0001",
+      "rule_id": "R-PF-002",
+      "stage": "validate",
+      "severity": "high",
+      "title": "ID card expired",
+      "explanation": "The identity card expired on 2025-03-14, before the application date. A valid ID is required by the KYC procedure.",
+      "evidence": [
+        { "doc_id": "doc_001", "page": 1, "bbox": [0.62, 0.71, 0.88, 0.75], "field_id": "fld_006", "quote": "14.03.2025" }
+      ],
+      "client_fixable": true,
+      "fix_message": "Your identity card expired on 14.03.2025. Please upload a valid ID card or passport.",
+      "status": "sent_to_client",
+      "created_by": "validator_v1",
+      "created_at": "2026-10-28T12:05:12+02:00",
+      "resolution_note": null
+    },
+    {
+      "flag_id": "flag_002",
+      "case_id": "case_0001",
+      "rule_id": "R-PF-001",
+      "stage": "validate",
+      "severity": "high",
+      "title": "Only 1 of 3 payslips uploaded",
+      "explanation": "The procedure requires the last three payslips; one was received (September 2026).",
+      "evidence": [
+        { "doc_id": "doc_002", "page": 1, "bbox": [0.10, 0.12, 0.40, 0.16], "field_id": "fld_011", "quote": "Septembrie 2026" }
+      ],
+      "client_fixable": true,
+      "fix_message": "Please upload your last 3 payslips. We received 1.",
+      "status": "sent_to_client",
+      "created_by": "validator_v1",
+      "created_at": "2026-10-28T12:05:13+02:00",
+      "resolution_note": null
+    }
+  ],
+  "risk_draft": {
+    "level": "medium",
+    "reasons": [
+      { "text": "File incomplete: expired ID and missing payslips.", "flag_ids": ["flag_001", "flag_002"] },
+      { "text": "No sanctions or PEP hits.", "flag_ids": [] }
+    ],
+    "is_draft": true
+  },
+  "decision": null
+}

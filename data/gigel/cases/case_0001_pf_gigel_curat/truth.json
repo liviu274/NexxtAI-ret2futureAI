@@ -1,0 +1,298 @@
+{
+  "case_id": "case_0001_pf_gigel_curat",
+  "reference_date": "2026-10-28",
+  "customer_type": "PF",
+  "persons": [
+    {
+      "person_id": "p_1",
+      "role": "applicant",
+      "full_name": "Gigel Popescu"
+    }
+  ],
+  "documents": [
+    {
+      "doc_id": "doc_001",
+      "doc_type": "identity_document",
+      "owner_person_id": "p_1",
+      "file": "docs/doc_001_identitate.pdf",
+      "fields": {
+        "last_name": {
+          "value": "POPESCU",
+          "raw_text": "POPESCU",
+          "page": 1,
+          "bbox": [
+            0.2856,
+            0.1568,
+            0.3829,
+            0.1718
+          ]
+        },
+        "first_name": {
+          "value": "GIGEL",
+          "raw_text": "GIGEL",
+          "page": 1,
+          "bbox": [
+            0.2856,
+            0.1924,
+            0.3472,
+            0.2074
+          ]
+        },
+        "cnp": {
+          "value": "1920312400171",
+          "raw_text": "1920312400171",
+          "page": 1,
+          "bbox": [
+            0.2856,
+            0.228,
+            0.4527,
+            0.2431
+          ]
+        },
+        "birth_date": {
+          "value": "12.03.1992",
+          "raw_text": "12.03.1992",
+          "page": 1,
+          "bbox": [
+            0.2856,
+            0.2637,
+            0.4025,
+            0.2787
+          ]
+        },
+        "address": {
+          "value": "Str. Exemplului nr. 7, bl. D2, ap. 14, București",
+          "raw_text": "Str. Exemplului nr. 7, bl. D2, ap. 14, București",
+          "page": 1,
+          "bbox": [
+            0.2856,
+            0.2993,
+            0.7658,
+            0.3143
+          ]
+        },
+        "doc_number": {
+          "value": "ZZ 000000",
+          "raw_text": "ZZ 000000",
+          "page": 1,
+          "bbox": [
+            0.2856,
+            0.3349,
+            0.396,
+            0.35
+          ]
+        },
+        "expiry_date": {
+          "value": "14.05.2031",
+          "raw_text": "14.05.2031",
+          "page": 1,
+          "bbox": [
+            0.2856,
+            0.3706,
+            0.4025,
+            0.3856
+          ]
+        }
+      },
+      "mutations": []
+    },
+    {
+      "doc_id": "doc_002",
+      "doc_type": "utility_bill",
+      "owner_person_id": "p_1",
+      "file": "docs/doc_002_factura.pdf",
+      "fields": {
+        "customer_name": {
+          "value": "Gigel Popescu",
+          "raw_text": "Gigel Popescu",
+          "page": 1,
+          "bbox": [
+            0.2856,
+            0.1449,
+            0.4327,
+            0.1599
+          ]
+        },
+        "address": {
+          "value": "Str. Exemplului nr. 7, bl. D2, ap. 14, București",
+          "raw_text": "Str. Exemplului nr. 7, bl. D2, ap. 14, București",
+          "page": 1,
+          "bbox": [
+            0.2856,
+            0.1805,
+            0.7658,
+            0.1956
+          ]
+        },
+        "issue_date": {
+          "value": "10.10.2026",
+          "raw_text": "10.10.2026",
+          "page": 1,
+          "bbox": [
+            0.2856,
+            0.2162,
+            0.4025,
+            0.2312
+          ]
+        },
+        "period": {
+          "value": "01.09.2026 - 30.09.2026",
+          "raw_text": "01.09.2026 - 30.09.2026",
+          "page": 1,
+          "bbox": [
+            0.2856,
+            0.2518,
+            0.5399,
+            0.2668
+          ]
+        },
+        "total_amount": {
+          "value": "214,37 lei",
+          "raw_text": "214,37 lei",
+          "page": 1,
+          "bbox": [
+            0.2856,
+            0.2874,
+            0.3885,
+            0.3025
+          ]
+        }
+      },
+      "mutations": []
+    },
+    {
+      "doc_id": "doc_003",
+      "doc_type": "payslip",
+      "owner_person_id": "p_1",
+      "file": "docs/doc_003_fluturas.pdf",
+      "fields": {
+        "employee_name": {
+          "value": "Gigel Popescu",
+          "raw_text": "Gigel Popescu",
+          "page": 1,
+          "bbox": [
+            0.2856,
+            0.133,
+            0.4327,
+            0.148
+          ]
+        },
+        "cnp": {
+          "value": "1920312400171",
+          "raw_text": "1920312400171",
+          "page": 1,
+          "bbox": [
+            0.2856,
+            0.1639,
+            0.4527,
+            0.1789
+          ]
+        },
+        "employer": {
+          "value": "Construct Demo SRL",
+          "raw_text": "Construct Demo SRL",
+          "page": 1,
+          "bbox": [
+            0.2856,
+            0.1948,
+            0.4989,
+            0.2098
+          ]
+        },
+        "employer_cui": {
+          "value": "RO98765430",
+          "raw_text": "RO98765430",
+          "page": 1,
+          "bbox": [
+            0.2856,
+            0.2257,
+            0.4184,
+            0.2407
+          ]
+        },
+        "issue_date": {
+          "value": "05.10.2026",
+          "raw_text": "05.10.2026",
+          "page": 1,
+          "bbox": [
+            0.2856,
+            0.2566,
+            0.4025,
+            0.2716
+          ]
+        },
+        "gross_salary": {
+          "value": {
+            "amount": 8000.0,
+            "currency": "RON"
+          },
+          "raw_text": "8.000,00 lei",
+          "page": 1,
+          "bbox": [
+            0.7637,
+            0.3112,
+            0.8735,
+            0.3262
+          ]
+        },
+        "cas": {
+          "value": {
+            "amount": 2000.0,
+            "currency": "RON"
+          },
+          "raw_text": "2.000,00 lei",
+          "page": 1,
+          "bbox": [
+            0.7637,
+            0.3421,
+            0.8735,
+            0.3571
+          ]
+        },
+        "cass": {
+          "value": {
+            "amount": 800.0,
+            "currency": "RON"
+          },
+          "raw_text": "800,00 lei",
+          "page": 1,
+          "bbox": [
+            0.7814,
+            0.373,
+            0.8735,
+            0.388
+          ]
+        },
+        "income_tax": {
+          "value": {
+            "amount": 520.0,
+            "currency": "RON"
+          },
+          "raw_text": "520,00 lei",
+          "page": 1,
+          "bbox": [
+            0.7814,
+            0.4038,
+            0.8735,
+            0.4189
+          ]
+        },
+        "net_salary": {
+          "value": {
+            "amount": 4680.0,
+            "currency": "RON"
+          },
+          "raw_text": "4.680,00 lei",
+          "page": 1,
+          "bbox": [
+            0.7396,
+            0.4455,
+            0.8735,
+            0.4619
+          ]
+        }
+      },
+      "mutations": []
+    }
+  ]
+}

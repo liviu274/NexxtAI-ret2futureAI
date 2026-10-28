@@ -1,0 +1,24 @@
+{
+  "flag_id": "flag_001",
+  "case_id": "case_0001",
+  "rule_id": "R-PF-002",
+  "stage": "validate",
+  "severity": "high",
+  "title": "ID card expired",
+  "explanation": "The identity card expired on 2025-03-14, before the application date. A valid ID is required by the KYC procedure.",
+  "evidence": [
+    {
+      "doc_id": "doc_001",
+      "page": 1,
+      "bbox": [0.62, 0.71, 0.88, 0.75],
+      "field_id": "fld_006",
+      "quote": "14.03.2025"
+    }
+  ],
+  "client_fixable": true,
+  "fix_message": "Your identity card expired on 14.03.2025. Please upload a valid ID card or passport.",
+  "status": "open",
+  "created_by": "validator_v1",
+  "created_at": "2026-10-28T12:05:12+02:00",
+  "resolution_note": null
+}

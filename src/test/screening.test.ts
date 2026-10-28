@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getCase, getScreeningMatch, getAuditLog, resolveScreeningMatch } from "@/api/client";
 import { cases } from "@/mocks/data";
 import { screeningLists } from "@/mocks/screening_lists";
-import { canCopyClientMessage, screeningRows, validateScreeningResolution } from "@/lib/screening";
+import { canCopyClientMessage, matchKind, screeningRows, validateScreeningResolution } from "@/lib/screening";
 import { resolveEvidence } from "@/lib/dataset";
 
 const id = "case_pj_13_pep_administrator";
@@ -11,14 +11,21 @@ describe("Mock screening requirements", () => {
     const c = cases.find((c) => c.id === id);
     expect(c?.company?.name).toBe("Atelier Exemplu Demo SRL");
     expect(c?.persons.find((p) => p.role === "administrator")).toMatchObject({ name: "Carmen Radu", birthYear: 1981 });
-    expect(c?.flags.find((f) => f.ruleId === "R-PJ-024")).toMatchObject({ severity: "high", stage: "screening", evidence: [{ list_entry_key: "pep_carmen_radu", score: 92 }] });
+    expect(c?.flags.find((f) => f.ruleId === "R-PJ-024")).toMatchObject({ severity: "high", stage: "screening", evidence: [{ list_entry_key: "PEP-RO-121#CARMENRADU#1981#CY", score: 92 }] });
   });
   it("compares Nicolae Toma 1990 against OFAC-106 1994 at 74%", async () => {
     const match = await getScreeningMatch(id, "pj13-sanctions");
-    expect(match).toMatchObject({ score: 74, client: { name: "Nicolae Toma", birthYear: 1990 }, entry: { id_sursa: "OFAC-106", anul_nasterii: 1994 } });
+    expect(match).toMatchObject({ score: 74, client: { name: "Nicolae Toma", birthYear: 1990 }, entry: { id_sursa: "OFAC-106", anul_nasterii: 1994, cetatenie: "GR" } });
     if (!match) throw new Error("Missing match");
     expect(screeningRows(match).find((r) => r.label === "An naștere")).toMatchObject({ client: 1990, list: 1994, matches: false });
     expect(screeningRows(match).find((r) => r.label === "Nume")?.matches).toBe(true);
+    expect(matchKind(match)).toBe("possible");
+  });
+  it("confirms Carmen Radu on name and birth year, like the backend", async () => {
+    const match = await getScreeningMatch(id, "pj13-pep");
+    if (!match) throw new Error("Missing match");
+    expect(match.entry).toMatchObject({ id_sursa: "PEP-RO-121", cetatenie: "CY" });
+    expect(matchKind(match)).toBe("confirmed");
   });
   it("keeps screening evidence free of document coordinates and client messages", () => {
     const flag = cases.find((c) => c.id === id)?.flags[0];
@@ -27,12 +34,9 @@ describe("Mock screening requirements", () => {
     expect(flag.evidence[0]).not.toHaveProperty("documentId");
     expect(resolveEvidence(flag.evidence[0], flag, { bbox: [0, 0, 1, 1] })).toEqual(flag.evidence[0]);
   });
-  it("provides 25 sanctions, 25 PEP and 50 news checks for a clean case", () => {
-    expect(cases.find((c) => c.id === "case_pj_00_corect_control")?.screeningSummary).toEqual({ sanctions: 25, pep: 25, news: 50, matches: 0 });
-  });
-  it("provides adverse media with title, source, year, country and keywords", () => {
-    const entry = screeningLists.find((e) => e.key === "media_carmen_radu");
-    expect(entry).toMatchObject({ an_publicare: 2025, tara_subiect: "România", cuvinte_cheie_risc: ["conflict de interese", "investigație"] });
+  it("screens 25 sanctions and 25 PEP entries for a clean case, without adverse media", () => {
+    expect(cases.find((c) => c.id === "case_pj_00_corect_control")?.screeningSummary).toEqual({ sanctions: 25, pep: 25, news: 0, matches: 0 });
+    expect(screeningLists.every((e) => "id_sursa" in e)).toBe(true);
   });
   it("requires a nonblank reason to ignore a match", () => {
     expect(() => validateScreeningResolution("dismissed", " ")).toThrow();

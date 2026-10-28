@@ -55,4 +55,18 @@ describe("Portal demo rules", () => {
   await submitDecision(c.id,"documente","Încarcă o factură mai clară.");expect(await getCase(c.id)).toMatchObject({status:"Documente solicitate",officerNote:"Încarcă o factură mai clară.",requestedStep:2});
   await checkPortalDocument(c.id,2,new File(["sample"],"factura-corecta.pdf"));expect((await getCase(c.id))?.status).toBe("În analiză");
  },20000);
+ it("gives the officer real documents, all 4 tamper findings and a critical risk for an edited payslip", async () => {
+  const c=await createPortalCase("PF",[{id:"pf",name:"Mara Exemplu",role:"titular"}]);
+  await checkPortalDocument(c.id,1,new File(["sample"],"buletin.png"));
+  await checkPortalDocument(c.id,2,new File(["sample"],"factura.png"));
+  await checkPortalDocument(c.id,3,new File(["sample"],"fluturas_modificat.png"));
+  await submitPortalCase(c.id);
+  const sent=await getCase(c.id);
+  expect(sent?.documents.map((d)=>d.id)).toEqual(["doc_001","doc_002","doc_003"]);
+  expect(sent?.documents.every((d)=>d.pageImages[0]?.startsWith("/mocks/"))).toBe(true);
+  expect(sent?.flags.map((f)=>f.ruleId).sort()).toEqual(["R-PF-012","R-PF-013","R-PF-014","R-PF-015"]);
+  expect(sent?.riskDraft.level).toBe("critical");
+  await checkPortalDocument(c.id,3,new File(["sample"],"fluturas.png"));
+  expect((await getCase(c.id))?.flags).toHaveLength(0);
+ },30000);
 });

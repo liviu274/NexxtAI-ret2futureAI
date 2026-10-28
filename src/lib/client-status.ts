@@ -39,3 +39,43 @@ export function toClientCaseStatus(c: Case): ClientCaseStatus {
       return { ...base, step: 4, state: "done", dates: { 1: d, 2: d, 3: d, 4: d }, decision: c.status === "Aprobat" ? "approved" : "rejected" };
   }
 }
+
+export type ClientPortalStage = "nou" | "verificare" | "documente_solicitate" | "in_analiza" | "finalizat";
+/** What the client portal may load: no flags, risk, extracted fields, evidence or officer data. */
+export interface ClientPortalCase {
+  id: string;
+  customerType: Case["customerType"];
+  clientName: string;
+  stage: ClientPortalStage;
+  stageLabel: string;
+  persons: { id: string; name: string; role: Case["persons"][number]["role"] }[];
+  documents: { key: string; type: string; label: string; personId?: string; personName?: string; fileName?: string; ok: boolean }[];
+  /** Upload step the bank asked the client to redo, if any (kept after the re-upload, to return to the status page). */
+  requestedStep: number | null;
+}
+
+const stages: Record<Case["status"], [ClientPortalStage, string]> = {
+  "Nou": ["nou", "Încărcare documente"],
+  "Se verifică": ["verificare", "Verificăm documentele"],
+  "Documente solicitate": ["documente_solicitate", "Avem nevoie de ceva de la tine"],
+  "În analiză": ["in_analiza", "În analiză la bancă"],
+  "Aprobat": ["finalizat", "Finalizat"],
+  "Respins": ["finalizat", "Finalizat"],
+};
+
+/** Builds the client-safe portal view. `documents` is the portal upload plan (from the case or the playbook). */
+export function toClientPortalCase(c: Case, documents: NonNullable<Case["portalDocuments"]>): ClientPortalCase {
+  const [stage, stageLabel] = stages[c.status];
+  return {
+    id: c.id,
+    customerType: c.customerType,
+    clientName: c.clientName,
+    stage,
+    stageLabel,
+    persons: c.persons.map((p) => ({ id: p.id, name: p.name, role: p.role })),
+    // officerIssue (a hidden tamper finding) is deliberately left out.
+    documents: documents.map((d) => ({ key: d.key, type: d.type, label: d.label, ok: d.ok,
+      ...(d.personId ? { personId: d.personId } : {}), ...(d.personName ? { personName: d.personName } : {}), ...(d.fileName ? { fileName: d.fileName } : {}) })),
+    requestedStep: c.requestedStep ?? null,
+  };
+}

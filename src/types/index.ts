@@ -48,6 +48,8 @@ export interface Flag extends ScreeningFlagExtension {
   explanation: string;
   clientFixMessage: string;
   status?: "open" | "sent_to_client" | "resolved" | "dismissed";
+  /** Backend `person_id`: whose document or screening subject the flag is about. */
+  personId?: string;
   client_fixable?: boolean;
   fix_message?: string | null;
   dismissedBy?: string;
@@ -77,6 +79,7 @@ export interface Person {
 }
 
 export interface Case {
+  source?: "backend" | "mock";
   id: string;
   customerType: CustomerType;
   clientName: string;
@@ -118,7 +121,12 @@ export interface Playbook {
   requiredDocuments?: string[];
   sourceName?: string;
   sourceDate?: string;
-  clauses?: { number: string; text: string; status: "Automatizată" | "Acoperită" | "Manuală" | "Context" | "Neverificată"; ruleIds: string[] }[];
+  clauses?: { number: string; text: string; status: "Automatizată" | "Acoperită" | "Manuală" | "Context" | "Neverificată"; ruleIds: string[]; reason?: string | null }[];
+  /** From the builder report: share of real requirements the agent enforces. */
+  coverage?: number;
+  generatedBy?: "llm" | "llm_repaired" | "fallback" | "mock" | "mock_repaired";
+  buildSeconds?: number;
+  fallbackReason?: string | null;
 }
 
 export interface AuditEntry {

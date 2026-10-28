@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Textarea } from "@/components/ui/textarea";
 import { submitDecision } from "@/api/client";
 import { useQueryClient } from "@tanstack/react-query";
-import { blockingFlags } from "@/lib/review";
+import { blockingFlags, problemLabel } from "@/lib/review";
 import type { Flag } from "@/types";
 
 type D = "aprobat" | "respins" | "documente";
@@ -42,7 +42,7 @@ export function DecisionBar({ caseId, flags = [] }: { caseId: string; flags?: Fl
           <Button variant="outline" className="h-8 border-ink bg-card px-3 text-xs" onClick={() => setOpen("documente")}>Solicită documente</Button>
           <Button variant="outline" className="h-8 border-ink bg-card px-3 text-xs" onClick={() => setOpen("respins")}>Respinge</Button>
           <Button disabled={blocked > 0} className="h-8 px-4 text-xs disabled:bg-beige-dark disabled:text-ink-muted disabled:opacity-100" onClick={() => setOpen("aprobat")}>Aprobă</Button>
-        </div><span className="max-w-80 text-right text-[10px] text-ink-muted">{blocked ? `Aprobarea e blocată de ${blocked} probleme. Rezolvă-le sau ignoră-le cu motiv.` : "Decizia finală aparține analistului."}</span>
+        </div><span className="max-w-80 text-right text-[10px] text-ink-muted">{blocked ? `Aprobarea e blocată de ${problemLabel(blocked)}. ${blocked === 1 ? "Rezolv-o sau ignor-o" : "Rezolvă-le sau ignoră-le"} cu motiv.` : "Decizia finală aparține analistului."}</span>
       </div>
       <Dialog open={!!open} onOpenChange={(o) => !o && setOpen(null)}>
         <DialogContent>

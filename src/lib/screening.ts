@@ -17,6 +17,15 @@ export function screeningRows(match: ScreeningMatch) {
   return values.map(([label, client, list]) => ({ label, client: client ?? "Nedisponibil", list, matches: client !== undefined && String(client).trim().toLocaleLowerCase("ro") === String(list).trim().toLocaleLowerCase("ro") }));
 }
 
+// Mirrors the backend rule (checks/screening.py): a known ID number, or name plus birth year,
+// confirms the match; a name match with a different birth year is only possible.
+export function matchKind(match: ScreeningMatch): "confirmed" | "possible" {
+  const rows = screeningRows(match);
+  const ok = (label: string) => rows.find((r) => r.label === label)?.matches === true;
+  return ok("Act identitate") || (ok("Nume") && ok("An naștere")) ? "confirmed" : "possible";
+}
+export const matchKindLabels = { confirmed: "Potrivire confirmată", possible: "Potrivire posibilă – trebuie confirmată de ofițer" } as const;
+
 export function validateScreeningResolution(resolution: "confirmed" | "dismissed", reason: string) {
   if (resolution === "dismissed" && !reason.trim()) throw new Error("Motivul ignorării este obligatoriu.");
 }

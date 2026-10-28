@@ -1,0 +1,161 @@
+{
+ "case_pf_00_corect_control": {
+  "expected_rule_ids": [],
+  "source": "pipeline"
+ },
+ "case_pf_01_factura_lipsa": {
+  "expected_rule_ids": [
+   "R-PF-001"
+  ],
+  "source": "pipeline"
+ },
+ "case_pf_02_numar_act_lipsa": {
+  "expected_rule_ids": [
+   "R-PF-002"
+  ],
+  "source": "pipeline"
+ },
+ "case_pf_03_act_expirat": {
+  "expected_rule_ids": [
+   "R-PF-003"
+  ],
+  "source": "pipeline"
+ },
+ "case_pf_04_nume_factura_diferit": {
+  "expected_rule_ids": [
+   "R-PF-004"
+  ],
+  "source": "pipeline"
+ },
+ "case_pf_05_adresa_factura_diferita": {
+  "expected_rule_ids": [
+   "R-PF-004"
+  ],
+  "source": "pipeline"
+ },
+ "case_pf_06_nume_fluturas_diferit": {
+  "expected_rule_ids": [
+   "R-PF-005"
+  ],
+  "source": "pipeline"
+ },
+ "case_pf_07_cnp_fluturas_diferit": {
+  "expected_rule_ids": [
+   "R-PF-005"
+  ],
+  "source": "pipeline"
+ },
+ "case_pf_08_metadate_suspecte": {
+  "expected_rule_ids": [
+   "R-PF-012"
+  ],
+  "source": "pipeline"
+ },
+ "case_pf_09_fonturi_amestecate": {
+  "expected_rule_ids": [
+   "R-PF-013"
+  ],
+  "source": "pipeline"
+ },
+ "case_pf_10_total_incorect": {
+  "expected_rule_ids": [
+   "R-PF-014"
+  ],
+  "source": "pipeline"
+ },
+ "case_pf_11_salvare_incrementala": {
+  "expected_rule_ids": [
+   "R-PF-015"
+  ],
+  "source": "pipeline"
+ },
+ "case_pf_12_modificari_combinate": {
+  "expected_rule_ids": [
+   "R-PF-012",
+   "R-PF-013",
+   "R-PF-014",
+   "R-PF-015"
+  ],
+  "source": "pipeline"
+ },
+ "case_pj_00_corect_control": {
+  "expected_rule_ids": [],
+  "source": "date"
+ },
+ "case_pj_01_certificat_lipsa": {
+  "expected_rule_ids": [
+   "R-PJ-001"
+  ],
+  "source": "date"
+ },
+ "case_pj_02_certificat_vechi": {
+  "expected_rule_ids": [
+   "R-PJ-002"
+  ],
+  "source": "date"
+ },
+ "case_pj_03_act_constitutiv_lipsa": {
+  "expected_rule_ids": [
+   "R-PJ-003"
+  ],
+  "source": "date"
+ },
+ "case_pj_04_declaratie_ubo_lipsa": {
+  "expected_rule_ids": [
+   "R-PJ-004"
+  ],
+  "source": "date"
+ },
+ "case_pj_05_cui_diferit": {
+  "expected_rule_ids": [
+   "R-PJ-016"
+  ],
+  "source": "date"
+ },
+ "case_pj_06_ubo_diferit": {
+  "expected_rule_ids": [
+   "R-PJ-006"
+  ],
+  "source": "date"
+ },
+ "case_pj_07_procente_diferite": {
+  "expected_rule_ids": [
+   "R-PJ-006"
+  ],
+  "source": "date"
+ },
+ "case_pj_08_identitate_ubo_lipsa": {
+  "expected_rule_ids": [
+   "R-PJ-007"
+  ],
+  "source": "date"
+ },
+ "case_pj_09_act_administrator_expirat": {
+  "expected_rule_ids": [
+   "R-PJ-010"
+  ],
+  "source": "date"
+ },
+ "case_pj_10_administrator_diferit": {
+  "expected_rule_ids": [
+   "R-PJ-011"
+  ],
+  "source": "date"
+ },
+ "case_pj_11_specimen_delegat_lipsa": {
+  "expected_rule_ids": [
+   "R-PJ-013"
+  ],
+  "source": "date"
+ },
+ "case_pj_12_probleme_combinate": {
+  "expected_rule_ids": [
+   "R-PJ-002",
+   "R-PJ-005",
+   "R-PJ-006",
+   "R-PJ-010",
+   "R-PJ-016"
+  ],
+  "source": "date"
+ }
+}

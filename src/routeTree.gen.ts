@@ -11,12 +11,16 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuditRouteImport } from './routes/audit'
+import { Route as CumFunctioneazaRouteImport } from './routes/cum-functioneaza'
+import { Route as SecuritateRouteImport } from './routes/securitate'
 import { Route as StatisticiRouteImport } from './routes/statistici'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as CasesIndexRouteImport } from './routes/cases.index'
 import { Route as PlaybooksIndexRouteImport } from './routes/playbooks.index'
 import { Route as PlaybooksIdRouteImport } from './routes/playbooks.$id'
 import { Route as PortalIndexRouteImport } from './routes/portal.index'
+import { Route as PortalAjutorRouteImport } from './routes/portal.ajutor'
+import { Route as PortalDosareRouteImport } from './routes/portal.dosare'
 import { Route as CasesIdIndexRouteImport } from './routes/cases.$id.index'
 import { Route as CasesIdAuditRouteImport } from './routes/cases.$id.audit'
 import { Route as PortalCaseIdIndexRouteImport } from './routes/portal.$caseId.index'
@@ -32,6 +36,16 @@ const IndexRoute = IndexRouteImport.update({
 const AuditRoute = AuditRouteImport.update({
   id: '/audit',
   path: '/audit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CumFunctioneazaRoute = CumFunctioneazaRouteImport.update({
+  id: '/cum-functioneaza',
+  path: '/cum-functioneaza',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecuritateRoute = SecuritateRouteImport.update({
+  id: '/securitate',
+  path: '/securitate',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StatisticiRoute = StatisticiRouteImport.update({
@@ -62,6 +76,16 @@ const PlaybooksIdRoute = PlaybooksIdRouteImport.update({
 const PortalIndexRoute = PortalIndexRouteImport.update({
   id: '/portal/',
   path: '/portal/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalAjutorRoute = PortalAjutorRouteImport.update({
+  id: '/portal/ajutor',
+  path: '/portal/ajutor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalDosareRoute = PortalDosareRouteImport.update({
+  id: '/portal/dosare',
+  path: '/portal/dosare',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CasesIdIndexRoute = CasesIdIndexRouteImport.update({
@@ -98,9 +122,13 @@ const PortalCaseIdPasNRoute = PortalCaseIdPasNRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/audit': typeof AuditRoute
+  '/cum-functioneaza': typeof CumFunctioneazaRoute
+  '/securitate': typeof SecuritateRoute
   '/statistici': typeof StatisticiRoute
   '/upload': typeof UploadRoute
   '/playbooks/$id': typeof PlaybooksIdRoute
+  '/portal/ajutor': typeof PortalAjutorRoute
+  '/portal/dosare': typeof PortalDosareRoute
   '/cases/': typeof CasesIndexRoute
   '/playbooks/': typeof PlaybooksIndexRoute
   '/portal/': typeof PortalIndexRoute
@@ -114,9 +142,13 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/audit': typeof AuditRoute
+  '/cum-functioneaza': typeof CumFunctioneazaRoute
+  '/securitate': typeof SecuritateRoute
   '/statistici': typeof StatisticiRoute
   '/upload': typeof UploadRoute
   '/playbooks/$id': typeof PlaybooksIdRoute
+  '/portal/ajutor': typeof PortalAjutorRoute
+  '/portal/dosare': typeof PortalDosareRoute
   '/cases': typeof CasesIndexRoute
   '/playbooks': typeof PlaybooksIndexRoute
   '/portal': typeof PortalIndexRoute
@@ -131,9 +163,13 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/audit': typeof AuditRoute
+  '/cum-functioneaza': typeof CumFunctioneazaRoute
+  '/securitate': typeof SecuritateRoute
   '/statistici': typeof StatisticiRoute
   '/upload': typeof UploadRoute
   '/playbooks/$id': typeof PlaybooksIdRoute
+  '/portal/ajutor': typeof PortalAjutorRoute
+  '/portal/dosare': typeof PortalDosareRoute
   '/cases/': typeof CasesIndexRoute
   '/playbooks/': typeof PlaybooksIndexRoute
   '/portal/': typeof PortalIndexRoute
@@ -149,9 +185,13 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/audit'
+    | '/cum-functioneaza'
+    | '/securitate'
     | '/statistici'
     | '/upload'
     | '/playbooks/$id'
+    | '/portal/ajutor'
+    | '/portal/dosare'
     | '/cases/'
     | '/playbooks/'
     | '/portal/'
@@ -165,9 +205,13 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/audit'
+    | '/cum-functioneaza'
+    | '/securitate'
     | '/statistici'
     | '/upload'
     | '/playbooks/$id'
+    | '/portal/ajutor'
+    | '/portal/dosare'
     | '/cases'
     | '/playbooks'
     | '/portal'
@@ -181,9 +225,13 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/audit'
+    | '/cum-functioneaza'
+    | '/securitate'
     | '/statistici'
     | '/upload'
     | '/playbooks/$id'
+    | '/portal/ajutor'
+    | '/portal/dosare'
     | '/cases/'
     | '/playbooks/'
     | '/portal/'
@@ -198,9 +246,13 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuditRoute: typeof AuditRoute
+  CumFunctioneazaRoute: typeof CumFunctioneazaRoute
+  SecuritateRoute: typeof SecuritateRoute
   StatisticiRoute: typeof StatisticiRoute
   UploadRoute: typeof UploadRoute
   PlaybooksIdRoute: typeof PlaybooksIdRoute
+  PortalAjutorRoute: typeof PortalAjutorRoute
+  PortalDosareRoute: typeof PortalDosareRoute
   CasesIndexRoute: typeof CasesIndexRoute
   PlaybooksIndexRoute: typeof PlaybooksIndexRoute
   PortalIndexRoute: typeof PortalIndexRoute
@@ -226,6 +278,20 @@ declare module '@tanstack/react-router' {
       path: '/audit'
       fullPath: '/audit'
       preLoaderRoute: typeof AuditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cum-functioneaza': {
+      id: '/cum-functioneaza'
+      path: '/cum-functioneaza'
+      fullPath: '/cum-functioneaza'
+      preLoaderRoute: typeof CumFunctioneazaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/securitate': {
+      id: '/securitate'
+      path: '/securitate'
+      fullPath: '/securitate'
+      preLoaderRoute: typeof SecuritateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/statistici': {
@@ -268,6 +334,20 @@ declare module '@tanstack/react-router' {
       path: '/portal'
       fullPath: '/portal/'
       preLoaderRoute: typeof PortalIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal/ajutor': {
+      id: '/portal/ajutor'
+      path: '/portal/ajutor'
+      fullPath: '/portal/ajutor'
+      preLoaderRoute: typeof PortalAjutorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal/dosare': {
+      id: '/portal/dosare'
+      path: '/portal/dosare'
+      fullPath: '/portal/dosare'
+      preLoaderRoute: typeof PortalDosareRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cases/$id/': {
@@ -318,9 +398,13 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuditRoute: AuditRoute,
+  CumFunctioneazaRoute: CumFunctioneazaRoute,
+  SecuritateRoute: SecuritateRoute,
   StatisticiRoute: StatisticiRoute,
   UploadRoute: UploadRoute,
   PlaybooksIdRoute: PlaybooksIdRoute,
+  PortalAjutorRoute: PortalAjutorRoute,
+  PortalDosareRoute: PortalDosareRoute,
   CasesIndexRoute: CasesIndexRoute,
   PlaybooksIndexRoute: PlaybooksIndexRoute,
   PortalIndexRoute: PortalIndexRoute,

@@ -157,6 +157,10 @@ export async function createPortalCase(type: CustomerType, persons: Person[]): P
  const store = readDemoCases(m.cases); store.push(c); writeDemoCases(store); return c;
 }
 
+export async function listMyPortalCases(): Promise<Case[]> {
+ const m = await mocks(); return readDemoCases(m.cases).filter((c) => c.id.startsWith("demo_"));
+}
+
 export async function checkPortalDocument(caseId: string, step: number, file: File) {
  const m = await mocks(); const store = readDemoCases(m.cases); const c = store.find((c) => c.id === caseId);
  if (!c) throw new Error("Dosarul nu a fost găsit.");

@@ -1,6 +1,7 @@
 import type { AuditEntry, Case, CaseStatus, DocumentEvidence, Flag, OwnershipPerson, Person, Playbook, Severity } from "@/types";
 import { normalizedBBox } from "@/lib/dataset";
 import { riskFromFlags } from "@/lib/review";
+import { documentLabels, portalDocumentPlan } from "@/lib/portal";
 
 export interface OrchestratorEvidence { doc_id: string; page: number; bbox: number[]; field_id?: string | null }
 export interface OrchestratorField { field_id: string; name: string; value: unknown; confidence: number; source: OrchestratorEvidence }
@@ -26,7 +27,7 @@ export interface OrchestratorAudit {
   entries: { seq: number; ts: string; case_id: string; actor: string; tool: string; input: unknown; output: unknown; duration_ms: number; error: unknown }[];
   chain_valid: boolean;
 }
-export interface AuditLogResult { entries: AuditEntry[]; chain_valid?: boolean }
+export interface AuditLogResult { entries: AuditEntry[]; chain_valid?: boolean; serviceUnavailable?: boolean }
 
 const text = (value: unknown): string => value == null ? "" : typeof value === "object" ? JSON.stringify(value) : String(value);
 const roles: Partial<Record<OrchestratorCase["persons"][number]["role"], Person["role"]>> = { applicant: "titular", ubo: "UBO", signatory: "semnatar", administrator: "administrator" };
@@ -34,7 +35,9 @@ const documentNames: Record<string, string> = { certificat_constatator: "Certifi
 function dateLabel(iso: string): string { const [date = ""] = iso.split("T"); return date.split("-").reverse().join("."); }
 
 export function fromOrchestratorEvidence(source: OrchestratorEvidence, field?: string): DocumentEvidence {
-  const bbox = normalizedBBox(source.bbox);
+  // OCR uses the whole page as a sentinel for an unknown field location.
+  const wholePage = source.bbox.length === 4 && source.bbox[0] === 0 && source.bbox[1] === 0 && source.bbox[2] === 1 && source.bbox[3] === 1;
+  const bbox = wholePage ? undefined : normalizedBBox(source.bbox);
   return { documentId: source.doc_id, page: Math.max(0, source.page - 1), ...(bbox ? { bbox } : {}), ...(field ?? source.field_id ? { field: field ?? source.field_id! } : {}) };
 }
 
@@ -66,18 +69,39 @@ function declaredOwners(value: unknown): OwnershipPerson[] {
     return name && p["ownership_pct"] != null && Number.isFinite(pct) ? [{ id: text(p["person_id"]) || name, name, pct }] : [];
   });
 }
-export function fromOrchestratorCase(raw: OrchestratorCase, mock?: Case, rules: Playbook["rules"] = []): Case {
+export function fromOrchestratorCase(raw: OrchestratorCase, mock?: Case, rules: Playbook["rules"] = [], requiredDocuments?: string[]): Case {
   const allFields = raw.documents.flatMap((d) => Object.values(d.fields));
   const flags = raw.flags.map((f) => fromOrchestratorFlag(f, rules, allFields));
   const certificate = raw.documents.find((d) => d.doc_type === "certificat_constatator");
   const companyValue = (key: string) => text(raw.company?.[key] ?? certificate?.fields[key]?.value);
   const company = raw.customer_type === "PJ" ? { name: companyValue("name") || companyValue("company_name"), cui: companyValue("cui"), registration: companyValue("registration_number"), caen: companyValue("caen_code"), address: companyValue("registered_office") } : undefined;
   const statuses: Record<OrchestratorCase["status"], CaseStatus> = { intake: "Nou", processing: "Se verifică", waiting_client: "Documente solicitate", review: "În analiză", decided: raw.decision?.outcome === "approved" ? "Aprobat" : raw.decision?.outcome === "rejected" ? "Respins" : "Documente solicitate" };
+  const persons = raw.persons.flatMap((p) => { const role = roles[p.role]; return role ? [{ id: p.person_id, name: p.full_name, role }] : []; });
+  const plan = portalDocumentPlan(raw.customer_type, requiredDocuments ?? [...new Set(raw.documents.map((d) => d.doc_type).filter((t) => t !== "unknown"))], persons);
+  const used = new Set<string>();
+  const uploaded = (d: OrchestratorDocument) => ({
+    documentId: d.doc_id, fileName: d.file.split(/[\\/]/).at(-1) ?? d.file,
+    processingPending: d.doc_type === "unknown" || !Object.keys(d.fields).length,
+    ok: d.doc_type !== "unknown" && Object.keys(d.fields).length > 0 && !flags.some((f) => f.client_fixable && ["open", "sent_to_client"].includes(f.status ?? "open") && f.evidence.some((e) => e.documentId === d.doc_id)),
+  });
+  const portalDocuments: NonNullable<Case["portalDocuments"]> = plan.map((slot) => {
+    const key = slot.personId ? `${slot.personId}-${slot.type}` : `company-${slot.type}`;
+    const matches = raw.documents.filter((d) => d.doc_type === slot.type && (d.owner_person_id ?? undefined) === slot.personId && !used.has(d.doc_id));
+    const d = matches.length === 1 ? matches[0] : undefined;
+    if (d) used.add(d.doc_id);
+    return { ...slot, key, ...(d ? uploaded(d) : {}) };
+  });
+  // Unclassified files and ambiguous/extra documents stay visible and can be reprocessed.
+  for (const d of raw.documents.filter((d) => !used.has(d.doc_id))) portalDocuments.push({
+    key: d.doc_id, type: d.doc_type, label: documentLabels[d.doc_type] ?? documentNames[d.doc_type] ?? "Document neidentificat",
+    ...(d.owner_person_id ? { personId: d.owner_person_id, personName: raw.persons.find((p) => p.person_id === d.owner_person_id)?.full_name ?? "" } : {}),
+    ...uploaded(d),
+  });
   return {
     id: raw.case_id, source: "backend", playbookId: raw.playbook_id, customerType: raw.customer_type,
     clientName: company?.name || raw.persons[0]?.full_name || "Dosar fără nume", ...(company ? { company, cui: company.cui } : {}),
     status: statuses[raw.status], createdAt: dateLabel(raw.created_at), processingMs: 0,
-    persons: raw.persons.flatMap((p) => { const role = roles[p.role]; return role ? [{ id: p.person_id, name: p.full_name, role }] : []; }),
+    persons, portalDocuments,
     documents: raw.documents.map((d) => {
       const basename = d.file.split(/[\\/]/).at(-1) ?? d.file;
       const imageName = basename.replace(/\.[^.]+$/, "") + ".png";

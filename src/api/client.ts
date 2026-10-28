@@ -2,8 +2,9 @@ import type { AuditEntry, Case, OwnershipEdge, OwnershipNode, Playbook } from "@
 import { resolveEvidence } from "@/lib/dataset";
 import { validateScreeningResolution } from "@/lib/screening";
 import type { ScreeningMatch } from "@/types/extensions";
-import { blockingFlags, isTamper, riskFromFlags } from "@/lib/review";
+import { blockingFlags, isFinalCase, isTamper, riskFromFlags } from "@/lib/review";
 import { clearDemoCases, readDemoCases, writeDemoCases } from "./demo-store";
+import { ensureDocumentRequests, updateRequestedStep } from "@/lib/document-requests";
 import { portalDocumentPlan, simulatePortalResult } from "@/lib/portal";
 import type { CustomerType, Person } from "@/types";
 import { toClientCaseStatus, toClientPortalCase, type ClientCaseStatus, type ClientPortalCase } from "@/lib/client-status";
@@ -12,11 +13,12 @@ import { fromBuilder, type BuilderResult } from "@/lib/playbook-builder";
 import { fromOrchestratorCase, fromOrchestratorAudit, type OrchestratorCase, type OrchestratorAudit, type AuditLogResult } from "@/lib/orchestrator-adapter";
 
 export const REAL_CASE_IDS = ["case_pj_07_procente_diferite", "case_pj_00_corect_control"] as const;
-const isRealCase = (id: string) => REAL_CASE_IDS.some((realId) => realId === id);
+export const isRealCase = (id: string) => REAL_CASE_IDS.some((realId) => realId === id);
 const ORCHESTRATOR_BASE = (import.meta.env["VITE_ORCHESTRATOR_URL"] ?? "/api/orch").replace(/\/$/, "");
 let availability: Promise<boolean> | undefined;
 
-export function orchestratorAvailable(): Promise<boolean> {
+export function orchestratorAvailable(retry = false): Promise<boolean> {
+  if (retry) availability = undefined;
   if (typeof window === "undefined") return Promise.resolve(false);
   return availability ??= (async () => {
     const abort = new AbortController();
@@ -26,19 +28,37 @@ export function orchestratorAvailable(): Promise<boolean> {
     finally { clearTimeout(timer); }
   })();
 }
-async function orchestratorHttp<T>(path: string, init?: RequestInit): Promise<T> {
+// OCR may perform a vision call for every page, followed by classification/extraction.
+const OCR_TIMEOUT_MS = 600_000;
+const OCR_UNCONFIRMED = "Serviciul de verificare nu răspunde. Confirmarea procesării nu a fost primită; fișierul poate fi deja salvat. Reîncearcă conexiunea, apoi verificarea dosarului înainte să încarci din nou.";
+async function orchestratorHttp<T>(path: string, init?: RequestInit, processing = false): Promise<T> {
   let res: Response;
-  try { res = await fetch(`${ORCHESTRATOR_BASE}${path}`, { ...init, headers: { "Content-Type": "application/json", ...init?.headers }, signal: AbortSignal.timeout(10_000) }); }
-  catch { availability = Promise.resolve(false); throw new Error("Serviciul de verificare nu răspunde."); }
+  const multipart = init?.body instanceof FormData;
+  try { res = await fetch(`${ORCHESTRATOR_BASE}${path}`, { ...init, headers: { ...(!multipart ? { "Content-Type": "application/json" } : {}), ...init?.headers }, signal: AbortSignal.timeout(processing ? OCR_TIMEOUT_MS : 10_000) }); }
+  catch { availability = Promise.resolve(false); throw new Error(processing ? OCR_UNCONFIRMED : SERVICE_UNAVAILABLE); }
   if (!res.ok) {
-    if (res.status >= 500) availability = Promise.resolve(false);
+    const body = await res.json().catch(() => null) as { detail?: unknown } | null;
+    const detail = typeof body?.detail === "string" ? body.detail : "";
+    if (processing && res.status === 502 && detail.startsWith("document processing failed:")) {
+      availability = Promise.resolve(true);
+      throw new Error("Documentul a fost primit, dar verificarea OCR nu a reușit. Reîncearcă verificarea dosarului fără să încarci fișierul din nou.");
+    }
+    if (res.status >= 500) { availability = Promise.resolve(false); throw new Error(processing ? OCR_UNCONFIRMED : SERVICE_UNAVAILABLE); }
+    if (res.status === 403 && detail.includes("already decided")) throw new Error("Dosarul este închis. Modificările nu mai sunt permise.");
+    if (processing) {
+      const errors: Record<number, string> = { 413: "Fișierul depășește 10 MB.", 415: "Încarcă un fișier PDF, PNG sau JPEG valid.", 422: "Documentul nu a putut fi citit sau dosarul nu poate fi procesat." };
+      if (errors[res.status]) throw new Error(errors[res.status]);
+    }
     if (res.status === 403 && path.endsWith("/decision")) {
-      const body = await res.json().catch(() => null) as { detail?: string } | null;
-      throw new Error(body?.detail?.includes("unresolved high/critical") ? "Aprobarea este blocată de probleme nerezolvate." : "Decizia nu poate fi înregistrată. Verifică starea dosarului.");
+      throw new Error(detail.includes("unresolved high/critical") ? "Aprobarea este blocată de probleme nerezolvate." : "Decizia nu poate fi înregistrată. Verifică starea dosarului.");
     }
     throw new Error(res.status === 404 ? "Dosarul sau problema nu a fost găsită în backend." : `Acțiunea nu a reușit (eroare ${res.status}).`);
   }
-  return res.json() as Promise<T>;
+  try {
+    const body = await res.json() as T;
+    availability = Promise.resolve(true);
+    return body;
+  } catch { availability = Promise.resolve(false); throw new Error(processing ? OCR_UNCONFIRMED : SERVICE_UNAVAILABLE); }
 }
 async function readOrchestratorCase(id: string): Promise<Case | null> {
   if (!isRealCase(id) || !await orchestratorAvailable()) return null;
@@ -46,10 +66,42 @@ async function readOrchestratorCase(id: string): Promise<Case | null> {
     const raw = await orchestratorHttp<OrchestratorCase>(`/cases/${encodeURIComponent(id)}`);
     const m = await mocks();
     const playbook = await getPlaybook(raw.playbook_id);
-    return fromOrchestratorCase(raw, m.cases.find((c) => c.id === id), playbook?.rules);
+    return fromOrchestratorCase(raw, m.cases.find((c) => c.id === id), playbook?.rules, playbook?.requiredDocuments);
   } catch { return null; } // Read failures retain the existing demo experience; mutations never silently write to mocks after a failed POST.
 }
 
+export const SERVICE_UNAVAILABLE = "Serviciul de verificare nu răspunde, iar modificările nu au fost salvate.";
+export function notifyCaseChange() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event("dosarai-demo-change"));
+  if (typeof BroadcastChannel !== "undefined") {
+    const channel = new BroadcastChannel("dosarai-cases"); channel.postMessage("changed"); channel.close();
+  }
+}
+function assertEditable(c: Case | null | undefined): asserts c is Case {
+  if (!c) throw new Error("Dosarul nu a fost găsit.");
+  if (isFinalCase(c.status)) throw new Error("Dosarul este închis. Modificările nu mai sunt permise.");
+}
+async function mutationCase(id: string, withPortalPlan = false) {
+  if (isRealCase(id)) {
+    // Identity selects the source. Always retry a fresh authoritative read before a write.
+    const raw = await orchestratorHttp<OrchestratorCase>(`/cases/${encodeURIComponent(id)}`);
+    const c = fromOrchestratorCase(raw); assertEditable(c);
+    if (withPortalPlan) {
+      const playbook = await getPlaybook(raw.playbook_id);
+      // Loading the plan is asynchronous: recheck the authoritative status afterwards.
+      const latest = await orchestratorHttp<OrchestratorCase>(`/cases/${encodeURIComponent(id)}`);
+      const current = fromOrchestratorCase(latest, undefined, playbook?.rules, playbook?.requiredDocuments);
+      assertEditable(current); return current;
+    }
+    return c;
+  }
+  const m = await mocks(); const c = readDemoCases(m.cases).find((c) => c.id === id);
+  assertEditable(c); return c;
+}
+function mockCase(store: Case[], id: string) {
+  const c = store.find((c) => c.id === id); assertEditable(c); return c;
+}
 export const USE_MOCK = true;
 const BASE = import.meta.env["VITE_API_BASE_URL"] ?? "";
 
@@ -71,8 +123,8 @@ export async function listCases(): Promise<Case[]> {
   const m = await mocks();
   await delay(400);
   const stored = readDemoCases(m.cases);
-  if (!await orchestratorAvailable()) return stored;
-  return Promise.all(stored.map(async (c) => isRealCase(c.id) ? await readOrchestratorCase(c.id) ?? c : c));
+  if (!await orchestratorAvailable()) return stored.map((c) => isRealCase(c.id) ? { ...c, source: "backend", serviceUnavailable: true } : c);
+  return Promise.all(stored.map(async (c) => isRealCase(c.id) ? await readOrchestratorCase(c.id) ?? { ...c, source: "backend" as const, serviceUnavailable: true } : c));
 }
 
 export async function getCase(id: string): Promise<Case | null> {
@@ -84,6 +136,7 @@ export async function getCase(id: string): Promise<Case | null> {
   const source = readDemoCases(m.cases).find((c) => c.id === id);
   if (!source) return null;
   const c = structuredClone(source);
+  if (isRealCase(id)) { c.source = "backend"; c.serviceUnavailable = true; }
   if (id === "case_pj_13_pep_administrator" || id.startsWith("demo_")) return c;
   try {
     const res = await fetch(`/mocks/${id}/truth.json`);
@@ -107,7 +160,7 @@ export async function getAuditLogResult(caseId: string): Promise<AuditLogResult>
   if (!USE_MOCK) return { entries: await http<AuditEntry[]>(`/cases/${caseId}/audit`) };
   const m = await mocks();
   await delay(400);
-  return { entries: m.auditLog.filter((a) => a.caseId === caseId) };
+  return { entries: m.auditLog.filter((a) => a.caseId === caseId), ...(isRealCase(caseId) ? { serviceUnavailable: true } : {}) };
 }
 // Preserve the array API used by existing consumers; the audit UI also requests integrity metadata.
 export async function getAuditLog(caseId: string): Promise<AuditEntry[]> {
@@ -129,13 +182,15 @@ export async function getScreeningMatch(caseId: string, flagId: string): Promise
 }
 
 export async function resolveScreeningMatch(caseId: string, flagId: string, resolution: "confirmed" | "dismissed", reason = "") {
+  await mutationCase(caseId);
+  if (isRealCase(caseId)) throw new Error("Rezoluția screening nu este conectată la serviciul real.");
   validateScreeningResolution(resolution, reason);
+  await delay(300);
   if (!USE_MOCK) throw new Error("Screeningul nu este încă conectat la serviciul real.");
   const m = await mocks();
   const store = readDemoCases(m.cases);
-  const flag = store.find((item) => item.id === caseId)?.flags.find((item) => item.id === flagId && item.stage === "screening");
+  const flag = mockCase(store, caseId).flags.find((item) => item.id === flagId && item.stage === "screening");
   if (!flag) throw new Error("Potrivirea nu a fost găsită.");
-  await delay(300);
   flag.screeningResolution = resolution;
   flag.screeningReason = reason.trim();
   if (resolution === "dismissed") { flag.status = "dismissed"; flag.dismissedBy = "Elena Radu"; flag.dismissalNote = reason.trim(); }
@@ -212,30 +267,38 @@ function writeBuiltPlaybooks(list: Playbook[]) {
   try { window.localStorage.setItem(BUILT_KEY, JSON.stringify(list)); } catch { /* storage full or blocked: the build still returns */ }
 }
 
-export async function submitDecision(caseId: string, decision: "aprobat" | "respins" | "documente", comment: string) {
-  if (isRealCase(caseId) && await orchestratorAvailable()) {
+export async function submitDecision(caseId: string, decision: "aprobat" | "respins" | "documente", comment: string, documentKeys: string[] = []) {
+  await mutationCase(caseId);
+  if (isRealCase(caseId)) {
     const outcomes = { aprobat: "approved", respins: "rejected", documente: "documents_requested" };
     await orchestratorHttp(`/cases/${encodeURIComponent(caseId)}/decision`, { method: "POST", headers: { "X-Analyst": "Elena Radu" }, body: JSON.stringify({ outcome: outcomes[decision], note: comment }) });
-    return { ok: true };
+    notifyCaseChange(); return { ok: true };
   }
   const c = await getCase(caseId);
   if (!c) throw new Error("Dosarul nu a fost găsit.");
   if (decision === "aprobat" && blockingFlags(c.flags).length) throw new Error("Aprobarea este blocată de probleme nerezolvate.");
   if (!USE_MOCK) return http(`/cases/${caseId}/decision`, { method: "POST", body: JSON.stringify({ decision, comment }) });
   await delay(700);
-  const m = await mocks(); const store = readDemoCases(m.cases); const source = store.find((item) => item.id === caseId);
+  const m = await mocks(); const store = readDemoCases(m.cases); const source = mockCase(store, caseId);
+  if (decision === "aprobat" && blockingFlags(source.flags).length) throw new Error("Aprobarea este blocată de probleme nerezolvate.");
   if (source) {
+    const previousRequests = source.status === "Documente solicitate" ? ensureDocumentRequests(source) : [];
     source.status = decision === "aprobat" ? "Aprobat" : decision === "respins" ? "Respins" : "Documente solicitate";
     if (decision === "documente") for (const f of source.flags) if (f.status === "open" && f.client_fixable) f.status = "sent_to_client";
     if (decision === "documente") {
       const p = m.playbooks.find((p) => p.id === source.playbookId);
       source.portalDocuments ??= portalDocumentPlan(source.customerType, p?.requiredDocuments ?? [], source.persons);
       source.officerNote = comment;
-      const requestedFlag = source.flags.find((f) => f.client_fixable && f.status === "sent_to_client");
-      const requestedDocument = source.documents.find((d) => d.id === requestedFlag?.evidence[0]?.documentId);
-      const requestedType = requestedDocument?.id === "doc_001" && source.customerType === "PF" ? "identity_document" : requestedDocument?.id === "doc_003" && source.customerType === "PF" ? "payslip" : "utility_bill";
-      source.requestedStep = Math.max(1, source.portalDocuments.findIndex((d) => d.type === requestedType) + 1);
-      const requested = source.portalDocuments[source.requestedStep - 1]; if (requested) requested.ok = false;
+      source.documentRequests = previousRequests;
+      delete source.requestedStep;
+      if (documentKeys.length) {
+        if (documentKeys.some((key) => !source.portalDocuments?.some((d) => d.key === key))) throw new Error("Documentul solicitat nu a fost găsit.");
+        source.documentRequests.push(...[...new Set(documentKeys)].map((key) => ({ key, message: comment })));
+      }
+      const pending = updateRequestedStep(source);
+      for (const request of pending) {
+        const doc = source.portalDocuments.find((d) => d.key === request.key); if (doc) doc.ok = false;
+      }
     }
   }
   writeDemoCases(store);
@@ -244,12 +307,13 @@ export async function submitDecision(caseId: string, decision: "aprobat" | "resp
 
 export async function dismissFlag(caseId: string, flagId: string, note: string) {
   if (!note.trim()) throw new Error("Motivul este obligatoriu.");
-  if (isRealCase(caseId) && await orchestratorAvailable()) {
+  await mutationCase(caseId);
+  if (isRealCase(caseId)) {
     await orchestratorHttp(`/cases/${encodeURIComponent(caseId)}/flags/${encodeURIComponent(flagId)}/dismiss`, { method: "POST", headers: { "X-Analyst": "Elena Radu" }, body: JSON.stringify({ note: note.trim() }) });
-    return { ok: true };
+    notifyCaseChange(); return { ok: true };
   }
   if (!USE_MOCK) throw new Error("Ignorarea cu motiv nu este conectată la serviciul real.");
-  const m = await mocks(); const store = readDemoCases(m.cases); const f = store.find((c) => c.id === caseId)?.flags.find((f) => f.id === flagId);
+  const m = await mocks(); const store = readDemoCases(m.cases); const f = mockCase(store, caseId).flags.find((f) => f.id === flagId);
   if (!f) throw new Error("Problema nu a fost găsită.");
   f.status = "dismissed"; f.dismissedBy = "Elena Radu"; f.dismissalNote = note.trim();
   if (f.stage === "screening") { f.screeningResolution = "dismissed"; f.screeningReason = note.trim(); }
@@ -269,20 +333,22 @@ export async function createPortalCase(type: CustomerType, persons: Person[]): P
 
 /** Client portal only: returns a safe status object, never the full case. */
 export async function getClientCaseStatus(caseId: string): Promise<ClientCaseStatus | null> {
-  if (!USE_MOCK) return http(`/cases/${caseId}/client-status`);
-  const m = await mocks();
-  await delay(300);
-  const c = readDemoCases(m.cases).find((x) => x.id === caseId);
+  const c = await getCase(caseId);
+  if (c && c.status === "Documente solicitate") {
+    const p = c.playbookId ? await getPlaybook(c.playbookId) : null;
+    c.portalDocuments ??= portalDocumentPlan(c.customerType, p?.requiredDocuments ?? [], c.persons);
+  }
   return c ? toClientCaseStatus(c) : null;
 }
 
-/** Client portal only: the upload plan and stage of one case, never flags, risk or officer data. */
+/** Builds an allowlisted portal view from the same source used by the officer. */
 export async function getClientPortalCase(caseId: string): Promise<ClientPortalCase | null> {
- const m = await mocks();
- const c = readDemoCases(m.cases).find((x) => x.id === caseId);
+ const c = await getCase(caseId);
  if (!c) return null;
- const p = m.playbooks.find((pb) => pb.id === c.playbookId);
- return toClientPortalCase(c, c.portalDocuments ?? portalDocumentPlan(c.customerType, p?.requiredDocuments ?? [], c.persons));
+ const p = c.playbookId ? await getPlaybook(c.playbookId) : null;
+ c.portalDocuments ??= portalDocumentPlan(c.customerType, p?.requiredDocuments ?? [], c.persons);
+ if (c.status === "Documente solicitate") updateRequestedStep(c);
+ return toClientPortalCase(c, c.portalDocuments);
 }
 
 export async function listMyPortalCases(): Promise<ClientPortalCase[]> {
@@ -290,19 +356,45 @@ export async function listMyPortalCases(): Promise<ClientPortalCase[]> {
  return readDemoCases(m.cases).filter((c) => c.id.startsWith("demo_")).map((c) => toClientPortalCase(c, c.portalDocuments ?? []));
 }
 
-export async function checkPortalDocument(caseId: string, step: number, file: File) {
- const m = await mocks(); const store = readDemoCases(m.cases); const c = store.find((c) => c.id === caseId);
- if (!c) throw new Error("Dosarul nu a fost găsit.");
+export async function checkPortalDocument(caseId: string, step: number, file: File, expectedKey?: string) {
+ const current = await mutationCase(caseId, isRealCase(caseId));
+ if (file.size > 10 * 1024 * 1024 || !/\.(pdf|png|jpe?g)$/i.test(file.name)) throw new Error("Alege un fișier PDF, JPG sau PNG de cel mult 10 MB.");
+ if (isRealCase(caseId)) {
+   const slot = current.portalDocuments?.[step - 1];
+   if (!slot || (expectedKey && slot.key !== expectedKey)) throw new Error("Lista documentelor s-a schimbat. Reîncarcă pagina înainte să încarci fișierul.");
+   const form = new FormData(); form.append("file", file);
+   const query = slot.documentId ? `?replaces=${encodeURIComponent(slot.documentId)}` : "";
+   try {
+     const raw = await orchestratorHttp<OrchestratorCase>(`/cases/${encodeURIComponent(caseId)}/documents${query}`, { method: "POST", body: form }, true);
+     const added = raw.documents.filter((d) => !current.documents.some((old) => old.id === d.doc_id));
+     const doc = added.length === 1 ? added[0] : undefined;
+     if (!doc || doc.doc_type === "unknown" || !Object.keys(doc.fields).length) return { ok: false, message: "Fișierul a fost primit, dar citirea documentului nu este finalizată. Continuă cu verificarea dosarului; dacă problema persistă, contactează banca." };
+     if (slot.type !== "unknown" && doc.doc_type !== slot.type) return { ok: false, message: "Fișierul primit nu este tipul de document cerut la acest pas. Încarcă documentul solicitat." };
+     if ((slot.personId ?? null) !== doc.owner_person_id) return { ok: false, message: "Documentul primit nu a putut fi asociat persoanei cerute la acest pas. Verifică documentul și persoana." };
+     const messages = raw.flags.filter((f) => f.client_fixable && ["open", "sent_to_client"].includes(f.status) && f.evidence.some((e) => e.doc_id === doc.doc_id)).map((f) => f.fix_message).filter((m): m is string => !!m);
+     return messages.length ? { ok: false, message: [...new Set(messages)].join(" ") } : { ok: true, message: "Documentul a fost primit și verificat." };
+   } finally { notifyCaseChange(); }
+ }
+ await delay(2300);
+ const m = await mocks(); const store = readDemoCases(m.cases); const c = mockCase(store, caseId);
  const p = m.playbooks.find((p) => p.id === c.playbookId);
  c.portalDocuments ??= portalDocumentPlan(c.customerType, p?.requiredDocuments ?? [], c.persons);
  const doc = c.portalDocuments[step - 1]; if (!doc) throw new Error("Documentul nu a fost găsit.");
+ if (expectedKey && doc.key !== expectedKey) throw new Error("Lista documentelor s-a schimbat. Reîncarcă pagina înainte să încarci fișierul.");
+ const pending = c.status === "Documente solicitate" ? ensureDocumentRequests(c) : [];
  const result = simulatePortalResult(doc.type, file.name);
- await delay(2300);
  doc.fileName = file.name; doc.ok = result.ok;
  doc.officerIssue = doc.type === "payslip" && TAMPERED.test(file.name);
+ if (result.ok) for (const request of pending.filter((r) => r.key === doc.key)) {
+   request.resolved = true;
+   const flag = c.flags.find((f) => f.id === request.flagId);
+   if (flag && flag.stage !== "screening" && !isTamper(flag)) flag.status = "resolved";
+ }
  if (result.ok) attachDatasetDocument(c, m.cases, doc, file.name);
  c.riskDraft = riskFromFlags(c.flags);
- if (result.ok && c.status === "Documente solicitate") { c.status = "În analiză"; c.officerNote = ""; for (const f of c.flags) if (f.status === "sent_to_client") f.status = "resolved"; }
+ if (result.ok && c.status === "Documente solicitate") {
+   if (!updateRequestedStep(c).length) { c.status = "În analiză"; c.officerNote = ""; }
+ }
  writeDemoCases(store); return result;
 }
 
@@ -325,14 +417,23 @@ function attachDatasetDocument(c: Case, dataset: Case[], doc: NonNullable<Case["
  if (!source || !original) return;
  c.documents = [...c.documents.filter((d) => d.id !== original.id), { ...structuredClone(original), fileName }];
  // Findings on the replaced document are re-derived from the new source document.
- c.flags = c.flags.filter((f) => !f.evidence.some((e) => "documentId" in e && e.documentId === original.id) || f.status === "dismissed");
+ c.flags = c.flags.filter((f) => !isTamper(f) || !f.evidence.some((e) => e.documentId === original.id) || (f.personId && doc.personId && f.personId !== doc.personId) || f.status === "dismissed" || f.status === "sent_to_client" || f.status === "resolved");
  const findings = source.flags.filter((f) => isTamper(f) && f.evidence.some((e) => "documentId" in e && e.documentId === original.id));
  for (const f of findings) c.flags.push({ ...structuredClone(f), id: `${c.id}-${f.ruleId}`, status: "open", client_fixable: false, fix_message: null });
 }
 
 export async function submitPortalCase(id: string) {
- const m = await mocks(); const store = readDemoCases(m.cases); const c = store.find((c) => c.id === id);
- if (!c?.portalDocuments?.length || !c.portalDocuments.every((d) => d.ok)) throw new Error("Încarcă toate documentele înainte de trimitere.");
+ await mutationCase(id);
+ if (isRealCase(id)) {
+   try {
+     const raw = await orchestratorHttp<OrchestratorCase>(`/cases/${encodeURIComponent(id)}/process`, { method: "POST" }, true);
+     if (raw.documents.some((d) => d.doc_type === "unknown" || !Object.keys(d.fields).length)) throw new Error("Citirea unor documente nu este finalizată. Reîncearcă verificarea dosarului; dacă problema persistă, contactează banca.");
+     return { ok: true, waitingForDocuments: raw.status === "waiting_client" };
+   } finally { notifyCaseChange(); }
+ }
+ const m = await mocks(); const store = readDemoCases(m.cases); const c = mockCase(store, id);
+ if (c.status === "Documente solicitate" && ensureDocumentRequests(c).length) throw new Error("Mai există solicitări de documente neîndeplinite.");
+ if (!c.portalDocuments?.length || !c.portalDocuments.every((d) => d.ok)) throw new Error("Încarcă toate documentele înainte de trimitere.");
  c.status = "În analiză"; c.riskDraft = riskFromFlags(c.flags); writeDemoCases(store); return { ok: true };
 }
 

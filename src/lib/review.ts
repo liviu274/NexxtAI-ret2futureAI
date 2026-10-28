@@ -1,4 +1,5 @@
 import type { Case, Flag, Person, Playbook, RiskDraft } from "@/types";
+export const isFinalCase = (status: Case["status"]) => status === "Aprobat" || status === "Respins";
 export const flagStatusLabels = { open: "Deschis", sent_to_client: "Trimis clientului", resolved: "Rezolvat", dismissed: "Ignorat" };
 export const tamperRules = ["R-PF-012", "R-PF-013", "R-PF-014", "R-PF-015", "R-PJ-018", "R-PJ-019", "R-PJ-020"];
 export const isTamper = (f: Flag) => tamperRules.includes(f.ruleId) || /falsific|tamper|metadate|font|EOF/i.test(f.title);

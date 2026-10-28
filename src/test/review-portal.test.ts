@@ -15,7 +15,8 @@ describe("Approval and review rules", () => {
  it.each(["resolved", "dismissed"] as const)("does not block %s flags", (status) => {expect(blockingFlags([{...f,status}])).toHaveLength(0);});
  it("does not block medium flags", () => {expect(blockingFlags([{...f,severity:"medium",status:"open"}])).toHaveLength(0);});
  it("forbids approval through the API while a PF or PJ case is blocked", async () => {
-  for(const id of ["case_pf_12_modificari_combinate","case_pj_07_procente_diferite"]) await expect(submitDecision(id,"aprobat","")).rejects.toThrow("blocată");
+  await expect(submitDecision("case_pf_12_modificari_combinate","aprobat","")).rejects.toThrow("blocată");
+  await expect(submitDecision("case_pj_07_procente_diferite","aprobat","")).rejects.toThrow("nu răspunde");
  });
  it("requires a dismissal reason and reads back Elena Radu attribution", async () => {
   await expect(dismissFlag(cases[0]?.id??"",f.id," ")).rejects.toThrow();

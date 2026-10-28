@@ -80,6 +80,8 @@ export interface Person {
 
 export interface Case {
   source?: "backend" | "mock";
+  serviceUnavailable?: boolean;
+  documentRequests?: { key?: string | undefined; flagId?: string; message: string; resolved?: boolean }[];
   id: string;
   customerType: CustomerType;
   clientName: string;
@@ -96,7 +98,7 @@ export interface Case {
   ownership?: { registry: OwnershipPerson[]; declared: OwnershipPerson[] };
   screeningSummary?: ScreeningSummary;
   executedRuleIds?: string[];
-  portalDocuments?: { key: string; type: string; label: string; personId?: string; personName?: string; fileName?: string; ok: boolean; officerIssue?: boolean }[];
+  portalDocuments?: { key: string; type: string; label: string; personId?: string; personName?: string; fileName?: string; ok: boolean; officerIssue?: boolean; documentId?: string; processingPending?: boolean }[];
   officerNote?: string;
   requestedStep?: number;
 }

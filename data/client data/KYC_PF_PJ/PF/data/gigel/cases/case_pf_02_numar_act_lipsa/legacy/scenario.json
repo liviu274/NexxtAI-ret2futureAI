@@ -1,0 +1,10 @@
+{
+  "description": "Numărul actului nu este înscris",
+  "reference_date": "2026-10-28",
+  "scenario_type": "negative",
+  "mutation": "missing_number",
+  "expected_rule_ids": [
+    "R-PF-002"
+  ],
+  "synthetic": true
+}

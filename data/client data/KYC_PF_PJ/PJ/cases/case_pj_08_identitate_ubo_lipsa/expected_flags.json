@@ -1,0 +1,8 @@
+[
+  {
+    "rule_id": "R-PJ-007",
+    "check": "required_present",
+    "severity": "high",
+    "description": "Fiecare beneficiar real trebuie să aibă un act de identitate."
+  }
+]

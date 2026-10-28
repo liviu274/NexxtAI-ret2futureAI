@@ -1,0 +1,10 @@
+{
+  "case_id": "case_pj_07_procente_diferite",
+  "rule_ids": [
+    "R-PJ-006"
+  ],
+  "flag_count": 1,
+  "decision": null,
+  "project_pipeline_run": false,
+  "expected_result_kind": "Scenario expectation for the PJ implementation; dataset conditions independently checked."
+}

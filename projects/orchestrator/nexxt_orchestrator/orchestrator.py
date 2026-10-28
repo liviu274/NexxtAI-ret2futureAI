@@ -137,7 +137,7 @@ class Orchestrator:
 
     @staticmethod
     def _key(flag: Flag) -> tuple:
-        return (flag.rule_id, tuple(sorted({e.doc_id for e in flag.evidence})))
+        return (flag.rule_id, flag.person_id, tuple(sorted({e.doc_id for e in flag.evidence})))
 
     def _reconcile(self, case: CaseFile, found: list[Flag], ran_stages: set[str], skipped_rules: set[str]) -> None:
         existing = {self._key(f): f for f in case.flags}

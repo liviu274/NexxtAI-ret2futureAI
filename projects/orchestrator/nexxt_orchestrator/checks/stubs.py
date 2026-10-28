@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date
 
 from ..models import Document, Evidence, Flag, RiskDraft, RiskReason
@@ -24,6 +25,10 @@ def _first_field_evidence(doc: Document) -> Evidence:
 
 @register("required_present")
 def required_present(ctx: CheckContext) -> list[Flag]:
+    # A role-level rule (e.g. id_card for ubo) applies once per person with that role:
+    # one UBO's ID must not satisfy the requirement for another UBO.
+    if ctx.person_id is None and ctx.owner_ids:
+        return [f for pid in sorted(ctx.owner_ids) for f in required_present(replace(ctx, person_id=pid))]
     doc_type = ctx.rule.params["doc_type"]
     min_count = int(ctx.rule.params.get("min_count", 1))
     required = next((r for r in ctx.playbook.required_documents if r.doc_type == doc_type), None)
@@ -31,15 +36,19 @@ def required_present(ctx: CheckContext) -> list[Flag]:
     found = ctx.documents(*accepted)
     if len(found) >= min_count:
         return []
-    anchor = found[0] if found else (ctx.case.documents[0] if ctx.case.documents else None)
+    own = [d for d in ctx.case.documents if ctx.person_id and d.owner_person_id == ctx.person_id]
+    anchor = (found or own or ctx.case.documents or [None])[0]
     if anchor is None:
         return []
+    person = next((p for p in ctx.case.persons if p.person_id == ctx.person_id), None)
+    whose = f" for {person.full_name} ({person.role})" if person else ""
     return [
         ctx.flag(
-            title=f"Only {len(found)} of {min_count} {doc_type} documents uploaded",
-            explanation=f"The procedure requires {min_count} x {doc_type}; {len(found)} received.",
+            title=f"Only {len(found)} of {min_count} {doc_type} documents uploaded{whose}",
+            explanation=f"The procedure requires {min_count} x {doc_type}{whose}; {len(found)} received.",
             evidence=[_first_field_evidence(anchor)],
-            fix_vars={"min_count": min_count, "found_count": len(found)},
+            fix_vars={"min_count": min_count, "found_count": len(found),
+                      **({"person_name": person.full_name} if person else {})},
         )
     ]
 

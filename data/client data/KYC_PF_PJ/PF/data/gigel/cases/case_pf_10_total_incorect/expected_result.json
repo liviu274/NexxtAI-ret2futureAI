@@ -1,0 +1,11 @@
+{
+  "case_id": "case_pf_10_total_incorect",
+  "playbook_id": "pb_cont_pf_v1",
+  "rule_ids": [
+    "R-PF-012"
+  ],
+  "flag_count": 1,
+  "decision": null,
+  "project_pipeline_run": false,
+  "expected_result_kind": "Scenario expectation for pb_cont_pf_v1, derived from procedure PF-ONB-01."
+}

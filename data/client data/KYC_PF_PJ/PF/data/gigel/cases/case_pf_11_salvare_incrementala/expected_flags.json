@@ -1,0 +1,8 @@
+[
+  {
+    "rule_id": "R-PF-010",
+    "check": "pdf_metadata",
+    "severity": "critical",
+    "description": "Documentele cu semne de modificare ulterioară emiterii se escaladează la conformitate."
+  }
+]

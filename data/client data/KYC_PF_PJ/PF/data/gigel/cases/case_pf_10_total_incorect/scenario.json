@@ -1,0 +1,14 @@
+{
+  "description": "Netul afișat nu corespunde calculului",
+  "reference_date": "2026-10-28",
+  "scenario_type": "negative",
+  "mutation": "total",
+  "expected_rule_ids": [
+    "R-PF-012"
+  ],
+  "synthetic": true,
+  "playbook_id": "pb_cont_pf_v1",
+  "legacy_expected_rule_ids": [
+    "R-PF-014"
+  ]
+}

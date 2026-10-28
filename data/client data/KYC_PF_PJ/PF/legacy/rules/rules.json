@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "playbook_id": "pb_kyc_pf_v1",
+  "version": 1,
+  "reference_date": "2026-10-28",
+  "customer_type": "PF",
+  "document_types": {
+    "identity_document": {
+      "description": "Fișă de identitate fictivă",
+      "fields": [
+        {"name": "last_name", "type": "string", "required": true},
+        {"name": "first_name", "type": "string", "required": true},
+        {"name": "cnp", "type": "cnp", "required": true},
+        {"name": "birth_date", "type": "date", "required": true},
+        {"name": "address", "type": "address", "required": true},
+        {"name": "doc_number", "type": "string", "required": true},
+        {"name": "expiry_date", "type": "date", "required": true}
+      ]
+    },
+    "utility_bill": {
+      "description": "Dovadă fictivă de adresă",
+      "fields": [
+        {"name": "customer_name", "type": "string", "required": true},
+        {"name": "address", "type": "address", "required": true},
+        {"name": "issue_date", "type": "date", "required": true},
+        {"name": "period", "type": "date_range", "required": true},
+        {"name": "total_amount", "type": "money", "required": true}
+      ]
+    },
+    "payslip": {
+      "description": "Fluturaș de salariu fictiv",
+      "fields": [
+        {"name": "employee_name", "type": "string", "required": true},
+        {"name": "cnp", "type": "cnp", "required": true},
+        {"name": "employer", "type": "string", "required": true},
+        {"name": "employer_cui", "type": "cui", "required": true},
+        {"name": "issue_date", "type": "date", "required": true},
+        {"name": "gross_salary", "type": "money", "required": true},
+        {"name": "cas", "type": "money", "required": true},
+        {"name": "cass", "type": "money", "required": true},
+        {"name": "income_tax", "type": "money", "required": true},
+        {"name": "net_salary", "type": "money", "required": true}
+      ]
+    }
+  },
+  "checks": [
+    {
+      "rule_id": "R-PF-001",
+      "stage": "validate",
+      "check": "required_present",
+      "applies_to": "case",
+      "params": {"document_types": ["identity_document", "utility_bill", "payslip"], "min_count": 1},
+      "severity": "high",
+      "description": "Toate cele trei documente necesare trebuie să fie încărcate."
+    },
+    {
+      "rule_id": "R-PF-002",
+      "stage": "validate",
+      "check": "required_fields",
+      "applies_to": "document",
+      "params": {"fields_from_document_type": true},
+      "severity": "high",
+      "description": "Fiecare document trebuie să conțină toate câmpurile declarate pentru tipul său."
+    },
+    {
+      "rule_id": "R-PF-003",
+      "stage": "validate",
+      "check": "not_expired",
+      "applies_to": "identity_document",
+      "params": {"field": "expiry_date", "reference_date": "2026-10-28"},
+      "severity": "high",
+      "description": "Documentul de identitate trebuie să fie valabil la data de referință."
+    },
+    {
+      "rule_id": "R-PF-004",
+      "stage": "cross_check",
+      "check": "fields_match",
+      "applies_to": "case",
+      "params": {"fields": ["full_name", "address"], "sources": ["identity_document", "utility_bill"], "mode": "normalized"},
+      "severity": "medium",
+      "description": "Numele și adresa din dovada de adresă trebuie să corespundă cu identitatea."
+    },
+    {
+      "rule_id": "R-PF-005",
+      "stage": "cross_check",
+      "check": "fields_match",
+      "applies_to": "case",
+      "params": {"fields": ["full_name", "cnp"], "sources": ["identity_document", "payslip"], "mode": "normalized"},
+      "severity": "medium",
+      "description": "Fluturașul trebuie să aparțină aceleiași persoane ca documentul de identitate."
+    },
+    {
+      "rule_id": "R-PF-012",
+      "stage": "tamper",
+      "check": "pdf_metadata",
+      "applies_to": "payslip",
+      "params": {"suspicious_producers": ["adobe photoshop", "ilovepdf", "smallpdf", "sejda", "canva"]},
+      "severity": "critical",
+      "description": "Metadatele fluturașului indică un editor sau o resalvare suspectă."
+    },
+    {
+      "rule_id": "R-PF-013",
+      "stage": "tamper",
+      "check": "font_consistency",
+      "applies_to": "payslip",
+      "params": {"fields": ["gross_salary", "cas", "cass", "income_tax", "net_salary"]},
+      "severity": "high",
+      "description": "Valorile salariale din același rând trebuie să folosească stiluri de font coerente."
+    },
+    {
+      "rule_id": "R-PF-014",
+      "stage": "tamper",
+      "check": "totals_consistency",
+      "applies_to": "payslip",
+      "params": {
+        "result_field": "net_salary",
+        "add_field": "gross_salary",
+        "subtract_fields": ["cas", "cass", "income_tax"],
+        "tolerance": 0.01,
+        "currency": "RON"
+      },
+      "severity": "high",
+      "description": "Netul trebuie să fie brutul minus CAS, CASS și impozitul."
+    },
+    {
+      "rule_id": "R-PF-015",
+      "stage": "tamper",
+      "check": "incremental_save",
+      "applies_to": "payslip",
+      "params": {"max_eof_markers": 1},
+      "severity": "medium",
+      "description": "Un PDF final nu ar trebui să conțină mai multe marcaje EOF."
+    }
+  ]
+}

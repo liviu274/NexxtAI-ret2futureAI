@@ -1,0 +1,10 @@
+{
+  "case_id": "case_pj_05_cui_diferit",
+  "description": "CUI diferit în declarația UBO",
+  "reference_date": "2026-10-28",
+  "mutation": "cui_mismatch",
+  "expected_rule_ids": [
+    "R-PJ-016"
+  ],
+  "synthetic": true
+}

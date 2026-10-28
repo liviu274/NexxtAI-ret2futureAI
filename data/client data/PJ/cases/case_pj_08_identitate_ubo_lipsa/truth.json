@@ -1561,5 +1561,5 @@
   ],
   "expected_business_result": "Lipsește actul de identitate al unui UBO",
   "automatic_decision": null,
-  "registry_fixture": "../../fixtures/onrc_mock.json"
+  "registry_fixture": "data/mock_registries/onrc_registry.json"
 }

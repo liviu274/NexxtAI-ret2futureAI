@@ -15,7 +15,8 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 | Call | Who | What runs |
 |---|---|---|
 | `POST /cases` | intake | validates the case file against the contract, checks PF/PJ matches the playbook |
-| `POST /cases/{id}/documents?replaces=doc_001` | client, per upload | **intake mode**: classify, extract, validate, cross-check. Completeness is not judged yet. Returns the case; `GET /client-messages` has what to tell the client |
+| `POST /cases/{id}/documents?replaces=doc_001` | client, per upload | multipart `file` (PDF, PNG or JPEG, max 10 MB; type checked from the bytes). Stored as `runs/<case>/docs/<doc_id>.<ext>`, then **intake mode**: classify, extract, validate, cross-check. Completeness is not judged yet. Returns the case; `GET /client-messages` has what to tell the client |
+| `POST /cases/{id}/documents/extracted` | tests, fixtures | same, but the body is an already extracted `Document` JSON (e.g. from `case_file.extracted.json`) |
 | `POST /cases/{id}/process` | client is done | **full mode**: adds tamper, screening and the risk draft. Status becomes `review` or `waiting_client` |
 | `POST /cases/{id}/decision` + `X-Analyst` | Maria only | approve / reject / documents_requested |
 | `GET /cases/{id}/audit` | Person 6 | every call with input, output, time, hash chain |
@@ -44,8 +45,8 @@ def pdf_metadata(ctx: CheckContext):
 ```
 
 `ctx.flag()` copies severity, rule id and client message from the playbook rule. Do not set them yourself; the orchestrator overwrites them anyway.
-`risk_factors` returns a `RiskDraft` instead of flags. Classify and extract plug in with `orchestrator.set_ingest(classify=..., extract=...)`.
-Implemented: `required_present`, `not_expired` (reference versions), the tamper checks in `checks/tamper.py` and sanctions/PEP in `checks/screening.py`. Everything else in the catalog is a no-op stub in `checks/stubs.py`.
+`risk_factors` returns a `RiskDraft` instead of flags. Classify and extract plug in with `orchestrator.set_ingest(classify=..., extract=...)`. Each gets `(case, doc)` and fills `doc` in place (`doc_type`, `classification_confidence`, `owner_person_id`, `fields`); the uploaded file is at `store.files_dir(case.case_id).parent / doc.file`, and `doc.mime_type` says whether it is a PDF or an image.
+Implemented today: `required_present` and `not_expired` (reference versions, `checks/stubs.py`), sanctions/PEP (`checks/screening.py`), the tamper checks in `checks/tamper.py`, and `registry_vs_declaration` (`checks/registry.py`: looks up the company's CUI in `data/mock_registries/onrc_registry.json` and compares its UBOs and percentages with the UBO declaration; an unknown company or an unreadable declaration is flagged, never passed). Everything else in the catalog is a no-op stub in `checks/stubs.py`.
 
 ## Tamper checks (`checks/tamper.py`)
 

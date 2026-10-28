@@ -1,66 +1,10 @@
-import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Minus, Plus, FileSearch } from "lucide-react";
+import { useEffect, useState } from "react";
+import { FileSearch } from "lucide-react";
 import type { BBox, Document } from "@/types";
-import { Button } from "@/components/ui/button";
-
-export function DocumentViewer({ document, page = 0, highlights = [], onPageChange }: {
-  document: Document | null;
-  page?: number;
-  highlights?: BBox[];
-  onPageChange?: (p: number) => void;
-}) {
-  const [zoom, setZoom] = useState(1);
-  const scroller = useRef<HTMLDivElement>(null);
-  const first = highlights[0];
-  const centerHighlight = () => {
-    const el = scroller.current;
-    const inner = el?.firstElementChild as HTMLElement | null;
-    if (!el || !inner || !first) return;
-    const top = inner.offsetTop + first.y * inner.offsetHeight - el.clientHeight / 2;
-    el.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
-  };
-  useEffect(() => {
-    const t = setTimeout(centerHighlight, 50);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [first?.x, first?.y, zoom, document?.id]);
-  if (!document)
-    return (
-      <div className="flex h-[480px] flex-col items-center justify-center gap-2 rounded-lg bg-beige-dark text-center text-sm text-ink-muted">
-        <FileSearch className="h-8 w-8 text-line" />
-        Selectează un flag pentru a vedea dovada în document.
-      </div>
-    );
-  const pages = document.pageImages.length;
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="text-sm font-semibold text-ink">{document.type}</div>
-          <div className="text-xs text-ink-muted">{document.fileName}</div>
-        </div>
-        <div className="flex items-center gap-1">
-          <Button size="icon" variant="ghost" aria-label="Micșorează" onClick={() => setZoom((z) => Math.max(0.5, z - 0.25))}><Minus className="h-4 w-4" /></Button>
-          <span className="w-12 text-center text-xs text-ink-muted">{Math.round(zoom * 100)}%</span>
-          <Button size="icon" variant="ghost" aria-label="Mărește" onClick={() => setZoom((z) => Math.min(3, z + 0.25))}><Plus className="h-4 w-4" /></Button>
-          <div className="mx-2 h-5 w-px bg-border" />
-          <Button size="icon" variant="ghost" aria-label="Pagina anterioară" disabled={page <= 0} onClick={() => onPageChange?.(page - 1)}><ChevronLeft className="h-4 w-4" /></Button>
-          <span className="text-xs text-ink-muted">Pagina {page + 1} / {pages}</span>
-          <Button size="icon" variant="ghost" aria-label="Pagina următoare" disabled={page >= pages - 1} onClick={() => onPageChange?.(page + 1)}><ChevronRight className="h-4 w-4" /></Button>
-        </div>
-      </div>
-      <div ref={scroller} className="relative max-h-[560px] overflow-auto rounded-lg bg-beige-dark p-4">
-        <div className="relative mx-auto shadow-card" style={{ width: `${zoom * 100}%` }}>
-          <img src={document.pageImages[page]} alt={`${document.type}, pagina ${page + 1}`} className="block w-full" onLoad={centerHighlight} />
-          {highlights.map((b, i) => (
-            <div
-              key={i}
-              className="pointer-events-none absolute rounded-sm border-2 border-sev-high bg-sev-high/20 animate-in fade-in zoom-in-95"
-              style={{ left: `${b.x * 100}%`, top: `${b.y * 100}%`, width: `${b.width * 100}%`, height: `${b.height * 100}%` }}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+export function DocumentViewer({ document, page = 0, highlights = [] }: { document: Document | null; page?: number; highlights?: BBox[]; onPageChange?: (p: number) => void }) {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [document?.id, document?.pageImages[page]]);
+  return <div className="flex min-h-[345px] items-center justify-center rounded border border-border bg-beige p-7 max-sm:p-3">
+    {!document ? <div className="flex flex-col items-center gap-2 text-xs text-ink-muted"><FileSearch className="h-6 w-6" />{document === null ? "Niciun document disponibil." : "Selectează un document."}</div> : failed ? <div className="w-full text-center text-xs text-ink-muted"><FileSearch className="mx-auto mb-3 h-7 w-7" /><p>Documentul SPECIMEN este în așteptarea arhivei.</p>{document.pdfUrl && <a className="mt-3 inline-block text-teal" href={document.pdfUrl} target="_blank" rel="noreferrer">Deschide PDF →</a>}</div> : <div className="relative w-full max-w-[570px]"><img src={document.pageImages[page]} alt={`${document.type}, pagina ${page + 1}`} onError={() => setFailed(true)} className="block max-h-[510px] w-full object-contain" />{highlights.map((b, i) => <div key={i} data-evidence-highlight className="pointer-events-none absolute border border-sev-high bg-sev-high/10" style={{ left: `${b.x * 100}%`, top: `${b.y * 100}%`, width: `${b.width * 100}%`, height: `${b.height * 100}%` }} />)}</div>}
+  </div>;
 }

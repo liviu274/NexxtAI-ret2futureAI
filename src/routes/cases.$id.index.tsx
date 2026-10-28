@@ -1,207 +1,34 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowDown, ArrowUp, Clock, FileText, Flag as FlagIcon, Gauge, Minus, ShieldAlert } from "lucide-react";
+import { AlertTriangle, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
 import { getCase } from "@/api/client";
 import { AnalystHeader } from "@/components/dosar/Header";
-import { Card, DocumentStatusBadge, Loading, SeverityBadge, TypeBadge } from "@/components/dosar/badges";
+import { Loading, TypeBadge } from "@/components/dosar/badges";
 import { DocumentViewer } from "@/components/dosar/DocumentViewer";
-import { FlagCard } from "@/components/dosar/FlagCard";
+import { OwnershipPanel } from "@/components/dosar/OwnershipPanel";
 import { DecisionBar } from "@/components/dosar/DecisionBar";
-import { StageStepper } from "@/components/dosar/StageStepper";
-import { AuditTable } from "@/components/dosar/AuditTable";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { Severity } from "@/types";
-import { cn } from "@/lib/utils";
-
-export const Route = createFileRoute("/cases/$id/")({
-  head: ({ params }) => ({
-    meta: [
-      { title: `Dosar #${params.id} · DosarAI` },
-      { name: "description", content: `Analiza dosarului ${params.id}: flag-uri, dovezi și propunere de risc.` },
-      { property: "og:title", content: `Dosar #${params.id} · DosarAI` },
-      { property: "og:description", content: "Revizuire analist cu dovezi evidențiate în documente." },
-    ],
-  }),
-  component: CasePage,
-});
-
-const SEV_ORDER: Severity[] = ["high", "medium", "low"];
-const SEV_TITLE = { high: "Critice", medium: "Medii", low: "Informative" };
-const riskCls = { scăzut: "text-sev-ok", mediu: "text-sev-medium", ridicat: "text-sev-high" };
-
+import { Button } from "@/components/ui/button";
+import { riskLabels, severityLabels } from "@/lib/dataset";
+import type { BBox } from "@/types";
+export const Route = createFileRoute("/cases/$id/")({ head: ({ params }) => ({ meta: [{ title: `Dosar ${params.id} · DosarAI` }, { name: "description", content: "Revizuire dosar SPECIMEN, dovezi și propunere de risc." }, { property: "og:title", content: `Dosar ${params.id} · DosarAI` }, { property: "og:description", content: "Revizuire documente și beneficiari reali." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }), component: CasePage });
 function CasePage() {
-  const { id } = Route.useParams();
-  const { data: c, isLoading } = useQuery({ queryKey: ["case", id], queryFn: () => getCase(id) });
-  const [flagId, setFlagId] = useState<string | null>(null);
-  const [evIdx, setEvIdx] = useState(0);
-  const [docId, setDocId] = useState<string | null>(null);
-  const [page, setPage] = useState(0);
-
-  const flag = c?.flags.find((f) => f.id === flagId) ?? null;
-  const ev = flag?.evidence[evIdx];
-  const doc = c?.documents.find((d) => d.id === (ev?.documentId ?? docId)) ?? null;
-  const highlights = useMemo(
-    () => (flag ? flag.evidence.filter((e) => e.documentId === doc?.id && e.page === page).map((e) => e.bbox) : []),
-    [flag, doc, page],
-  );
-
-  function selectFlag(fid: string) {
-    const f = c!.flags.find((x) => x.id === fid)!;
-    setFlagId(fid);
-    setEvIdx(0);
-    setPage(f.evidence[0]?.page ?? 0);
-  }
-
-  if (isLoading)
-    return (
-      <div className="min-h-screen bg-beige"><AnalystHeader /><Loading label="Se încarcă dosarul…" /></div>
-    );
-  if (!c)
-    return (
-      <div className="min-h-screen bg-beige"><AnalystHeader />
-        <div className="py-20 text-center text-ink-muted">Dosarul nu a fost găsit. <Link to="/cases" className="text-teal">Înapoi la dosare</Link></div>
-      </div>
-    );
-
-  const bySev = SEV_ORDER.map((s) => [s, c.flags.filter((f) => f.severity === s)] as const);
-
-  return (
-    <div className="min-h-screen bg-beige">
-      <AnalystHeader />
-      <main className="mx-auto max-w-[1392px] px-6 py-6">
-        <Link to="/cases" className="text-sm text-teal">← Dosare</Link>
-        <div className="mt-2 flex items-center justify-between">
-          <h1 className="flex items-center gap-3 text-2xl font-bold text-ink">
-            Dosar #{c.id} · {c.clientName} · <TypeBadge type={c.customerType} />
-          </h1>
-          <span className="rounded-full bg-brand px-3 py-1 text-sm font-medium text-ink">{c.status}</span>
-        </div>
-        <Card className="mt-4 p-4"><StageStepper /></Card>
-
-        <div className="mt-4 grid grid-cols-4 gap-4">
-          <Summary icon={FileText} label="Documente" value={`${c.documents.length}`} sub={`${c.documents.filter((d) => d.status === "valid").length} valide`} />
-          <Card className="p-4">
-            <div className="flex items-center gap-2 text-xs text-ink-muted"><FlagIcon className="h-4 w-4" /> Flag-uri</div>
-            <div className="mt-2 text-2xl font-bold text-ink">{c.flags.length}</div>
-            <div className="mt-1 flex flex-wrap gap-1">
-              {bySev.filter(([, l]) => l.length).map(([s, l]) => <SeverityBadge key={s} severity={s} count={l.length} />)}
-            </div>
-          </Card>
-          <Summary icon={Gauge} label="Propunere de risc" value={<span className={cn("capitalize", riskCls[c.riskDraft.level])}>{c.riskDraft.level}</span>} sub="Propunere AI, nu decizie" />
-          <Summary icon={Clock} label="Timp procesare AI" value={`${(c.processingMs / 1000).toFixed(1)} s`} sub="7 etape finalizate" />
-        </div>
-
-        <Card className="mt-4 p-5">
-          <div className="flex items-center justify-between">
-            <h2 className="flex items-center gap-2 font-semibold text-ink"><ShieldAlert className="h-4 w-4 text-teal" /> Propunere de risc: <span className={cn("capitalize", riskCls[c.riskDraft.level])}>{c.riskDraft.level}</span></h2>
-            <span className="text-xs text-ink-muted">Generată de AI · se confirmă de analist</span>
-          </div>
-          <ul className="mt-3 grid grid-cols-2 gap-x-8 gap-y-2">
-            {c.riskDraft.reasons.map((r) => (
-              <li key={r.factor} className="flex items-center justify-between border-b border-border py-1.5 text-sm">
-                <span className="flex items-center gap-2 text-ink">
-                  {r.impact === "crește" ? <ArrowUp className="h-4 w-4 text-sev-high" /> : r.impact === "scade" ? <ArrowDown className="h-4 w-4 text-sev-ok" /> : <Minus className="h-4 w-4 text-line" />}
-                  {r.factor}
-                </span>
-                <span className="text-ink-muted">{r.value}</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-
-        <Tabs defaultValue="flags" className="mt-6">
-          <TabsList className="bg-beige-dark">
-            <TabsTrigger value="flags">Flag-uri ({c.flags.length})</TabsTrigger>
-            <TabsTrigger value="docs">Documente ({c.documents.length})</TabsTrigger>
-            <TabsTrigger value="audit">Audit log</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="flags">
-            <div className="mt-2 grid grid-cols-[2fr_3fr] gap-4">
-              <div className="flex flex-col gap-5">
-                {c.flags.length === 0 && <Card className="p-8 text-center text-sm text-ink-muted">AI-ul nu a găsit probleme în acest dosar. Verifică totuși documentele înainte de decizie.</Card>}
-                {bySev.filter(([, l]) => l.length).map(([s, list]) => (
-                  <section key={s}>
-                    <h3 className="mb-2 text-sm font-semibold text-ink">{SEV_TITLE[s]} · {list.length}</h3>
-                    <div className="flex flex-col gap-2">
-                      {list.map((f) => <FlagCard key={f.id} flag={f} active={f.id === flagId} onSelect={() => selectFlag(f.id)} />)}
-                    </div>
-                  </section>
-                ))}
-              </div>
-              <Card className="sticky top-4 self-start p-4">
-                <DocumentViewer document={doc} page={page} highlights={highlights} onPageChange={setPage} />
-                {flag && (
-                  <div className="mt-4 space-y-3 border-t border-border pt-4">
-                    {flag.evidence.length > 1 && (
-                      <div className="flex gap-2">
-                        {flag.evidence.map((e, i) => {
-                          const d = c.documents.find((x) => x.id === e.documentId);
-                          return (
-                            <button key={i} onClick={() => { setEvIdx(i); setPage(e.page); }} className={cn("rounded-md border px-3 py-1 text-xs", i === evIdx ? "border-ink bg-brand text-ink" : "border-border text-ink-muted")}>
-                              Dovada {i + 1}: {d?.type}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                    <div className="rounded-md bg-beige-dark p-3">
-                      <div className="text-xs font-semibold text-ink-muted">Regula {flag.ruleId} din playbook</div>
-                      <div className="mt-1 text-sm text-ink">{flag.ruleText}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs font-semibold text-ink-muted">Explicația AI</div>
-                      <p className="mt-1 text-sm text-ink">{flag.explanation}</p>
-                    </div>
-                    <div>
-                      <div className="text-xs font-semibold text-ink-muted">Mesaj pentru client</div>
-                      <p className="mt-1 text-sm italic text-ink-muted">„{flag.clientFixMessage}”</p>
-                    </div>
-                  </div>
-                )}
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="docs">
-            <Card className="mt-2 divide-y divide-border">
-              {c.documents.map((d) => (
-                <div key={d.id} className="flex items-center justify-between p-4">
-                  <div>
-                    <div className="font-medium text-ink">{d.type}</div>
-                    <div className="text-xs text-ink-muted">{d.fileName} · {d.extractedFields.length} câmpuri extrase</div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <DocumentStatusBadge status={d.status} />
-                  </div>
-                </div>
-              ))}
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="audit">
-            <Card className="mt-2 overflow-hidden">
-              <AuditTable caseId={c.id} />
-              <div className="border-t border-border p-3 text-right">
-                <Link to="/cases/$id/audit" params={{ id: c.id }} className="text-sm text-teal">Deschide jurnalul complet →</Link>
-              </div>
-            </Card>
-          </TabsContent>
-        </Tabs>
-        <div className="h-8" />
-      </main>
-      <DecisionBar caseId={c.id} />
-    </div>
-  );
-}
-
-function Summary({ icon: Icon, label, value, sub }: { icon: typeof Clock; label: string; value: React.ReactNode; sub: string }) {
-  return (
-    <Card className="p-4">
-      <div className="flex items-center gap-2 text-xs text-ink-muted"><Icon className="h-4 w-4" /> {label}</div>
-      <div className="mt-2 text-2xl font-bold text-ink">{value}</div>
-      <div className="mt-1 text-xs text-ink-muted">{sub}</div>
-    </Card>
-  );
+ const { id } = Route.useParams(); const { data: c, isLoading } = useQuery({ queryKey: ["case", id], queryFn: () => getCase(id) });
+ const [selected, setSelected] = useState<string | null>(null); const [docId, setDocId] = useState<string | null>(null); const [page, setPage] = useState(0); const [panel, setPanel] = useState("ownership");
+ if (isLoading) return <><AnalystHeader /><Loading /></>; if (!c) return <><AnalystHeader /><div className="p-12 text-center text-sm">Dosarul nu a fost găsit.</div></>;
+ const flag = c.flags.find((f) => f.id === selected) ?? c.flags[0]; const doc = c.documents.find((d) => d.id === (docId ?? flag?.evidence[0]?.documentId)) ?? c.documents[0] ?? null;
+ const highlights = flag?.evidence.filter((e) => e.documentId === doc?.id && e.page === page).map((e) => e.bbox).filter((b): b is BBox => b !== undefined) ?? [];
+ return <div className="min-h-screen bg-beige"><AnalystHeader /><main className="mx-auto max-w-[1392px] px-[18px] pb-6 pt-6">
+  <div className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="flex items-center gap-2 text-2xl font-semibold text-ink">{c.clientName}<TypeBadge type={c.customerType} /></h1><p className="mt-2 break-all text-[11px] text-ink-muted">Dosar {c.id} · {c.cui ? `CUI ${c.cui} · CAEN ${c.company?.caen} · ` : ""}Creat {c.createdAt} · Propunere de risc: <span className={c.riskDraft.level === "critical" ? "text-sev-high" : ""}>{riskLabels[c.riskDraft.level]}</span></p></div><DecisionBar caseId={c.id} /></div>
+  {c.customerType === "PJ" && <div className="mt-4 flex gap-6 border-b border-border text-xs"><span className="border-b-2 border-brand pb-3 font-semibold">Probleme</span><Link to="/cases/$id/audit" params={{ id }} className="text-ink-muted">Audit log</Link></div>}
+  <div className="review-shell mt-7 grid min-h-[540px] grid-cols-[31%_69%] overflow-hidden rounded-md border border-border bg-card max-md:grid-cols-1">
+   <aside className="flex flex-col border-r border-border"><h2 className="border-b border-border px-[18px] py-5 text-sm font-semibold">{c.flags.length} probleme</h2><div>{c.flags.map((f) => <Button key={f.id} variant="ghost" onClick={() => { setSelected(f.id); setDocId(f.evidence[0]?.documentId ?? null); setPage(f.evidence[0]?.page ?? 0); }} className={`flex h-auto w-full flex-col items-start gap-2 whitespace-normal rounded-none border-b border-border px-[18px] py-4 text-left text-xs font-normal ${flag?.id === f.id ? "border-l-2 border-l-brand bg-beige/70" : ""}`}><span className="flex items-start gap-2"><span className={`flex shrink-0 items-center gap-1 ${f.severity === "medium" ? "text-sev-medium" : "text-sev-high"}`}><AlertTriangle className="h-3 w-3" />{severityLabels[f.severity]}</span><span className="font-semibold">{f.title}</span></span><span className="text-[10px] leading-relaxed text-ink-muted">{f.explanation}</span></Button>)}</div><div className="mt-auto flex items-center gap-1.5 border-t border-border px-[18px] py-4 text-[10px] text-ink-muted"><CheckCircle2 className="h-3 w-3" />{c.flags.length ? "Verificări finalizate" : "Toate verificările sunt concordante"}</div></aside>
+   <section className="min-w-0 p-6"><div className="mb-[18px] flex flex-wrap gap-6 border-b border-border">{c.customerType === "PJ" ? ["ownership", "docs", "persons"].map((key, i) => <Button variant="ghost" key={key} onClick={() => setPanel(key)} className={`h-8 rounded-none border-b-2 px-0 text-xs ${panel === key ? "border-brand font-semibold" : "border-transparent font-normal text-ink-muted"}`}>{["Structură acționariat", "Documente", "Persoane"][i]}</Button>) : c.documents.map((d) => <Button variant="ghost" key={d.id} onClick={() => { setDocId(d.id); setPage(0); }} className={`h-8 rounded-none border-b-2 px-0 text-xs ${doc?.id === d.id ? "border-brand font-semibold" : "border-transparent font-normal text-ink-muted"}`}>{d.type}</Button>)}</div>
+    {c.customerType === "PJ" && panel === "ownership" ? <OwnershipPanel c={c} /> : c.customerType === "PJ" && panel === "persons" ? <div className="divide-y divide-border">{c.persons.map((p) => <div key={p.id} className="py-4 text-xs"><strong>{p.name}</strong><span className="ml-3 text-ink-muted">{p.role}</span></div>)}</div> : <>{c.customerType === "PJ" && <div className="mb-3 flex flex-wrap gap-2">{c.documents.map((d) => <Button key={d.id} variant="ghost" size="sm" onClick={() => setDocId(d.id)} className="text-xs">{d.type}</Button>)}</div>}<DocumentViewer document={doc} page={page} highlights={highlights} /></>}
+    {flag && <div className="mt-[18px] border-t border-border pt-3 text-xs leading-relaxed text-ink"><p>{flag.ruleId} : {flag.ruleText}</p><Button variant="link" className="h-auto p-0 text-xs font-normal text-teal" onClick={async () => { await navigator.clipboard.writeText(flag.clientFixMessage); toast.success("Mesaj copiat."); }}>Copiază mesajul pentru client</Button></div>}
+    <Link to="/cases/$id/audit" params={{ id }} className="mt-4 inline-block text-[10px] text-ink-muted">Audit log →</Link>
+   </section>
+  </div>
+ </main></div>;
 }

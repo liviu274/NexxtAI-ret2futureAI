@@ -53,12 +53,12 @@ export function DecisionBar({ caseId, flags = [] }: { caseId: string; flags?: Fl
                 <DialogDescription>{LABELS[open].desc}</DialogDescription>
               </DialogHeader>
               <label className="text-sm font-medium text-ink">
-                Comentariu (opțional)
+                {open === "documente" ? "Mesaj pentru client" : "Comentariu (opțional)"}
                 <Textarea className="mt-1" value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Ex.: verificat telefonic cu clientul" />
               </label>
               <DialogFooter>
                 <Button variant="ghost" onClick={() => setOpen(null)}>Anulează</Button>
-                <Button onClick={confirm} disabled={busy || (open === "aprobat" && blocked > 0)}>{busy && <Loader2 className="h-4 w-4 animate-spin" />}{LABELS[open].cta}</Button>
+                <Button onClick={confirm} disabled={busy || (open === "aprobat" && blocked > 0) || (open === "documente" && !comment.trim())}>{busy && <Loader2 className="h-4 w-4 animate-spin" />}{LABELS[open].cta}</Button>
               </DialogFooter>
             </>
           )}

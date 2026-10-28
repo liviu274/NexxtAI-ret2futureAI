@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ClientPortal } from "@/components/dosar/ClientPortal";
+import { PortalStatus } from "@/components/dosar/PortalFlow";
 export const Route = createFileRoute("/portal/$caseId/")({
   head: ({ params }) => ({ meta: [
     { title: `Documente ${params.caseId} · DosarAI` },
@@ -11,4 +11,4 @@ export const Route = createFileRoute("/portal/$caseId/")({
   ] }),
   component: PortalPage,
 });
-function PortalPage() { const { caseId } = Route.useParams(); return <ClientPortal caseId={caseId} />; }
+function PortalPage() { const { caseId } = Route.useParams(); return <PortalStatus caseId={caseId} />; }

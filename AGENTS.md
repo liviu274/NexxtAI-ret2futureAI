@@ -18,3 +18,6 @@
 - Screenshot-mapped content routes share focused presentation components; /upload remains a client-portal alias to preserve its existing address.
 - SPECIMEN dataset is generated into src/mocks/specimen.json (assets in public/mocks/<case>/) from the user's archive; regenerate rather than hand-edit, so data stays faithful to the source.
 - Mock-only screening types live in `src/types/extensions.ts`; list fixtures and officer resolutions are accessed only through the API client, so screening evidence never masquerades as document coordinates or alters the existing REST contract.
+- Review policies and source clauses are generated from archive rules and the original PJ PDF into a separate fixture, preserving the imported case dataset.
+- Demo onboarding and officer actions share a versioned browser store accessed only through the API client; storage events invalidate case queries across tabs without adding a real backend.
+- Portal pages are sibling file-route leaves with a shared focused presentation module; no content route acts as a parent without an Outlet.

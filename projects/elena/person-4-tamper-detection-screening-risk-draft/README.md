@@ -30,6 +30,8 @@ elena/person-4-tamper-detection-screening-risk-draft/
 │   ├── field-catalog.md
 │   ├── validate_rules.py
 │   └── README.md
+├── docs/
+│   └── diagram-prompts.md
 ├── featherless-ai-client/
 │   ├── src/
 │   └── package.json
@@ -42,6 +44,10 @@ The Gigel fixtures provide synthetic PDFs, ground truth, and expected flags.
 
 All data is synthetic. The final risk output is always a draft for human
 review; this work must never make an autonomous banking decision.
+
+The reusable prompts for architecture, tamper, API, microservices, screening,
+and human-review diagrams are in
+[`docs/diagram-prompts.md`](./docs/diagram-prompts.md).
 
 ## Validate the rules
 

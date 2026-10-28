@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -13,6 +14,7 @@ from .store import CaseStore, PlaybookStore
 
 def main() -> None:
     path = Path(sys.argv[1] if len(sys.argv) > 1 else "../../conventions/case_file.example.json")
+    os.environ.setdefault("NEXXT_DOCS_DIR", str(path.resolve().parent))  # documents sit next to the case file
     case = CaseFile.model_validate(json.loads(path.read_text(encoding="utf-8")))
     case.flags, case.risk_draft, case.decision = [], None, None
 

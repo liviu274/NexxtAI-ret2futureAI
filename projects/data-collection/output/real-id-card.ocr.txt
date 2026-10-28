@@ -1,0 +1,32 @@
+--- Page 1 ---
+ROUMANIE
+ROMANIA
+CARTE
+D'IDENTITE
+CARTE DE IDENTITATE
+IDENTITY
+CARD
+CNP 1870719
+SERIA
+Y8860
+Nume/Nom/Surname
+JOACĂ-BINE
+Prenume/Prenume/First name
+MIREL
+Prenume parinti/noms des parents/Parent's name
+NECULAI
+MARIA
+Loc nastera/Lieu de naissance/Place of birth
+Mun. Brașov Jud. Brașov
+Domiciliu/Adresse/Address
+Mun. Brașov Jud. Brașov
+Sex/Sexe/Sex
+M
+141
+e-p
+BV
+Emisa de politie/Delivree par/Issued by
+Mun. Brașov
+Validitate/Validite/Validity
+14.12.01-19.07.2011
+IDROMJOACA<BINE<<MIREL<<<<<<<<<<<<<<

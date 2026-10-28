@@ -179,6 +179,18 @@
       "source_ref": { "page": 2, "clause": "6.3", "quote": "Pe fluturașul de salariu, salariul brut minus reținerile trebuie să fie egal cu salariul net." }
     },
     {
+      "rule_id": "R-PF-017",
+      "stage": "tamper",
+      "check": "id_integrity",
+      "params": {},
+      "applies_to": "applicant",
+      "severity": "high",
+      "description": "CNP-ul și zona cu citire automată (MRZ) din actul de identitate trebuie să fie coerente cu data nașterii și între ele.",
+      "client_fixable": false,
+      "fix_message": null,
+      "source_ref": { "page": 3, "clause": "9.3", "quote": "Deschiderea contului poate fi refuzată dacă documentele sunt incomplete, neconforme cu realitatea sau ridică suspiciuni privind valabilitatea lor (CGB 3.1.4 lit. b și c)." }
+    },
+    {
       "rule_id": "R-PF-013",
       "stage": "screening",
       "check": "sanctions",

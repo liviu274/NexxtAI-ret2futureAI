@@ -38,6 +38,7 @@ CATALOG = {
     "pdf_metadata": ("tamper", set()),
     "font_consistency": ("tamper", set()),
     "totals_consistency": ("tamper", {"doc_type"}),
+    "id_integrity": ("tamper", set()),
     "sanctions": ("screening", {"list"}),
     "pep": ("screening", {"list"}),
     "adverse_media": ("screening", set()),
@@ -46,7 +47,7 @@ CATALOG = {
 
 # Field dictionary: the only field names the extractor produces per document type.
 FIELDS = {
-    "id_card": {"full_name", "cnp", "date_of_birth", "address", "series_number", "expiry_date"},
+    "id_card": {"full_name", "cnp", "date_of_birth", "address", "series_number", "expiry_date", "mrz"},
     "passport": {"full_name", "cnp", "date_of_birth", "series_number", "expiry_date"},
     "proof_of_address": {"full_name", "address", "issue_date"},
     "payslip": {"full_name", "employer", "gross_salary", "deductions", "net_salary", "period_end"},

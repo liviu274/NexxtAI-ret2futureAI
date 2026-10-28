@@ -105,9 +105,10 @@ The pipeline implements exactly these checks. The playbook validator rejects any
 | `fields_match` | cross_check | `{field, doc_types[], mode}`; mode: `exact` \| `normalized` \| `fuzzy` | Values differ across documents |
 | `income_vs_deposits` | cross_check | `{tolerance_pct}` | Declared net salary differs from statement deposits by more than the tolerance |
 | `registry_vs_declaration` | cross_check | `{}` | UBOs in the registry extract differ from the UBO declaration |
-| `pdf_metadata` | tamper | `{}` | Editing software or modification date after issue date |
+| `pdf_metadata` | tamper | `{}` | Editing software, modification date after creation or issue date, or incremental saves (more than one `%%EOF`); for a photo: editing software in EXIF/XMP, or EXIF re-save date after capture date |
 | `font_consistency` | tamper | `{}` | Mixed fonts inside a single field or line |
 | `totals_consistency` | tamper | `{doc_type}` | Lines don't add up to stated totals |
+| `id_integrity` | tamper | `{}` | CNP checksum, birth date or county code is invalid or differs from the printed date of birth; MRZ check digits or MRZ vs printed data differ (identity documents; the MRZ part needs the optional `mrz` field) |
 | `sanctions` | screening | `{list}` | Fuzzy name match above threshold |
 | `pep` | screening | `{list}` | Person is a PEP or a close associate |
 | `adverse_media` | screening | `{}` | Negative news hit (stub in demo) |

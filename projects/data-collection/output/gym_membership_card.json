@@ -1,0 +1,49 @@
+{
+  "source_file": "gym_membership_card.pdf",
+  "page_count": 1,
+  "ocr_model": "Qwen/Qwen3-VL-8B-Instruct",
+  "extraction_model": "Qwen/Qwen3-VL-8B-Instruct",
+  "important_data": {
+    "document_type": "OFFICIAL MEMBER IDENTIFICATION",
+    "people": [
+      {
+        "name": "Taylor Hayes",
+        "role": "Client",
+        "identifiers": []
+      }
+    ],
+    "organizations": [
+      {
+        "name": "APEX FITNESS CLUB",
+        "role": "Issuer",
+        "identifiers": []
+      }
+    ],
+    "dates": [
+      {
+        "label": "Birthdate",
+        "value": "2004-03-31"
+      },
+      {
+        "label": "Issued",
+        "value": "2026-10-28"
+      }
+    ],
+    "amounts": [],
+    "addresses": [],
+    "key_facts": [
+      {
+        "fact": "Client ID: 8290797204684",
+        "source_text": "Client ID: 8290797204684"
+      },
+      {
+        "fact": "Status: ACTIVE / VIP",
+        "source_text": "Status: ACTIVE / VIP"
+      },
+      {
+        "fact": "Non-Transferable • Property of Apex Fitness Club",
+        "source_text": "Non-Transferable • Property of Apex Fitness Club"
+      }
+    ]
+  }
+}

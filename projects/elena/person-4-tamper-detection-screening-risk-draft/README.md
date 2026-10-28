@@ -24,6 +24,8 @@ elena/person-4-tamper-detection-screening-risk-draft/
 │   │   ├── cases/
 │   │   ├── document-manifest.json
 │   │   └── generator/
+│   └── mock-registries/
+│       └── ubo-companies.json
 │   └── README.md
 ├── rules/
 │   ├── rules.json
@@ -31,7 +33,8 @@ elena/person-4-tamper-detection-screening-risk-draft/
 │   ├── validate_rules.py
 │   └── README.md
 ├── docs/
-│   └── diagram-prompts.md
+│   ├── diagram-prompts.md
+│   └── use-cases-and-story.md
 ├── featherless-ai-client/
 │   ├── src/
 │   └── package.json
@@ -45,9 +48,17 @@ The Gigel fixtures provide synthetic PDFs, ground truth, and expected flags.
 All data is synthetic. The final risk output is always a draft for human
 review; this work must never make an autonomous banking decision.
 
+The 50-company synthetic ONRC/UBO fixture is in
+[`data/mock-registries/ubo-companies.json`](./data/mock-registries/ubo-companies.json).
+It contains 25 parent-to-holding-company pairs. Every ownership total is
+exactly 100.0%, and every holding company has only PF shareholders.
+
 The reusable prompts for architecture, tamper, API, microservices, screening,
 and human-review diagrams are in
 [`docs/diagram-prompts.md`](./docs/diagram-prompts.md).
+
+The simple-language story and use cases are in
+[`docs/use-cases-and-story.md`](./docs/use-cases-and-story.md).
 
 ## Validate the rules
 

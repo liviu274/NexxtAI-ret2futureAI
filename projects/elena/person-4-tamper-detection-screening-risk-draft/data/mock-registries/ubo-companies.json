@@ -1,0 +1,1352 @@
+[
+  {
+    "cui": "RO10000001",
+    "denumire_companie": "Parent Demo 01 SRL",
+    "status": "Activ",
+    "cod_caen": "6201",
+    "administratori": [
+      {
+        "nume": "PF 01 A",
+        "cnp": "29001010001",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 01 SRL",
+        "cui_actionar": "RO20000001",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 01 B",
+        "cnp": "19002020001",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000001",
+    "denumire_companie": "Holding Demo 01 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 01 B",
+        "cnp": "19002020001",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 01 A",
+        "cnp": "29001010001",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 01 B",
+        "cnp": "19002020001",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000002",
+    "denumire_companie": "Parent Demo 02 SRL",
+    "status": "Activ",
+    "cod_caen": "6311",
+    "administratori": [
+      {
+        "nume": "PF 02 A",
+        "cnp": "29001010002",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 02 SRL",
+        "cui_actionar": "RO20000002",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 02 B",
+        "cnp": "19002020002",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000002",
+    "denumire_companie": "Holding Demo 02 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 02 B",
+        "cnp": "19002020002",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 02 A",
+        "cnp": "29001010002",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 02 B",
+        "cnp": "19002020002",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000003",
+    "denumire_companie": "Parent Demo 03 SRL",
+    "status": "Activ",
+    "cod_caen": "4690",
+    "administratori": [
+      {
+        "nume": "PF 03 A",
+        "cnp": "29001010003",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 03 SRL",
+        "cui_actionar": "RO20000003",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 03 B",
+        "cnp": "19002020003",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000003",
+    "denumire_companie": "Holding Demo 03 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 03 B",
+        "cnp": "19002020003",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 03 A",
+        "cnp": "29001010003",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 03 B",
+        "cnp": "19002020003",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000004",
+    "denumire_companie": "Parent Demo 04 SRL",
+    "status": "Activ",
+    "cod_caen": "7022",
+    "administratori": [
+      {
+        "nume": "PF 04 A",
+        "cnp": "29001010004",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 04 SRL",
+        "cui_actionar": "RO20000004",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 04 B",
+        "cnp": "19002020004",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000004",
+    "denumire_companie": "Holding Demo 04 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 04 B",
+        "cnp": "19002020004",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 04 A",
+        "cnp": "29001010004",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 04 B",
+        "cnp": "19002020004",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000005",
+    "denumire_companie": "Parent Demo 05 SRL",
+    "status": "Activ",
+    "cod_caen": "7112",
+    "administratori": [
+      {
+        "nume": "PF 05 A",
+        "cnp": "29001010005",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 05 SRL",
+        "cui_actionar": "RO20000005",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 05 B",
+        "cnp": "19002020005",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000005",
+    "denumire_companie": "Holding Demo 05 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 05 B",
+        "cnp": "19002020005",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 05 A",
+        "cnp": "29001010005",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 05 B",
+        "cnp": "19002020005",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000006",
+    "denumire_companie": "Parent Demo 06 SRL",
+    "status": "Activ",
+    "cod_caen": "4120",
+    "administratori": [
+      {
+        "nume": "PF 06 A",
+        "cnp": "29001010006",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 06 SRL",
+        "cui_actionar": "RO20000006",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 06 B",
+        "cnp": "19002020006",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000006",
+    "denumire_companie": "Holding Demo 06 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 06 B",
+        "cnp": "19002020006",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 06 A",
+        "cnp": "29001010006",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 06 B",
+        "cnp": "19002020006",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000007",
+    "denumire_companie": "Parent Demo 07 SRL",
+    "status": "Activ",
+    "cod_caen": "4941",
+    "administratori": [
+      {
+        "nume": "PF 07 A",
+        "cnp": "29001010007",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 07 SRL",
+        "cui_actionar": "RO20000007",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 07 B",
+        "cnp": "19002020007",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000007",
+    "denumire_companie": "Holding Demo 07 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 07 B",
+        "cnp": "19002020007",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 07 A",
+        "cnp": "29001010007",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 07 B",
+        "cnp": "19002020007",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000008",
+    "denumire_companie": "Parent Demo 08 SRL",
+    "status": "Activ",
+    "cod_caen": "5610",
+    "administratori": [
+      {
+        "nume": "PF 08 A",
+        "cnp": "29001010008",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 08 SRL",
+        "cui_actionar": "RO20000008",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 08 B",
+        "cnp": "19002020008",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000008",
+    "denumire_companie": "Holding Demo 08 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 08 B",
+        "cnp": "19002020008",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 08 A",
+        "cnp": "29001010008",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 08 B",
+        "cnp": "19002020008",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000009",
+    "denumire_companie": "Parent Demo 09 SRL",
+    "status": "Activ",
+    "cod_caen": "6920",
+    "administratori": [
+      {
+        "nume": "PF 09 A",
+        "cnp": "29001010009",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 09 SRL",
+        "cui_actionar": "RO20000009",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 09 B",
+        "cnp": "19002020009",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000009",
+    "denumire_companie": "Holding Demo 09 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 09 B",
+        "cnp": "19002020009",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 09 A",
+        "cnp": "29001010009",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 09 B",
+        "cnp": "19002020009",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000010",
+    "denumire_companie": "Parent Demo 10 SRL",
+    "status": "Activ",
+    "cod_caen": "7410",
+    "administratori": [
+      {
+        "nume": "PF 10 A",
+        "cnp": "29001010010",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 10 SRL",
+        "cui_actionar": "RO20000010",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 10 B",
+        "cnp": "19002020010",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000010",
+    "denumire_companie": "Holding Demo 10 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 10 B",
+        "cnp": "19002020010",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 10 A",
+        "cnp": "29001010010",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 10 B",
+        "cnp": "19002020010",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000011",
+    "denumire_companie": "Parent Demo 11 SRL",
+    "status": "Activ",
+    "cod_caen": "8622",
+    "administratori": [
+      {
+        "nume": "PF 11 A",
+        "cnp": "29001010011",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 11 SRL",
+        "cui_actionar": "RO20000011",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 11 B",
+        "cnp": "19002020011",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000011",
+    "denumire_companie": "Holding Demo 11 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 11 B",
+        "cnp": "19002020011",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 11 A",
+        "cnp": "29001010011",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 11 B",
+        "cnp": "19002020011",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000012",
+    "denumire_companie": "Parent Demo 12 SRL",
+    "status": "Activ",
+    "cod_caen": "1071",
+    "administratori": [
+      {
+        "nume": "PF 12 A",
+        "cnp": "29001010012",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 12 SRL",
+        "cui_actionar": "RO20000012",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 12 B",
+        "cnp": "19002020012",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000012",
+    "denumire_companie": "Holding Demo 12 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 12 B",
+        "cnp": "19002020012",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 12 A",
+        "cnp": "29001010012",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 12 B",
+        "cnp": "19002020012",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000013",
+    "denumire_companie": "Parent Demo 13 SRL",
+    "status": "Activ",
+    "cod_caen": "1812",
+    "administratori": [
+      {
+        "nume": "PF 13 A",
+        "cnp": "29001010013",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 13 SRL",
+        "cui_actionar": "RO20000013",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 13 B",
+        "cnp": "19002020013",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000013",
+    "denumire_companie": "Holding Demo 13 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 13 B",
+        "cnp": "19002020013",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 13 A",
+        "cnp": "29001010013",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 13 B",
+        "cnp": "19002020013",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000014",
+    "denumire_companie": "Parent Demo 14 SRL",
+    "status": "Activ",
+    "cod_caen": "2511",
+    "administratori": [
+      {
+        "nume": "PF 14 A",
+        "cnp": "29001010014",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 14 SRL",
+        "cui_actionar": "RO20000014",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 14 B",
+        "cnp": "19002020014",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000014",
+    "denumire_companie": "Holding Demo 14 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 14 B",
+        "cnp": "19002020014",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 14 A",
+        "cnp": "29001010014",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 14 B",
+        "cnp": "19002020014",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000015",
+    "denumire_companie": "Parent Demo 15 SRL",
+    "status": "Activ",
+    "cod_caen": "4321",
+    "administratori": [
+      {
+        "nume": "PF 15 A",
+        "cnp": "29001010015",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 15 SRL",
+        "cui_actionar": "RO20000015",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 15 B",
+        "cnp": "19002020015",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000015",
+    "denumire_companie": "Holding Demo 15 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 15 B",
+        "cnp": "19002020015",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 15 A",
+        "cnp": "29001010015",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 15 B",
+        "cnp": "19002020015",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000016",
+    "denumire_companie": "Parent Demo 16 SRL",
+    "status": "Activ",
+    "cod_caen": "4771",
+    "administratori": [
+      {
+        "nume": "PF 16 A",
+        "cnp": "29001010016",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 16 SRL",
+        "cui_actionar": "RO20000016",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 16 B",
+        "cnp": "19002020016",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000016",
+    "denumire_companie": "Holding Demo 16 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 16 B",
+        "cnp": "19002020016",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 16 A",
+        "cnp": "29001010016",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 16 B",
+        "cnp": "19002020016",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000017",
+    "denumire_companie": "Parent Demo 17 SRL",
+    "status": "Activ",
+    "cod_caen": "4791",
+    "administratori": [
+      {
+        "nume": "PF 17 A",
+        "cnp": "29001010017",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 17 SRL",
+        "cui_actionar": "RO20000017",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 17 B",
+        "cnp": "19002020017",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000017",
+    "denumire_companie": "Holding Demo 17 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 17 B",
+        "cnp": "19002020017",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 17 A",
+        "cnp": "29001010017",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 17 B",
+        "cnp": "19002020017",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000018",
+    "denumire_companie": "Parent Demo 18 SRL",
+    "status": "Activ",
+    "cod_caen": "5829",
+    "administratori": [
+      {
+        "nume": "PF 18 A",
+        "cnp": "29001010018",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 18 SRL",
+        "cui_actionar": "RO20000018",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 18 B",
+        "cnp": "19002020018",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000018",
+    "denumire_companie": "Holding Demo 18 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 18 B",
+        "cnp": "19002020018",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 18 A",
+        "cnp": "29001010018",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 18 B",
+        "cnp": "19002020018",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000019",
+    "denumire_companie": "Parent Demo 19 SRL",
+    "status": "Activ",
+    "cod_caen": "6831",
+    "administratori": [
+      {
+        "nume": "PF 19 A",
+        "cnp": "29001010019",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 19 SRL",
+        "cui_actionar": "RO20000019",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 19 B",
+        "cnp": "19002020019",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000019",
+    "denumire_companie": "Holding Demo 19 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 19 B",
+        "cnp": "19002020019",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 19 A",
+        "cnp": "29001010019",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 19 B",
+        "cnp": "19002020019",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000020",
+    "denumire_companie": "Parent Demo 20 SRL",
+    "status": "Activ",
+    "cod_caen": "8559",
+    "administratori": [
+      {
+        "nume": "PF 20 A",
+        "cnp": "29001010020",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 20 SRL",
+        "cui_actionar": "RO20000020",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 20 B",
+        "cnp": "19002020020",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000020",
+    "denumire_companie": "Holding Demo 20 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 20 B",
+        "cnp": "19002020020",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 20 A",
+        "cnp": "29001010020",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 20 B",
+        "cnp": "19002020020",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000021",
+    "denumire_companie": "Parent Demo 21 SRL",
+    "status": "Activ",
+    "cod_caen": "9602",
+    "administratori": [
+      {
+        "nume": "PF 21 A",
+        "cnp": "29001010021",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 21 SRL",
+        "cui_actionar": "RO20000021",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 21 B",
+        "cnp": "19002020021",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000021",
+    "denumire_companie": "Holding Demo 21 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 21 B",
+        "cnp": "19002020021",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 21 A",
+        "cnp": "29001010021",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 21 B",
+        "cnp": "19002020021",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000022",
+    "denumire_companie": "Parent Demo 22 SRL",
+    "status": "Activ",
+    "cod_caen": "0146",
+    "administratori": [
+      {
+        "nume": "PF 22 A",
+        "cnp": "29001010022",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 22 SRL",
+        "cui_actionar": "RO20000022",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 22 B",
+        "cnp": "19002020022",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000022",
+    "denumire_companie": "Holding Demo 22 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 22 B",
+        "cnp": "19002020022",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 22 A",
+        "cnp": "29001010022",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 22 B",
+        "cnp": "19002020022",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000023",
+    "denumire_companie": "Parent Demo 23 SRL",
+    "status": "Activ",
+    "cod_caen": "0322",
+    "administratori": [
+      {
+        "nume": "PF 23 A",
+        "cnp": "29001010023",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 23 SRL",
+        "cui_actionar": "RO20000023",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 23 B",
+        "cnp": "19002020023",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000023",
+    "denumire_companie": "Holding Demo 23 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 23 B",
+        "cnp": "19002020023",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 23 A",
+        "cnp": "29001010023",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 23 B",
+        "cnp": "19002020023",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000024",
+    "denumire_companie": "Parent Demo 24 SRL",
+    "status": "Activ",
+    "cod_caen": "4511",
+    "administratori": [
+      {
+        "nume": "PF 24 A",
+        "cnp": "29001010024",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 24 SRL",
+        "cui_actionar": "RO20000024",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 24 B",
+        "cnp": "19002020024",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000024",
+    "denumire_companie": "Holding Demo 24 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 24 B",
+        "cnp": "19002020024",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 24 A",
+        "cnp": "29001010024",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 24 B",
+        "cnp": "19002020024",
+        "procent_detinere": 40.0
+      }
+    ]
+  },
+  {
+    "cui": "RO10000025",
+    "denumire_companie": "Parent Demo 25 SRL",
+    "status": "Activ",
+    "cod_caen": "5210",
+    "administratori": [
+      {
+        "nume": "PF 25 A",
+        "cnp": "29001010025",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PJ",
+        "denumire_companie": "Holding Demo 25 SRL",
+        "cui_actionar": "RO20000025",
+        "procent_detinere": 70.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 25 B",
+        "cnp": "19002020025",
+        "procent_detinere": 30.0
+      }
+    ]
+  },
+  {
+    "cui": "RO20000025",
+    "denumire_companie": "Holding Demo 25 SRL",
+    "status": "Activ",
+    "cod_caen": "6420",
+    "administratori": [
+      {
+        "nume": "PF 25 B",
+        "cnp": "19002020025",
+        "functie": "Administrator"
+      }
+    ],
+    "actionari": [
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 25 A",
+        "cnp": "29001010025",
+        "procent_detinere": 60.0
+      },
+      {
+        "tip_entitate": "PF",
+        "nume": "PF 25 B",
+        "cnp": "19002020025",
+        "procent_detinere": 40.0
+      }
+    ]
+  }
+]

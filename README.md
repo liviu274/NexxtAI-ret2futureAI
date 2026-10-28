@@ -12,15 +12,11 @@ NexxtAI-ret2futureAI/
 ├── docs/
 │   ├── brief-raiffeisen-bank.pdf
 │   └── source-code-security-day4.pdf
-├── data/
-│   ├── README.md
-│   ├── document-manifest.json
-│   └── gigel/
 └── projects/
-    └── featherless-ai-client/
-        ├── src/
-        ├── .env.example
-        ├── package.json
+    └── person-4-tamper-screening-risk-draft/
+        ├── data/
+        ├── rules/
+        ├── featherless-ai-client/
         └── README.md
 ```
 
@@ -28,20 +24,19 @@ NexxtAI-ret2futureAI/
 under `projects/` so additional agents or prototypes can be added without
 mixing their files.
 
-## Run the current project
+## Person 4 project
 
 ```sh
-cd projects/featherless-ai-client
-npm start -- "Explain how an operations agent could verify a document"
+cd projects/person-4-tamper-screening-risk-draft/featherless-ai-client
+npm start -- "Describe the tamper signals in a payslip"
 ```
 
 Copy `.env.example` to `.env` and add your Featherless AI key if `.env` is not
 already present. Secrets and dependencies are ignored at the repository level.
 
-The current client is only the foundation. The selected solution will add
-specialized agents, orchestration, LLM guidelines, auditability, human review,
-and authorized LLM security tests.
+The Person 4 scope, synthetic Gigel fixture, declarative rules, tamper checks,
+screening placeholders, and risk-draft boundary are documented in
+[`projects/person-4-tamper-screening-risk-draft/README.md`](./projects/person-4-tamper-screening-risk-draft/README.md).
 
-The first synthetic parser fixture is documented in
-[`data/README.md`](./data/README.md), with every Gigel Popescu document listed
-in [`data/gigel/document-manifest.json`](./data/gigel/document-manifest.json).
+Additional colleagues can add sibling folders under `projects/` without
+mixing ownership or implementation files.

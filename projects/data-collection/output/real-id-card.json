@@ -1,0 +1,90 @@
+{
+  "source_file": "real-id-card.pdf",
+  "page_count": 1,
+  "ocr_model": "Qwen/Qwen3-VL-8B-Instruct",
+  "extraction_model": "Qwen/Qwen3-VL-8B-Instruct",
+  "important_data": {
+    "document_type": "identity_card",
+    "people": [
+      {
+        "name": "JOACĂ-BINE MIREL",
+        "role": "holder",
+        "identifiers": [
+          "CNP 1870719",
+          "Y8860"
+        ]
+      },
+      {
+        "name": "NECULAI MARIA",
+        "role": "parent",
+        "identifiers": []
+      }
+    ],
+    "organizations": [
+      {
+        "name": "Mun. Brașov",
+        "role": "issuing authority",
+        "identifiers": []
+      }
+    ],
+    "dates": [
+      {
+        "label": "date of birth",
+        "value": "14.12.01"
+      },
+      {
+        "label": "validity start",
+        "value": "14.12.01"
+      },
+      {
+        "label": "validity end",
+        "value": "19.07.2011"
+      }
+    ],
+    "amounts": [],
+    "addresses": [
+      {
+        "label": "place of birth",
+        "value": "Mun. Brașov Jud. Brașov"
+      },
+      {
+        "label": "residence",
+        "value": "Mun. Brașov Jud. Brașov"
+      }
+    ],
+    "key_facts": [
+      {
+        "fact": "Document type: Identity Card",
+        "source_text": "CARTE D'IDENTITE / CARTE DE IDENTITATE / IDENTITY CARD"
+      },
+      {
+        "fact": "Holder's full name: JOACĂ-BINE MIREL",
+        "source_text": "Nume/Nom/Surname JOACĂ-BINE, Prenume/Prenume/First name MIREL"
+      },
+      {
+        "fact": "Parent's name: NECULAI MARIA",
+        "source_text": "Prenume parinti/noms des parents/Parent's name NECULAI MARIA"
+      },
+      {
+        "fact": "Place of birth: Mun. Brașov Jud. Brașov",
+        "source_text": "Loc nastera/Lieu de naissance/Place of birth Mun. Brașov Jud. Brașov"
+      },
+      {
+        "fact": "Residence: Mun. Brașov Jud. Brașov",
+        "source_text": "Domiciliu/Adresse/Address Mun. Brașov Jud. Brașov"
+      },
+      {
+        "fact": "Sex: Male",
+        "source_text": "Sex/Sexe/Sex M"
+      },
+      {
+        "fact": "Issuing authority: Mun. Brașov",
+        "source_text": "Emisa de politie/Delivree par/Issued by Mun. Brașov"
+      },
+      {
+        "fact": "Validity: 14.12.01 - 19.07.2011",
+        "source_text": "Validitate/Validite/Validity 14.12.01-19.07.2011"
+      }
+    ]
+  }
+}

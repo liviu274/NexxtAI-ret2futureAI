@@ -1,54 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 import { getPlaybook } from "@/api/client";
 import { AnalystHeader } from "@/components/dosar/Header";
-import { Card, Loading, TypeBadge } from "@/components/dosar/badges";
-
-export const Route = createFileRoute("/playbooks/$id")({
-  head: () => ({
-    meta: [
-      { title: "Playbook · DosarAI" },
-      { name: "description", content: "Regulile extrase din procedura băncii, cu propoziția sursă pentru fiecare regulă." },
-      { property: "og:title", content: "Playbook · DosarAI" },
-      { property: "og:description", content: "Procedura băncii transformată în reguli verificabile." },
-    ],
-  }),
-  component: PlaybookPage,
-});
-
-function PlaybookPage() {
-  const { id } = Route.useParams();
-  const { data: p, isLoading } = useQuery({ queryKey: ["playbook", id], queryFn: () => getPlaybook(id) });
-  return (
-    <div className="min-h-screen bg-beige">
-      <AnalystHeader />
-      <main className="mx-auto max-w-[1392px] px-6 py-8">
-        {isLoading ? <Loading label="Se încarcă playbook-ul…" /> : !p ? (
-          <div className="py-16 text-center text-ink-muted">Playbook-ul nu a fost găsit.</div>
-        ) : (
-          <>
-            <h1 className="flex items-center gap-3 text-2xl font-bold text-ink">{p.processName} <TypeBadge type={p.customerType} /></h1>
-            <div className="mt-6 grid grid-cols-[3fr_2fr] gap-4">
-              <Card className="divide-y divide-border">
-                {p.rules.map((r) => (
-                  <div key={r.id} className="p-4">
-                    <div className="flex items-center gap-2 text-xs text-ink-muted"><span className="font-semibold text-ink">{r.id}</span> · {r.kind}</div>
-                    <div className="mt-1 font-medium text-ink">{r.text}</div>
-                    <div className="mt-1 text-xs text-ink-muted">{Object.entries(r.params).map(([k, v]) => `${k}: ${v}`).join(" · ")}</div>
-                    <div className="mt-2 border-l-2 border-teal pl-3 text-sm italic text-ink-muted">„{r.sourceSentence}”</div>
-                    {r.warning && <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-sev-medium/10 px-2 py-0.5 text-xs text-sev-medium"><AlertTriangle className="h-3.5 w-3.5" /> {r.warning}</div>}
-                  </div>
-                ))}
-              </Card>
-              <Card className="self-start bg-beige-dark p-5">
-                <h2 className="text-sm font-semibold text-ink">Documentul sursă</h2>
-                <p className="mt-2 text-sm leading-relaxed text-ink-muted">{p.sourceDocumentText}</p>
-              </Card>
-            </div>
-          </>
-        )}
-      </main>
-    </div>
-  );
-}
+import { Loading } from "@/components/dosar/badges";
+import { Button } from "@/components/ui/button";
+export const Route = createFileRoute("/playbooks/$id")({ head: ({ params }) => ({ meta: [{ title: `Revizuire playbook ${params.id} · DosarAI` }, { name: "description", content: "Procedura și regulile verificabile pentru dosare SPECIMEN." }, { property: "og:title", content: `Playbook ${params.id} · DosarAI` }, { property: "og:description", content: "Revizuire umană a regulilor KYC și KYB." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }), component: PlaybookPage });
+function PlaybookPage() { const { id } = Route.useParams(); const { data: p, isLoading } = useQuery({ queryKey: ["playbook", id], queryFn: () => getPlaybook(id) }); const [selected, setSelected] = useState<string | null>(null); const [editing, setEditing] = useState(false); const [draft, setDraft] = useState(""); return <div className="min-h-screen bg-workspace"><AnalystHeader /><main className="mx-auto mt-6 max-w-[1392px] bg-beige px-6 py-6 max-sm:px-[18px]">{isLoading ? <Loading /> : !p ? <div>Playbook-ul nu a fost găsit.</div> : <><div className="flex flex-wrap items-start justify-between gap-3"><div><h1 className="text-2xl font-semibold">{p.processName}</h1><p className="mt-2 text-[10px] text-ink-muted">{p.rules.length} reguli · {p.rules.filter((r) => r.warning).length} de verificat</p></div><div className="text-right"><div className="flex gap-2"><Button variant="outline" className="h-8 border-ink bg-card text-xs" onClick={() => toast.info("Respingere simulată pentru playbook-ul SPECIMEN.")}>Respinge</Button><Button variant="outline" className="h-8 border-ink bg-card text-xs" onClick={() => { setEditing(!editing); setDraft(p.sourceDocumentText); }}>{editing ? "Închide" : "Editează"}</Button><Button className="h-8 text-xs" onClick={() => toast.info("Publicare simulată. Playbook-ul SPECIMEN nu activează reguli reale.")}>Publică playbook</Button></div><p className="mt-2 text-[10px] text-ink-muted">Playbook-ul devine activ doar după publicarea de către un om.</p></div></div><div className="mt-6 grid grid-cols-2 overflow-hidden rounded-md border border-border bg-card max-md:grid-cols-1"><section className="border-r border-border p-6"><h2 className="mb-5 border-b border-border pb-4 text-xs font-semibold">Procedura originală</h2>{editing ? <textarea aria-label="Procedura originală" value={draft} onChange={(e) => setDraft(e.target.value)} className="min-h-[550px] w-full rounded border border-border bg-card p-3 text-sm" /> : p.rules.filter((r) => r.sourceSentence).map((r, i) => <div key={r.id} className="mb-6"><h3 className="mb-2 text-sm font-semibold">{i + 1}. {r.id}</h3><p className="text-sm leading-7 text-ink">{selected === r.id ? <mark className="bg-brand/30 text-ink">{r.sourceSentence}</mark> : r.sourceSentence}</p></div>)}</section><section className="p-6"><h2 className="mb-2 border-b border-border pb-4 text-xs font-semibold">Reguli generate</h2>{p.rules.map((r) => <Button key={r.id} variant="ghost" onClick={() => setSelected(r.id)} className={`flex h-auto w-full flex-col items-start gap-1 whitespace-normal rounded-none border-b border-border px-3 py-4 text-left ${selected === r.id ? "border-l-2 border-l-brand bg-beige" : ""}`}><span className={`text-[10px] font-normal ${r.warning ? "text-sev-medium" : "text-ink-muted"}`}>{r.warning ? "De verificat · " : ""}{r.id} · {r.kind}</span><span className="text-xs font-semibold leading-relaxed">{r.text}</span>{r.warning && <span className="text-[10px] font-normal text-ink-muted">{r.warning}</span>}</Button>)}</section></div><div className="mt-4 flex gap-4 text-xs text-teal"><Link to="/playbooks/$id" params={{ id: "pb_kyc_pf_v1" }}>KYC persoană fizică</Link><Link to="/playbooks/$id" params={{ id: "pb_cont_pj_v1" }}>Cont persoană juridică</Link></div></>}</main></div>; }

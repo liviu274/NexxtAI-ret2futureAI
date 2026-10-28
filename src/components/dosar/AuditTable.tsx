@@ -1,34 +1,12 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Bot, User } from "lucide-react";
+import { Settings, UserRound, Download } from "lucide-react";
 import { getAuditLog } from "@/api/client";
+import { Button } from "@/components/ui/button";
 import { Loading } from "./badges";
-import { cn } from "@/lib/utils";
-
-const st = { ok: "text-sev-ok", avertisment: "text-sev-medium", eroare: "text-sev-high" };
-
 export function AuditTable({ caseId }: { caseId: string }) {
-  const { data, isLoading } = useQuery({ queryKey: ["audit", caseId], queryFn: () => getAuditLog(caseId) });
-  if (isLoading) return <Loading label="Se încarcă jurnalul…" />;
-  if (!data?.length) return <div className="py-12 text-center text-sm text-ink-muted">Nu există încă intrări în jurnal pentru acest dosar.</div>;
-  return (
-    <table className="w-full text-sm">
-      <thead className="bg-beige-dark text-left text-xs text-ink-muted">
-        <tr>{["Ora", "Actor", "Etapă", "Acțiune", "Intrare", "Rezultat", "Durată", "Stare"].map((h) => <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr>
-      </thead>
-      <tbody>
-        {data.map((a) => (
-          <tr key={a.id} className="border-t border-border">
-            <td className="px-3 py-2 text-ink-muted">{a.timestamp.split(" ")[1]}</td>
-            <td className="px-3 py-2">{a.actor === "ai" ? <span className="inline-flex items-center gap-1"><Bot className="h-4 w-4 text-teal" />AI</span> : <span className="inline-flex items-center gap-1"><User className="h-4 w-4" />Analist</span>}</td>
-            <td className="px-3 py-2 font-medium text-ink">{a.stage}</td>
-            <td className="px-3 py-2">{a.action}</td>
-            <td className="px-3 py-2 text-ink-muted">{a.input}</td>
-            <td className="px-3 py-2 text-ink-muted">{a.output}</td>
-            <td className="px-3 py-2 tabular-nums text-ink-muted">{(a.durationMs / 1000).toFixed(1)} s</td>
-            <td className={cn("px-3 py-2 font-medium capitalize", st[a.status])}>{a.status}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
+ const { data = [], isLoading } = useQuery({ queryKey: ["audit", caseId], queryFn: () => getAuditLog(caseId) }); const [expanded, setExpanded] = useState<string | null>(null); const [stage, setStage] = useState(""); const [actor, setActor] = useState("");
+ if (isLoading) return <Loading label="Se încarcă jurnalul…" />;
+ const filtered = data.filter((a) => (!stage || a.stage === stage) && (!actor || a.actor === actor));
+ return <><div className="mb-3 flex flex-wrap items-center justify-between gap-3 text-[10px] text-ink-muted"><span>{data.length} evenimente · {data.filter((a) => a.actor === "ai").length} automate · {data.filter((a) => a.actor === "human").length} umane</span><div className="flex items-center gap-4"><label>Etapă: <select aria-label="Etapă audit" value={stage} onChange={(e) => setStage(e.target.value)} className="bg-transparent"><option value="">Toate</option>{Array.from(new Set(data.map((a) => a.stage))).map((s) => <option key={s}>{s}</option>)}</select></label><label>Actor: <select aria-label="Actor audit" value={actor} onChange={(e) => setActor(e.target.value)} className="bg-transparent"><option value="">Toți</option><option value="ai">AI</option><option value="human">Analist</option></select></label><Button variant="link" className="h-auto p-0 text-[10px] text-teal" onClick={() => { const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })); const a = document.createElement("a"); a.href = url; a.download = `${caseId}-audit.json`; a.click(); URL.revokeObjectURL(url); }}><Download className="h-3 w-3" />Exportă JSON</Button></div></div><div className="overflow-hidden rounded-md border border-border bg-card">{filtered.map((a) => <div key={a.id} className="border-b border-border last:border-b-0"><Button variant="ghost" onClick={() => setExpanded(expanded === a.id ? null : a.id)} className="flex h-auto w-full items-start justify-start gap-3 whitespace-normal rounded-none px-4 py-3 text-left text-[10px] font-normal">{a.actor === "ai" ? <Settings className="mt-0.5 h-3 w-3 shrink-0 text-avatar" /> : <UserRound className="h-3 w-3 shrink-0 text-ink-muted" />}<span className="shrink-0 text-ink-muted">{a.timestamp.split(" ")[1]}</span><span className="shrink-0 font-semibold">{a.stage}</span><span className="text-ink-muted">·</span><span className="flex-1 text-ink">{a.action}</span><span className="shrink-0 text-ink-muted">{(a.durationMs / 1000).toFixed(1)}s</span></Button>{expanded === a.id && <div className="grid grid-cols-2 gap-3 px-[90px] pb-5 max-sm:px-4">{[["Intrare", a.input], ["Ieșire", a.output]].map(([label, value]) => <div key={label}><h3 className="mb-1 text-[10px] font-semibold">{label}</h3><pre className="min-h-36 overflow-auto whitespace-pre-wrap break-all rounded border border-border bg-beige p-3 text-[10px] leading-relaxed text-ink-muted">{value}</pre></div>)}</div>}</div>)}{!filtered.length && <div className="p-10 text-center text-xs text-ink-muted">Nu există evenimente.</div>}</div></>;
 }

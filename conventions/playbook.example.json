@@ -1,0 +1,155 @@
+{
+  "playbook_id": "pb_kyc_pf_v1",
+  "version": 1,
+  "process_name": "KYC onboarding - persoane fizice",
+  "customer_type": "PF",
+  "source_procedure": {
+    "file": "procedures/kyc_pf_procedure.pdf",
+    "generated_at": "2026-10-28T12:00:00+02:00"
+  },
+  "required_documents": [
+    {
+      "doc_type": "id_card",
+      "applies_to": "applicant",
+      "min_count": 1,
+      "alternatives": ["passport"],
+      "fields": ["full_name", "cnp", "date_of_birth", "address", "series_number", "expiry_date"],
+      "source_ref": { "page": 1, "quote": "The client presents a valid identity document." }
+    },
+    {
+      "doc_type": "proof_of_address",
+      "applies_to": "applicant",
+      "min_count": 1,
+      "alternatives": [],
+      "fields": ["full_name", "address", "issue_date"],
+      "source_ref": { "page": 1, "quote": "A utility bill not older than 90 days confirms the address." }
+    },
+    {
+      "doc_type": "payslip",
+      "applies_to": "applicant",
+      "min_count": 3,
+      "alternatives": ["income_certificate"],
+      "fields": ["full_name", "employer", "net_salary", "period_end"],
+      "source_ref": { "page": 2, "quote": "Income is proven by the last three payslips." }
+    },
+    {
+      "doc_type": "bank_statement",
+      "applies_to": "applicant",
+      "min_count": 1,
+      "alternatives": [],
+      "fields": ["full_name", "iban", "salary_deposits", "period_end"],
+      "source_ref": { "page": 2, "quote": "A bank statement covering the last three months is required." }
+    }
+  ],
+  "rules": [
+    {
+      "rule_id": "R-PF-001",
+      "stage": "validate",
+      "check": "required_present",
+      "params": { "doc_type": "payslip", "min_count": 3 },
+      "applies_to": "applicant",
+      "severity": "high",
+      "description": "Three payslips are required.",
+      "client_fixable": true,
+      "fix_message": "Please upload your last {min_count} payslips. We received {found_count}.",
+      "source_ref": { "page": 2, "quote": "Income is proven by the last three payslips." }
+    },
+    {
+      "rule_id": "R-PF-002",
+      "stage": "validate",
+      "check": "not_expired",
+      "params": { "doc_type": "id_card", "field": "expiry_date" },
+      "applies_to": "applicant",
+      "severity": "high",
+      "description": "The identity document must not be expired.",
+      "client_fixable": true,
+      "fix_message": "Your identity card expired on {expiry_date}. Please upload a valid ID card or passport.",
+      "source_ref": { "page": 1, "quote": "The client presents a valid identity document." }
+    },
+    {
+      "rule_id": "R-PF-003",
+      "stage": "validate",
+      "check": "max_age_days",
+      "params": { "doc_type": "proof_of_address", "field": "issue_date", "days": 90 },
+      "applies_to": "applicant",
+      "severity": "medium",
+      "description": "Proof of address must be at most 90 days old.",
+      "client_fixable": true,
+      "fix_message": "Your proof of address is from {issue_date}. Please upload one issued in the last 90 days.",
+      "source_ref": { "page": 1, "quote": "A utility bill not older than 90 days confirms the address." }
+    },
+    {
+      "rule_id": "R-PF-004",
+      "stage": "cross_check",
+      "check": "fields_match",
+      "params": { "field": "address", "doc_types": ["id_card", "proof_of_address"], "mode": "normalized" },
+      "applies_to": "applicant",
+      "severity": "medium",
+      "description": "The address on the ID must match the proof of address.",
+      "client_fixable": true,
+      "fix_message": "The address on your ID differs from the one on your proof of address. Please upload a document showing your current address.",
+      "source_ref": { "page": 1, "quote": "The declared address is checked against the identity document." }
+    },
+    {
+      "rule_id": "R-PF-005",
+      "stage": "cross_check",
+      "check": "income_vs_deposits",
+      "params": { "tolerance_pct": 10 },
+      "applies_to": "applicant",
+      "severity": "high",
+      "description": "Net salary on payslips must match salary deposits on the bank statement within 10%.",
+      "client_fixable": false,
+      "fix_message": null,
+      "source_ref": { "page": 2, "quote": "Declared income is reconciled with account inflows." }
+    },
+    {
+      "rule_id": "R-PF-006",
+      "stage": "tamper",
+      "check": "pdf_metadata",
+      "params": {},
+      "applies_to": "applicant",
+      "severity": "critical",
+      "description": "Documents must not show signs of editing after issue.",
+      "client_fixable": false,
+      "fix_message": null,
+      "source_ref": { "page": 3, "quote": "Documents with signs of alteration are escalated." }
+    },
+    {
+      "rule_id": "R-PF-007",
+      "stage": "screening",
+      "check": "sanctions",
+      "params": { "list": "mock_sanctions_v1" },
+      "applies_to": "applicant",
+      "severity": "critical",
+      "description": "The client must not appear on sanctions lists.",
+      "client_fixable": false,
+      "fix_message": null,
+      "source_ref": { "page": 3, "quote": "All clients are screened against international sanctions lists." }
+    },
+    {
+      "rule_id": "R-PF-008",
+      "stage": "screening",
+      "check": "pep",
+      "params": { "list": "mock_pep_v1" },
+      "applies_to": "applicant",
+      "severity": "high",
+      "description": "PEP status requires enhanced due diligence.",
+      "client_fixable": false,
+      "fix_message": null,
+      "source_ref": { "page": 3, "quote": "Politically exposed persons are subject to enhanced due diligence." }
+    },
+    {
+      "rule_id": "R-PF-009",
+      "stage": "risk",
+      "check": "risk_factors",
+      "params": { "factors": ["country", "occupation", "pep"] },
+      "applies_to": "applicant",
+      "severity": "info",
+      "description": "Draft a risk level from country, occupation and PEP status.",
+      "client_fixable": false,
+      "fix_message": null,
+      "source_ref": { "page": 3, "quote": "Each client receives a risk rating." }
+    }
+  ],
+  "person_flows": null
+}

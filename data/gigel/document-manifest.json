@@ -1,0 +1,66 @@
+{
+  "dataset_id": "gigel-popescu-pf-v1",
+  "reference_date": "2026-10-28",
+  "synthetic": true,
+  "customer": {
+    "full_name": "Gigel Popescu",
+    "customer_type": "PF",
+    "note": "Fictitious demo identity. Do not treat identifiers as real customer data."
+  },
+  "cases": [
+    {
+      "case_id": "case_0001_pf_gigel_curat",
+      "purpose": "Clean happy-path baseline",
+      "expected_flag_count": 0,
+      "documents": [
+        {
+          "doc_id": "doc_001",
+          "type": "identity_sheet",
+          "path": "cases/case_0001_pf_gigel_curat/docs/doc_001_identitate.pdf"
+        },
+        {
+          "doc_id": "doc_002",
+          "type": "utility_invoice",
+          "path": "cases/case_0001_pf_gigel_curat/docs/doc_002_factura.pdf"
+        },
+        {
+          "doc_id": "doc_003",
+          "type": "payslip",
+          "path": "cases/case_0001_pf_gigel_curat/docs/doc_003_fluturas.pdf"
+        }
+      ],
+      "truth": "cases/case_0001_pf_gigel_curat/truth.json",
+      "expected_flags": "cases/case_0001_pf_gigel_curat/expected_flags.json"
+    },
+    {
+      "case_id": "case_0006_pf_gigel_fluturas_talcioc",
+      "purpose": "Altered payslip with synthetic tampering signals",
+      "expected_flag_count": 3,
+      "additional_detector_signal": {
+        "name": "incremental_save",
+        "description": "The payslip contains two %%EOF markers.",
+        "expected": true,
+        "oracle_included": false
+      },
+      "documents": [
+        {
+          "doc_id": "doc_001",
+          "type": "identity_sheet",
+          "path": "cases/case_0006_pf_gigel_fluturas_talcioc/docs/doc_001_identitate.pdf"
+        },
+        {
+          "doc_id": "doc_002",
+          "type": "utility_invoice",
+          "path": "cases/case_0006_pf_gigel_fluturas_talcioc/docs/doc_002_factura.pdf"
+        },
+        {
+          "doc_id": "doc_003",
+          "type": "payslip",
+          "path": "cases/case_0006_pf_gigel_fluturas_talcioc/docs/doc_003_fluturas.pdf"
+        }
+      ],
+      "truth": "cases/case_0006_pf_gigel_fluturas_talcioc/truth.json",
+      "expected_flags": "cases/case_0006_pf_gigel_fluturas_talcioc/expected_flags.json"
+    }
+  ]
+}

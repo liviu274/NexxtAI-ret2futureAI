@@ -205,6 +205,12 @@ cython_debug/
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
+# JavaScript projects
+**/node_modules/
+**/.env
+**/.env.*
+!.env.example
+
 # Ruff stuff:
 .ruff_cache/
 

@@ -1,7 +1,0 @@
-[
-  {
-    "rule_id": "R-PF-001",
-    "check": "required_present",
-    "severity": "high"
-  }
-]

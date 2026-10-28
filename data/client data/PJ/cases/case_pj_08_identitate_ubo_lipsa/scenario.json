@@ -1,0 +1,10 @@
+{
+  "case_id": "case_pj_08_identitate_ubo_lipsa",
+  "description": "Lipsește actul de identitate al unui UBO",
+  "reference_date": "2026-10-28",
+  "mutation": "missing_ubo_id",
+  "expected_rule_ids": [
+    "R-PJ-007"
+  ],
+  "synthetic": true
+}

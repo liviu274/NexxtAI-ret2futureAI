@@ -1,0 +1,136 @@
+{
+  "reference_date": "2026-10-28",
+  "cases": [
+    {
+      "case_id": "case_pf_00_corect_control",
+      "description": "Dosar corect de control",
+      "rule_ids": [],
+      "flag_count": 0,
+      "risk": "low",
+      "passed": true
+    },
+    {
+      "case_id": "case_pf_01_factura_lipsa",
+      "description": "Lipsește factura de utilități",
+      "rule_ids": [
+        "R-PF-001"
+      ],
+      "flag_count": 1,
+      "risk": "high",
+      "passed": true
+    },
+    {
+      "case_id": "case_pf_02_numar_act_lipsa",
+      "description": "Numărul actului nu este înscris",
+      "rule_ids": [
+        "R-PF-002"
+      ],
+      "flag_count": 1,
+      "risk": "high",
+      "passed": true
+    },
+    {
+      "case_id": "case_pf_03_act_expirat",
+      "description": "Act de identitate expirat",
+      "rule_ids": [
+        "R-PF-003"
+      ],
+      "flag_count": 1,
+      "risk": "high",
+      "passed": true
+    },
+    {
+      "case_id": "case_pf_04_nume_factura_diferit",
+      "description": "Numele din factură diferă de identitate",
+      "rule_ids": [
+        "R-PF-004"
+      ],
+      "flag_count": 1,
+      "risk": "high",
+      "passed": true
+    },
+    {
+      "case_id": "case_pf_05_adresa_factura_diferita",
+      "description": "Adresa din factură diferă de identitate",
+      "rule_ids": [
+        "R-PF-004"
+      ],
+      "flag_count": 1,
+      "risk": "high",
+      "passed": true
+    },
+    {
+      "case_id": "case_pf_06_nume_fluturas_diferit",
+      "description": "Numele angajatului diferă de identitate",
+      "rule_ids": [
+        "R-PF-005"
+      ],
+      "flag_count": 1,
+      "risk": "high",
+      "passed": true
+    },
+    {
+      "case_id": "case_pf_07_cnp_fluturas_diferit",
+      "description": "CNP-ul angajatului diferă de identitate",
+      "rule_ids": [
+        "R-PF-005"
+      ],
+      "flag_count": 1,
+      "risk": "high",
+      "passed": true
+    },
+    {
+      "case_id": "case_pf_08_metadate_suspecte",
+      "description": "Fluturaș cu producător PDF suspect",
+      "rule_ids": [
+        "R-PF-012"
+      ],
+      "flag_count": 1,
+      "risk": "critical",
+      "passed": true
+    },
+    {
+      "case_id": "case_pf_09_fonturi_amestecate",
+      "description": "Fonturi amestecate pe linia salariului net",
+      "rule_ids": [
+        "R-PF-013"
+      ],
+      "flag_count": 1,
+      "risk": "high",
+      "passed": true
+    },
+    {
+      "case_id": "case_pf_10_total_incorect",
+      "description": "Netul afișat nu corespunde calculului",
+      "rule_ids": [
+        "R-PF-014"
+      ],
+      "flag_count": 1,
+      "risk": "high",
+      "passed": true
+    },
+    {
+      "case_id": "case_pf_11_salvare_incrementala",
+      "description": "PDF salvat incremental, cu două EOF",
+      "rule_ids": [
+        "R-PF-015"
+      ],
+      "flag_count": 1,
+      "risk": "high",
+      "passed": true
+    },
+    {
+      "case_id": "case_pf_12_modificari_combinate",
+      "description": "Metadate, fonturi, total și salvare incrementală suspecte",
+      "rule_ids": [
+        "R-PF-012",
+        "R-PF-013",
+        "R-PF-014",
+        "R-PF-015"
+      ],
+      "flag_count": 4,
+      "risk": "critical",
+      "passed": true
+    }
+  ]
+}

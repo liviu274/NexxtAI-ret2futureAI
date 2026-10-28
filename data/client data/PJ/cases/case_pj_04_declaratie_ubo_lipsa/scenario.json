@@ -1,0 +1,10 @@
+{
+  "case_id": "case_pj_04_declaratie_ubo_lipsa",
+  "description": "Lipsește declarația UBO",
+  "reference_date": "2026-10-28",
+  "mutation": "missing_declaration",
+  "expected_rule_ids": [
+    "R-PJ-004"
+  ],
+  "synthetic": true
+}

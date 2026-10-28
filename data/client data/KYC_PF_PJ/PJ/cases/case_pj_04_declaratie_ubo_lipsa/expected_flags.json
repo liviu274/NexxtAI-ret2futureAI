@@ -1,8 +1,0 @@
-[
-  {
-    "rule_id": "R-PJ-004",
-    "check": "required_present",
-    "severity": "high",
-    "description": "Societatea trebuie să prezinte declarația privind beneficiarul real."
-  }
-]

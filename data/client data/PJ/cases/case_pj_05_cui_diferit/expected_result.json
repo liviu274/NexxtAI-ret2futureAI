@@ -1,0 +1,10 @@
+{
+  "case_id": "case_pj_05_cui_diferit",
+  "rule_ids": [
+    "R-PJ-016"
+  ],
+  "flag_count": 1,
+  "decision": null,
+  "project_pipeline_run": false,
+  "expected_result_kind": "Scenario expectation for the PJ implementation; dataset conditions independently checked."
+}

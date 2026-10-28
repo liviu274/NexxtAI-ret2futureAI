@@ -1,0 +1,9 @@
+{
+  "case_id": "case_pj_04_declaratie_ubo_lipsa",
+  "audit_kind": "Dataset consistency checks, not the project PJ pipeline",
+  "identified_scenario_rule_ids": [
+    "R-PJ-004"
+  ],
+  "matches_expected": true,
+  "project_pipeline_run": false
+}

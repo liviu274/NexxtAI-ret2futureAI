@@ -1,9 +1,0 @@
-{
-  "case_id": "case_pj_03_act_constitutiv_lipsa",
-  "audit_kind": "Dataset consistency checks, not the project PJ pipeline",
-  "identified_scenario_rule_ids": [
-    "R-PJ-003"
-  ],
-  "matches_expected": true,
-  "project_pipeline_run": false
-}

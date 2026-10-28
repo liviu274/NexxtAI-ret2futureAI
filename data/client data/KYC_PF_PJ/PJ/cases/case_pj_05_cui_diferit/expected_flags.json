@@ -1,8 +1,0 @@
-[
-  {
-    "rule_id": "R-PJ-016",
-    "check": "fields_match",
-    "severity": "high",
-    "description": "CUI-ul trebuie să fie identic pe certificatul constatator, actul constitutiv și declarația BR."
-  }
-]

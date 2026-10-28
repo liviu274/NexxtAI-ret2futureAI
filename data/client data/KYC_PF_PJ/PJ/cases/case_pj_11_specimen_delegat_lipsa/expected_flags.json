@@ -1,8 +1,0 @@
-[
-  {
-    "rule_id": "R-PJ-013",
-    "check": "required_present",
-    "severity": "high",
-    "description": "Fiecare delegat depune un specimen de semnătură."
-  }
-]

@@ -1,0 +1,32 @@
+[
+  {
+    "rule_id": "R-PJ-002",
+    "check": "max_age_days",
+    "severity": "high",
+    "description": "Certificatul constatator nu trebuie să fie mai vechi de 30 de zile."
+  },
+  {
+    "rule_id": "R-PJ-005",
+    "check": "field_present",
+    "severity": "high",
+    "description": "Declarația privind beneficiarul real trebuie să fie semnată de reprezentantul legal."
+  },
+  {
+    "rule_id": "R-PJ-006",
+    "check": "registry_vs_declaration",
+    "severity": "high",
+    "description": "Beneficiarii reali declarați trebuie să corespundă cu asociații și cotele din certificatul constatator."
+  },
+  {
+    "rule_id": "R-PJ-010",
+    "check": "not_expired",
+    "severity": "high",
+    "description": "Actul de identitate al fiecărui administrator trebuie să fie valabil."
+  },
+  {
+    "rule_id": "R-PJ-016",
+    "check": "fields_match",
+    "severity": "high",
+    "description": "CUI-ul trebuie să fie identic pe certificatul constatator, actul constitutiv și declarația BR."
+  }
+]

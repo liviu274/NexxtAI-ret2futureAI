@@ -1,0 +1,127 @@
+{
+  "reference_date": "2026-10-28",
+  "negative_cases": 12,
+  "clean_control_cases": 1,
+  "cases": [
+    {
+      "case_id": "case_pj_00_corect_control",
+      "description": "Dosar PJ corect de control",
+      "expected_rule_ids": [],
+      "dataset_audit_matches": true,
+      "project_pipeline_run": false
+    },
+    {
+      "case_id": "case_pj_01_certificat_lipsa",
+      "description": "Lipsește certificatul constatator",
+      "expected_rule_ids": [
+        "R-PJ-001"
+      ],
+      "dataset_audit_matches": true,
+      "project_pipeline_run": false
+    },
+    {
+      "case_id": "case_pj_02_certificat_vechi",
+      "description": "Certificatul constatator este mai vechi de 30 de zile",
+      "expected_rule_ids": [
+        "R-PJ-002"
+      ],
+      "dataset_audit_matches": true,
+      "project_pipeline_run": false
+    },
+    {
+      "case_id": "case_pj_03_act_constitutiv_lipsa",
+      "description": "Lipsește actul constitutiv",
+      "expected_rule_ids": [
+        "R-PJ-003"
+      ],
+      "dataset_audit_matches": true,
+      "project_pipeline_run": false
+    },
+    {
+      "case_id": "case_pj_04_declaratie_ubo_lipsa",
+      "description": "Lipsește declarația UBO",
+      "expected_rule_ids": [
+        "R-PJ-004"
+      ],
+      "dataset_audit_matches": true,
+      "project_pipeline_run": false
+    },
+    {
+      "case_id": "case_pj_05_cui_diferit",
+      "description": "CUI diferit în declarația UBO",
+      "expected_rule_ids": [
+        "R-PJ-016"
+      ],
+      "dataset_audit_matches": true,
+      "project_pipeline_run": false
+    },
+    {
+      "case_id": "case_pj_06_ubo_diferit",
+      "description": "Un beneficiar real declarat diferă de registrul mock",
+      "expected_rule_ids": [
+        "R-PJ-006"
+      ],
+      "dataset_audit_matches": true,
+      "project_pipeline_run": false
+    },
+    {
+      "case_id": "case_pj_07_procente_diferite",
+      "description": "Declarație 50% / 50%, registru mock 60% / 40%",
+      "expected_rule_ids": [
+        "R-PJ-006"
+      ],
+      "dataset_audit_matches": true,
+      "project_pipeline_run": false
+    },
+    {
+      "case_id": "case_pj_08_identitate_ubo_lipsa",
+      "description": "Lipsește actul de identitate al unui UBO",
+      "expected_rule_ids": [
+        "R-PJ-007"
+      ],
+      "dataset_audit_matches": true,
+      "project_pipeline_run": false
+    },
+    {
+      "case_id": "case_pj_09_act_administrator_expirat",
+      "description": "Actul administratorului este expirat",
+      "expected_rule_ids": [
+        "R-PJ-010"
+      ],
+      "dataset_audit_matches": true,
+      "project_pipeline_run": false
+    },
+    {
+      "case_id": "case_pj_10_administrator_diferit",
+      "description": "Administratorul din certificat diferă de actul prezentat",
+      "expected_rule_ids": [
+        "R-PJ-011"
+      ],
+      "dataset_audit_matches": true,
+      "project_pipeline_run": false
+    },
+    {
+      "case_id": "case_pj_11_specimen_delegat_lipsa",
+      "description": "Lipsește specimenul de semnătură al delegatului",
+      "expected_rule_ids": [
+        "R-PJ-013"
+      ],
+      "dataset_audit_matches": true,
+      "project_pipeline_run": false
+    },
+    {
+      "case_id": "case_pj_12_probleme_combinate",
+      "description": "Certificat vechi, UBO diferit, CUI diferit, act expirat și semnatar omis",
+      "expected_rule_ids": [
+        "R-PJ-002",
+        "R-PJ-005",
+        "R-PJ-006",
+        "R-PJ-010",
+        "R-PJ-016"
+      ],
+      "dataset_audit_matches": true,
+      "project_pipeline_run": false
+    }
+  ],
+  "scope": "PJ dataset audit only. No end-to-end project pipeline run."
+}

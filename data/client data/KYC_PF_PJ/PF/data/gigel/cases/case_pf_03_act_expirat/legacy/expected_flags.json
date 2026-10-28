@@ -1,7 +1,0 @@
-[
-  {
-    "rule_id": "R-PF-003",
-    "check": "not_expired",
-    "severity": "high"
-  }
-]

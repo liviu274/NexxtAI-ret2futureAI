@@ -84,4 +84,4 @@ class CheckContext:
 
 
 def load_stubs() -> None:
-    from . import stubs, screening
+    from . import stubs, screening, tamper, id_integrity

@@ -1,0 +1,13 @@
+{
+  "case_id": "case_pj_12_probleme_combinate",
+  "audit_kind": "Dataset consistency checks, not the project PJ pipeline",
+  "identified_scenario_rule_ids": [
+    "R-PJ-002",
+    "R-PJ-005",
+    "R-PJ-006",
+    "R-PJ-010",
+    "R-PJ-016"
+  ],
+  "matches_expected": true,
+  "project_pipeline_run": false
+}

@@ -1,9 +1,0 @@
-{
-  "case_id": "case_pj_11_specimen_delegat_lipsa",
-  "audit_kind": "Dataset consistency checks, not the project PJ pipeline",
-  "identified_scenario_rule_ids": [
-    "R-PJ-013"
-  ],
-  "matches_expected": true,
-  "project_pipeline_run": false
-}

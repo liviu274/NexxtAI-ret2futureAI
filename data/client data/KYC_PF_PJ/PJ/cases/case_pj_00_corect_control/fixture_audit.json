@@ -1,7 +1,0 @@
-{
-  "case_id": "case_pj_00_corect_control",
-  "audit_kind": "Dataset consistency checks, not the project PJ pipeline",
-  "identified_scenario_rule_ids": [],
-  "matches_expected": true,
-  "project_pipeline_run": false
-}

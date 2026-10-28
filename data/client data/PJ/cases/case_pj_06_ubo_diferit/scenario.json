@@ -1,0 +1,10 @@
+{
+  "case_id": "case_pj_06_ubo_diferit",
+  "description": "Un beneficiar real declarat diferă de registrul mock",
+  "reference_date": "2026-10-28",
+  "mutation": "ubo_mismatch",
+  "expected_rule_ids": [
+    "R-PJ-006"
+  ],
+  "synthetic": true
+}

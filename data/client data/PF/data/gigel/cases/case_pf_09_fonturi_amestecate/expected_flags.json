@@ -1,0 +1,7 @@
+[
+  {
+    "rule_id": "R-PF-013",
+    "check": "font_consistency",
+    "severity": "high"
+  }
+]

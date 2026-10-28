@@ -1,8 +1,0 @@
-[
-  {
-    "rule_id": "R-PJ-001",
-    "check": "required_present",
-    "severity": "high",
-    "description": "Societatea trebuie să prezinte un certificat constatator emis de ONRC."
-  }
-]

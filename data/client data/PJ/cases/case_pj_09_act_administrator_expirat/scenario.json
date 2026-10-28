@@ -1,0 +1,10 @@
+{
+  "case_id": "case_pj_09_act_administrator_expirat",
+  "description": "Actul administratorului este expirat",
+  "reference_date": "2026-10-28",
+  "mutation": "expired_admin",
+  "expected_rule_ids": [
+    "R-PJ-010"
+  ],
+  "synthetic": true
+}

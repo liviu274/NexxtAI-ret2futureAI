@@ -1,0 +1,10 @@
+{
+  "case_count": 13,
+  "regenerated_pdfs": 9,
+  "pdf_text_and_bbox_fields_checked": 957,
+  "all_expected_scenarios_present": true,
+  "pdf_and_png_coherent": true,
+  "project_pipeline_run": false,
+  "limitation": "The supplied pipeline is PF-only. PJ expected flag IDs come from the archived PJ fallback playbook. No production validator was added.",
+  "visual_review": "All 9 newly authored pages inspected; other pages are copies of previously verified PDFs."
+}

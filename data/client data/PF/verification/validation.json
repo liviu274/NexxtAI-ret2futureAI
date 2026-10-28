@@ -1,0 +1,17 @@
+{
+  "negative_cases": 12,
+  "clean_control_cases": 1,
+  "pdf_count": 38,
+  "png_count": 38,
+  "pipeline_runs": 13,
+  "all_expected_flags_match_actual": true,
+  "independent_expected_rule_ids": true,
+  "text_and_bbox_checks": 331,
+  "real_font_changes_verified": true,
+  "real_incremental_pdf_revisions_verified": true,
+  "rules_unchanged": true,
+  "screening_matches": 0,
+  "scope": "PF only; no OCR or PJ run.",
+  "font_detection_limitation": "The pipeline flags font_mix_net_line from truth.json; the actual mixed fonts are also present in the PDF and verified separately.",
+  "visual_review": "All 38 final pages inspected; no clipping or overlap."
+}

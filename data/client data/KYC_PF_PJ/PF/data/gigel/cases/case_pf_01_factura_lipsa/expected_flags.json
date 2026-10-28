@@ -1,8 +1,0 @@
-[
-  {
-    "rule_id": "R-PF-004",
-    "check": "required_present",
-    "severity": "high",
-    "description": "Clientul trebuie să prezinte o dovadă a adresei."
-  }
-]

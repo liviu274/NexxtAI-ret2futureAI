@@ -1,8 +1,0 @@
-[
-  {
-    "rule_id": "R-PF-002",
-    "check": "not_expired",
-    "severity": "high",
-    "description": "Actul de identitate nu trebuie să fie expirat la data cererii."
-  }
-]

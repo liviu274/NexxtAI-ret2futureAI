@@ -1,9 +1,0 @@
-{
-  "case_id": "case_pj_01_certificat_lipsa",
-  "audit_kind": "Dataset consistency checks, not the project PJ pipeline",
-  "identified_scenario_rule_ids": [
-    "R-PJ-001"
-  ],
-  "matches_expected": true,
-  "project_pipeline_run": false
-}

@@ -1,0 +1,8 @@
+[
+  {
+    "rule_id": "R-PJ-010",
+    "check": "not_expired",
+    "severity": "high",
+    "description": "Actul de identitate al fiecărui administrator trebuie să fie valabil."
+  }
+]

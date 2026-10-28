@@ -1,0 +1,22 @@
+[
+  {
+    "rule_id": "R-PF-012",
+    "check": "pdf_metadata",
+    "severity": "critical"
+  },
+  {
+    "rule_id": "R-PF-013",
+    "check": "font_consistency",
+    "severity": "high"
+  },
+  {
+    "rule_id": "R-PF-014",
+    "check": "totals_consistency",
+    "severity": "high"
+  },
+  {
+    "rule_id": "R-PF-015",
+    "check": "incremental_save",
+    "severity": "medium"
+  }
+]

@@ -1,8 +1,0 @@
-[
-  {
-    "rule_id": "R-PJ-002",
-    "check": "max_age_days",
-    "severity": "high",
-    "description": "Certificatul constatator nu trebuie să fie mai vechi de 30 de zile."
-  }
-]

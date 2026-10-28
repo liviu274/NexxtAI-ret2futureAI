@@ -4,12 +4,12 @@ from dataclasses import replace
 from datetime import date
 
 from ..models import Document, Evidence, Flag, RiskDraft, RiskReason
-from . import CheckContext, register, whole_doc_evidence
+from . import CHECKS, CheckContext, register, whole_doc_evidence
 
 CATALOG = [
     "required_present", "not_expired", "max_age_days", "field_present",
     "fields_match", "income_vs_deposits", "registry_vs_declaration",
-    "pdf_metadata", "font_consistency", "totals_consistency",
+    "pdf_metadata", "font_consistency", "totals_consistency", "id_integrity",
     "sanctions", "pep", "adverse_media", "risk_factors",
 ]
 
@@ -87,5 +87,6 @@ def _risk_stub(ctx: CheckContext) -> RiskDraft:
 
 
 for _name in CATALOG:
-    if _name not in ("required_present", "not_expired"):
+    # Import order must not matter: a real implementation registered before this module loads is kept.
+    if _name not in ("required_present", "not_expired") and _name not in CHECKS:
         register(_name)(_risk_stub if _name == "risk_factors" else _noop)

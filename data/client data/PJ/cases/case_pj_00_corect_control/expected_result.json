@@ -1,0 +1,8 @@
+{
+  "case_id": "case_pj_00_corect_control",
+  "rule_ids": [],
+  "flag_count": 0,
+  "decision": null,
+  "project_pipeline_run": false,
+  "expected_result_kind": "Scenario expectation for the PJ implementation; dataset conditions independently checked."
+}

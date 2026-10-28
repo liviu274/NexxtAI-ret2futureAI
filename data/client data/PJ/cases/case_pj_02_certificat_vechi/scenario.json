@@ -1,0 +1,10 @@
+{
+  "case_id": "case_pj_02_certificat_vechi",
+  "description": "Certificatul constatator este mai vechi de 30 de zile",
+  "reference_date": "2026-10-28",
+  "mutation": "old_certificate",
+  "expected_rule_ids": [
+    "R-PJ-002"
+  ],
+  "synthetic": true
+}

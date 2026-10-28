@@ -1,8 +1,0 @@
-[
-  {
-    "rule_id": "R-PF-011",
-    "check": "font_consistency",
-    "severity": "critical",
-    "description": "Fonturile diferite în același câmp sau rând indică o posibilă alterare."
-  }
-]

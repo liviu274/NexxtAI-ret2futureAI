@@ -1,8 +1,0 @@
-[
-  {
-    "rule_id": "R-PJ-006",
-    "check": "registry_vs_declaration",
-    "severity": "high",
-    "description": "Beneficiarii reali declarați trebuie să corespundă cu asociații și cotele din certificatul constatator."
-  }
-]

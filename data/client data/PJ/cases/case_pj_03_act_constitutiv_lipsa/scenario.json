@@ -1,0 +1,10 @@
+{
+  "case_id": "case_pj_03_act_constitutiv_lipsa",
+  "description": "Lipsește actul constitutiv",
+  "reference_date": "2026-10-28",
+  "mutation": "missing_articles",
+  "expected_rule_ids": [
+    "R-PJ-003"
+  ],
+  "synthetic": true
+}

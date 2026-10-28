@@ -1,8 +1,0 @@
-[
-  {
-    "rule_id": "R-PJ-011",
-    "check": "fields_match",
-    "severity": "high",
-    "description": "Numele administratorului din actul de identitate trebuie să apară printre administratorii din certificatul constatator."
-  }
-]

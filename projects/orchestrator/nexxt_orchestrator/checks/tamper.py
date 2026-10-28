@@ -24,7 +24,7 @@ from pdfminer.pdfparser import PDFParser
 from pdfminer.pdftypes import resolve1
 
 from ..models import Document, Evidence, ExtractedField, Flag
-from ..store import REPO_ROOT
+from ..store import DEFAULT_RUNS_DIR, REPO_ROOT
 from . import CheckContext, register, whole_doc_evidence
 
 
@@ -41,9 +41,10 @@ MONEY_TOLERANCE = Decimal("0.01")
 
 
 def document_path(case_id: str, doc: Document) -> Path:
-    """Where the uploaded file lives: absolute, under NEXXT_DOCS_DIR, or under NEXXT_DOCS_DIR/<case_id>."""
+    """Where the uploaded file lives: absolute, in the case's upload folder (<runs>/<case_id>/<doc.file>, where the
+    upload API stores it), under NEXXT_DOCS_DIR, or under NEXXT_DOCS_DIR/<case_id>."""
     docs_dir = Path(os.environ.get("NEXXT_DOCS_DIR", REPO_ROOT / "data"))
-    for candidate in (Path(doc.file), docs_dir / doc.file, docs_dir / case_id / doc.file):
+    for candidate in (Path(doc.file), DEFAULT_RUNS_DIR / case_id / doc.file, docs_dir / doc.file, docs_dir / case_id / doc.file):
         if candidate.is_file():
             return candidate
     raise FileNotFoundError(f"{doc.doc_id}: file not found ({doc.file}); set NEXXT_DOCS_DIR")

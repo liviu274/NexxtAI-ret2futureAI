@@ -25,6 +25,10 @@ class CaseStore:
     def _path(self, case_id: str) -> Path:
         return self.root / case_id / "case.json"
 
+    def files_dir(self, case_id: str) -> Path:
+        """Uploaded document files of a case; Document.file is relative to the case folder."""
+        return self.root / case_id / "docs"
+
     def save(self, case: CaseFile) -> None:
         with self._lock:
             path = self._path(case.case_id)

@@ -62,12 +62,12 @@ import json  # noqa: E402
 
 import pytest  # noqa: E402
 
-from nexxt_orchestrator.store import REPO_ROOT  # noqa: E402
-
 
 @pytest.fixture(autouse=True)
 def example_case_documents(tmp_path_factory, monkeypatch):
     """conventions/case_file.example.json points at files that do not exist; give the tamper checks something to open."""
+    from nexxt_orchestrator.store import REPO_ROOT  # imported late: test_api sets NEXXT_RUNS_DIR before the store is first imported
+
     example = REPO_ROOT / "conventions" / "case_file.example.json"
     if not example.exists():
         return

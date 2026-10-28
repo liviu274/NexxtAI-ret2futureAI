@@ -22,7 +22,7 @@ export function PortalStep({ caseId, step }: { caseId: string; step: number }) {
   if (!file) return; setHelp(false);
   if (file.size > 10 * 1024 * 1024 || !/\.(pdf|png|jpe?g)$/i.test(file.name)) { setResult({ok:false,message:"Alege un fișier PDF, JPG sau PNG de cel mult 10 MB."}); return; }
   setBusy(true); setResult(null);
-  try { const r = await checkPortalDocument(caseId, step, file); setResult(r); await qc.invalidateQueries({queryKey:["case",caseId]}); }
+  try { const r = await checkPortalDocument(caseId, step, file); setResult(r); await qc.invalidateQueries({queryKey:["case",caseId]}); await qc.invalidateQueries({queryKey:["client-status",caseId]}); }
   catch { setResult({ok:false,message:"Documentul nu a putut fi primit. Încearcă din nou."}); }
   finally { setBusy(false); }
  }

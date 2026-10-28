@@ -25,6 +25,7 @@ class Model(BaseModel):
 class SourceRef(Model):
     page: int
     quote: str
+    clause: str | None = None
 
 
 

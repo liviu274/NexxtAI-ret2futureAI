@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, FileQuestion, Loader2, ShieldCheck, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -30,18 +30,12 @@ export function DecisionBar({ caseId }: { caseId: string }) {
 
   return (
     <>
-      <div className="sticky bottom-0 z-20 border-t border-border bg-card/95 backdrop-blur">
-        <div className="mx-auto flex max-w-[1392px] items-center justify-between px-6 py-3">
-          <div className="flex items-center gap-2 text-sm text-ink-muted">
-            <ShieldCheck className="h-4 w-4 text-teal" />
-            <span><strong className="text-ink">Decizia finală aparține analistului.</strong> AI-ul doar propune, nu aprobă și nu respinge.</span>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setOpen("documente")}><FileQuestion className="h-4 w-4" /> Solicită documente</Button>
-            <Button variant="outline" className="border-sev-high/40 text-sev-high hover:bg-sev-high/10 hover:text-sev-high" onClick={() => setOpen("respins")}><X className="h-4 w-4" /> Respinge</Button>
-            <Button onClick={() => setOpen("aprobat")}><Check className="h-4 w-4" /> Aprobă</Button>
-          </div>
-        </div>
+      <div className="flex flex-col items-end gap-1.5">
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button variant="outline" className="h-8 border-ink bg-card px-3 text-xs" onClick={() => setOpen("documente")}>Solicită documente</Button>
+          <Button variant="outline" className="h-8 border-ink bg-card px-3 text-xs" onClick={() => setOpen("respins")}>Respinge</Button>
+          <Button className="h-8 px-4 text-xs" onClick={() => setOpen("aprobat")}>Aprobă</Button>
+        </div><span className="text-[10px] text-ink-muted">Decizia finală aparține analistului.</span>
       </div>
       <Dialog open={!!open} onOpenChange={(o) => !o && setOpen(null)}>
         <DialogContent>

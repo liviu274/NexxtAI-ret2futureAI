@@ -35,7 +35,7 @@ describe("Approval and review rules", () => {
   const c=cases[0];if(!c)throw new Error("Missing case");expect(passedChecks(c,playbooks[0])).toBe(5);
  });
  it("has the complete 23-event main PF pipeline with exact stage counts", () => {
-  const rows=auditLog.filter((a)=>a.caseId==="case_pf_12_modificari_combinate");expect(rows).toHaveLength(23);
+  const rows=auditLog.filter((a)=>a.caseId==="case_pf_12_modificari_combinate" && a.id.includes("-pipeline-"));expect(rows).toHaveLength(23);
   expect(Object.fromEntries([...new Set(rows.map((a)=>a.stage))].map((stage)=>[stage,rows.filter((a)=>a.stage===stage).length]))).toEqual({"Încărcări client":3,"Clasificare":3,"Extracție":3,"Validare":3,"Verificare încrucișată":2,"Detectare falsificare":4,"Screening":3,"Propunere de risc":1,"Dosar pregătit":1});
   expect(rows.filter((r)=>["Validare","Verificare încrucișată","Screening"].includes(r.stage)).every((r)=>r.status==="ok")).toBe(true);
  });

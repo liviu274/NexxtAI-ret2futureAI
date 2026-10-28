@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import io
+import os
 import re
 from datetime import datetime
 from pathlib import Path
@@ -12,6 +13,7 @@ from pydantic import BaseModel
 from pypdf import PdfReader
 
 from .audit import AuditLog
+from .ingest import make_ingest
 from .models import CaseFile, Document, Outcome
 from .orchestrator import Orchestrator
 from .store import DEFAULT_RUNS_DIR, CaseStore, PlaybookStore
@@ -20,6 +22,9 @@ store = CaseStore(DEFAULT_RUNS_DIR)
 audit = AuditLog(DEFAULT_RUNS_DIR)
 playbooks = PlaybookStore()
 orchestrator = Orchestrator(store, audit, playbooks)
+if os.environ.get("FEATHERLESS_API_KEY"):  # without a key, uploads stay "unknown" until classified elsewhere
+    classify, extract = make_ingest(playbooks)
+    orchestrator.set_ingest(classify=classify, extract=extract)
 
 app = FastAPI(title="NexxtAI orchestrator")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -34,6 +39,8 @@ def _guard(fn):
         raise HTTPException(403, str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
+    except RuntimeError as exc:  # the OCR service failed; the document is kept and retried on the next process
+        raise HTTPException(502, f"document processing failed: {exc}") from exc
 
 
 class DecisionBody(BaseModel):

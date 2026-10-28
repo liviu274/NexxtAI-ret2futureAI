@@ -19,7 +19,7 @@ for (const p of playbooks) {
   p.sourceName = p.customerType === "PJ" ? "PJ-ONB-01.pdf" : "Fără procedură sursă";
   p.sourceDate = "28.10.2026";
   p.sourceDocumentText = p.customerType === "PJ" ? review.pjSourceText : "";
-  if (p.customerType === "PJ") p.clauses = review.pjClauses as Playbook["clauses"];
+  if (p.customerType === "PJ") p.clauses = review.pjClauses as NonNullable<Playbook["clauses"]>;
 }
 for (const c of cases) {
   c.screeningSummary ??= { sanctions: 25, pep: 25, news: 50, matches: 0 };

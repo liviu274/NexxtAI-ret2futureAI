@@ -1,4 +1,6 @@
 # Tasks
+- [ ] Build landing/start, per-document portal steps, summary, submission and client timeline.
+- [ ] Share demo cases/uploads/officer requests across browser tabs and verify PF/PJ flows.
 - [ ] Enforce approval blocking, flag statuses/dismissal and client-message eligibility on PF/PJ.
 - [ ] Add PF tabs, playbook list and statistics navigation; restore original clause-based procedure review.
 - [ ] Correct portal steps/feedback, full grouped PF pipeline audit and real passed-check counts.

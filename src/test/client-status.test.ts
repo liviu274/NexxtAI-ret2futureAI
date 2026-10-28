@@ -17,7 +17,7 @@ describe("client case status", () => {
     const json = JSON.stringify(toClientCaseStatus(make({ status: "Documente solicitate" })));
     for (const f of base.flags) { expect(json).not.toContain(f.id); if (!f.client_fixable) expect(json).not.toContain(f.title); }
     expect(json).not.toMatch(/risk|Elena|rule|screening|PEP/i);
-    expect(Object.keys(toClientCaseStatus(base)).sort()).toEqual(["client_messages", "dates", "decision", "step", "state", "upload_step"]);
+    expect(Object.keys(toClientCaseStatus(base)).sort()).toEqual(["client_messages", "dates", "decision", "state", "step", "upload_step"]);
   });
   it("looks identical in review for clean and flagged cases", () => {
     const clean = make({ status: "În analiză", flags: [] }); const dirty = make({ status: "În analiză" });

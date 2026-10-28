@@ -3,7 +3,7 @@ import type { Case } from "@/types";
 import { ownershipRows } from "@/lib/dataset";
 
 function OwnerNode({ data }: NodeProps) {
-  return <div className={`w-[185px] rounded-md border bg-card px-3 py-3 text-left ${data.mismatch ? "border-sev-high" : "border-border"}`}><Handle type="target" position={Position.Left} className="opacity-0" /><div className="text-xs font-semibold text-ink">{String(data.label)}</div><div className="mt-1 text-[10px] text-ink-muted">{data.company ? "Companie solicitantă" : "Beneficiar real"}</div><Handle type="source" position={Position.Right} className="opacity-0" /></div>;
+  return <div className={`w-[185px] rounded-md border bg-card px-3 py-3 text-left ${data["mismatch"] ? "border-sev-high" : "border-border"}`}><Handle type="target" position={Position.Left} className="opacity-0" /><div className="text-xs font-semibold text-ink">{String(data["label"])}</div><div className="mt-1 text-[10px] text-ink-muted">{data["company"] ? "Companie solicitantă" : "Beneficiar real"}</div><Handle type="source" position={Position.Right} className="opacity-0" /></div>;
 }
 const nodeTypes = { owner: OwnerNode };
 export default function OwnershipGraph({ c }: { c: Case }) {

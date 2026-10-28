@@ -17,12 +17,13 @@ export function findTruthBBox(truth: unknown, documentId: string, field: string)
   function walk(value: unknown, docMatch = false, fieldMatch = false): BBox | undefined {
     if (!value || typeof value !== "object") return;
     const obj = value as Record<string, unknown>;
-    const inDoc = docMatch || obj.id === documentId || obj.document_id === documentId || obj.documentId === documentId;
-    const inField = fieldMatch || obj.name === field || obj.field === field || obj.field_name === field;
+    const inDoc = docMatch || obj["id"] === documentId || obj["document_id"] === documentId || obj["documentId"] === documentId;
+    const inField = fieldMatch || obj["name"] === field || obj["field"] === field || obj["field_name"] === field;
     if (inDoc && inField) {
-      const bbox = normalizedBBox(obj.bbox);
+      const bbox = normalizedBBox(obj["bbox"]);
       if (bbox) return bbox;
     }
+    return undefined;
     for (const [key, child] of Object.entries(obj)) {
       const bbox = walk(child, inDoc || key === documentId, inField || key === field);
       if (bbox) return bbox;
@@ -34,10 +35,11 @@ export function findTruthBBox(truth: unknown, documentId: string, field: string)
 export function resolveEvidence(e: Evidence, flag: Flag, truth: unknown): Evidence {
   if (e.bbox) return e;
   const field = e.field ?? ["net_salary", "expiry_date", "address", "gross_salary", "cui"].find((key) => flag.explanation.includes(key));
-  return { ...e, bbox: field ? findTruthBBox(truth, e.documentId, field) : undefined };
+  const bbox = field ? findTruthBBox(truth, e.documentId, field) : undefined;
+  return bbox ? { ...e, bbox } : e;
 }
 
-export function ownershipRows(c: Case): { person: OwnershipPerson; registry?: number; declared?: number; matches: boolean }[] {
+export function ownershipRows(c: Case): { person: OwnershipPerson; registry: number | undefined; declared: number | undefined; matches: boolean }[] {
   const registry = c.ownership?.registry ?? [];
   const declared = c.ownership?.declared ?? [];
   const people = [...registry, ...declared.filter((p) => !registry.some((r) => r.id === p.id && r.name === p.name))];

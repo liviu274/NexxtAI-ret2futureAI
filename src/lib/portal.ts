@@ -1,5 +1,5 @@
 import type { Case, CustomerType, Person } from "@/types";
-export const documentLabels: Record<string, string> = { identity_document: "Act de identitate", utility_bill: "Factură de utilități (max 90 de zile)", payslip: "Fluturaș de salariu", certificat_constatator: "Certificat constatator", act_constitutiv: "Act constitutiv", ubo_declaration: "Declarație beneficiar real", id_card: "Act de identitate", signature_specimen: "Specimen de semnătură" };
+export const documentLabels: Record<string, string> = { identity_document: "Act de identitate", utility_bill: "Factură de utilități (max 90 de zile)", payslip: "Fluturaș de salariu", proof_of_address: "Dovada adresei (max 90 de zile)", bank_statement: "Extras de cont", certificat_constatator: "Certificat constatator", act_constitutiv: "Act constitutiv", ubo_declaration: "Declarație beneficiar real", id_card: "Act de identitate", signature_specimen: "Specimen de semnătură" };
 export function portalDocumentPlan(type: CustomerType, required: string[], persons: Person[]): NonNullable<Case["portalDocuments"]> {
  if (type === "PF") return required.map((t,i) => ({ key: `doc-${i+1}`, type: t, label: documentLabels[t] ?? t, ok: false }));
  const company = required.filter((t) => !["id_card", "signature_specimen"].includes(t));

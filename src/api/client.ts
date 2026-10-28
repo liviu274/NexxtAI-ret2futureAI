@@ -1,4 +1,4 @@
-import type { AuditEntry, Case, OwnershipEdge, OwnershipNode, Playbook } from "@/types";
+import type { AuditEntry, Case, OwnershipEdge, OwnershipNode, Playbook, PlaybookRule } from "@/types";
 import { resolveEvidence } from "@/lib/dataset";
 import { validateScreeningResolution } from "@/lib/screening";
 import type { ScreeningMatch } from "@/types/extensions";
@@ -9,16 +9,34 @@ import { portalDocumentPlan, simulatePortalResult } from "@/lib/portal";
 import type { CustomerType, Person } from "@/types";
 import { toClientCaseStatus, toClientPortalCase, type ClientCaseStatus, type ClientPortalCase } from "@/lib/client-status";
 import { fromBuilder, type BuilderResult } from "@/lib/playbook-builder";
+import { hasRequiredConsent, isValidEmail, isValidPhone, type ClientSession, type Consent, type ConsentId, type IdentityCheck, type Onboarding } from "@/lib/onboarding";
 
-import { fromOrchestratorCase, fromOrchestratorAudit, type OrchestratorCase, type OrchestratorAudit, type AuditLogResult } from "@/lib/orchestrator-adapter";
+import { fromOrchestratorCase, fromOrchestratorAudit, clientMessagesFor, type OrchestratorCase, type OrchestratorAudit, type AuditLogResult } from "@/lib/orchestrator-adapter";
 
 export const REAL_CASE_IDS = ["case_pj_07_procente_diferite", "case_pj_00_corect_control"] as const;
-export const isRealCase = (id: string) => REAL_CASE_IDS.some((realId) => realId === id);
+/** Cases opened from the portal while the orchestrator is up live only in the backend. */
+export const LIVE_PREFIX = "live_";
+// Every id `GET /cases` returned this session; the backend is the source for these.
+const backendIds = new Set<string>(REAL_CASE_IDS);
+export const isRealCase = (id: string) => backendIds.has(id) || id.startsWith(LIVE_PREFIX);
 const ORCHESTRATOR_BASE = (import.meta.env["VITE_ORCHESTRATOR_URL"] ?? "/api/orch").replace(/\/$/, "");
 let availability: Promise<boolean> | undefined;
+let backendList: Promise<string[]> | undefined;
+
+/** Ids of every case stored in the orchestrator, or [] when it is down. */
+function listBackendIds(): Promise<string[]> {
+  return backendList ??= (async () => {
+    if (!await orchestratorAvailable()) { backendList = undefined; return []; }
+    try {
+      const ids = (await orchestratorHttp<{ case_id: string }[]>("/cases")).map((c) => c.case_id);
+      for (const id of ids) backendIds.add(id);
+      return ids;
+    } catch { backendList = undefined; return []; }
+  })();
+}
 
 export function orchestratorAvailable(retry = false): Promise<boolean> {
-  if (retry) availability = undefined;
+  if (retry) { availability = undefined; backendList = undefined; }
   if (typeof window === "undefined") return Promise.resolve(false);
   return availability ??= (async () => {
     const abort = new AbortController();
@@ -60,13 +78,30 @@ async function orchestratorHttp<T>(path: string, init?: RequestInit, processing 
     return body;
   } catch { availability = Promise.resolve(false); throw new Error(processing ? OCR_UNCONFIRMED : SERVICE_UNAVAILABLE); }
 }
+// Which portal step each backend upload came from (doc_id -> step key), so a file the classifier
+// did not recognize stays on the step where the client uploaded it.
+const UPLOAD_SLOTS_KEY = "raif2future-upload-slots-v1";
+function uploadSlots(caseId: string): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  try { return (JSON.parse(window.localStorage.getItem(UPLOAD_SLOTS_KEY) ?? "{}") as Record<string, Record<string, string>>)[caseId] ?? {}; } catch { return {}; }
+}
+function rememberUploadSlot(caseId: string, docId: string, slotKey: string, replaced?: string) {
+  try {
+    const all = JSON.parse(window.localStorage.getItem(UPLOAD_SLOTS_KEY) ?? "{}") as Record<string, Record<string, string>>;
+    const slots = { ...all[caseId] }; if (replaced) delete slots[replaced];
+    for (const [doc, key] of Object.entries(slots)) if (key === slotKey) delete slots[doc];
+    slots[docId] = slotKey; all[caseId] = slots;
+    window.localStorage.setItem(UPLOAD_SLOTS_KEY, JSON.stringify(all));
+  } catch { /* the file then shows as an extra document, as before */ }
+}
 async function readOrchestratorCase(id: string): Promise<Case | null> {
-  if (!isRealCase(id) || !await orchestratorAvailable()) return null;
+  if (!await orchestratorAvailable()) return null;
+  if (!isRealCase(id) && !(await listBackendIds()).includes(id)) return null;
   try {
     const raw = await orchestratorHttp<OrchestratorCase>(`/cases/${encodeURIComponent(id)}`);
     const m = await mocks();
     const playbook = await getPlaybook(raw.playbook_id);
-    return fromOrchestratorCase(raw, m.cases.find((c) => c.id === id), playbook?.rules, playbook?.requiredDocuments);
+    return fromOrchestratorCase(raw, m.cases.find((c) => c.id === id), playbook?.rules, playbook?.requiredDocuments, uploadSlots(id));
   } catch { return null; } // Read failures retain the existing demo experience; mutations never silently write to mocks after a failed POST.
 }
 
@@ -83,6 +118,7 @@ function assertEditable(c: Case | null | undefined): asserts c is Case {
   if (isFinalCase(c.status)) throw new Error("Dosarul este închis. Modificările nu mai sunt permise.");
 }
 async function mutationCase(id: string, withPortalPlan = false) {
+  if (!isRealCase(id) && await orchestratorAvailable()) await listBackendIds();
   if (isRealCase(id)) {
     // Identity selects the source. Always retry a fresh authoritative read before a write.
     const raw = await orchestratorHttp<OrchestratorCase>(`/cases/${encodeURIComponent(id)}`);
@@ -91,7 +127,7 @@ async function mutationCase(id: string, withPortalPlan = false) {
       const playbook = await getPlaybook(raw.playbook_id);
       // Loading the plan is asynchronous: recheck the authoritative status afterwards.
       const latest = await orchestratorHttp<OrchestratorCase>(`/cases/${encodeURIComponent(id)}`);
-      const current = fromOrchestratorCase(latest, undefined, playbook?.rules, playbook?.requiredDocuments);
+      const current = fromOrchestratorCase(latest, undefined, playbook?.rules, playbook?.requiredDocuments, uploadSlots(id));
       assertEditable(current); return current;
     }
     return c;
@@ -124,7 +160,10 @@ export async function listCases(): Promise<Case[]> {
   await delay(400);
   const stored = readDemoCases(m.cases);
   if (!await orchestratorAvailable()) return stored.map((c) => isRealCase(c.id) ? { ...c, source: "backend", serviceUnavailable: true } : c);
-  return Promise.all(stored.map(async (c) => isRealCase(c.id) ? await readOrchestratorCase(c.id) ?? { ...c, source: "backend" as const, serviceUnavailable: true } : c));
+  const ids = await listBackendIds();
+  // Backend cases with a matching fixture keep their place; the rest (portal, other tools) come first.
+  const extra = (await Promise.all(ids.filter((id) => !stored.some((c) => c.id === id)).map(readOrchestratorCase))).filter((c): c is Case => !!c);
+  return [...extra.reverse(), ...await Promise.all(stored.map(async (c) => isRealCase(c.id) ? await readOrchestratorCase(c.id) ?? { ...c, source: "backend" as const, serviceUnavailable: true } : c))];
 }
 
 export async function getCase(id: string): Promise<Case | null> {
@@ -217,8 +256,31 @@ export async function getPlaybook(id: string): Promise<Playbook | null> {
   if (!USE_MOCK) return http(`/playbooks/${id}`);
   const m = await mocks();
   await delay(400);
-  return m.playbooks.find((p) => p.id === (id === "popriri" ? "pb_kyc_pf_v1" : id)) ?? null;
+  return m.playbooks.find((p) => p.id === (id === "popriri" ? "pb_kyc_pf_v1" : id)) ?? (await orchestratorPlaybooks()).find((p) => p.id === id) ?? null;
 }
+
+interface OrchestratorPlaybook {
+  playbook_id: string; process_name: string; customer_type: CustomerType;
+  required_documents: { doc_type: string }[];
+  rules: { rule_id: string; stage: string; check: string; params: Record<string, string | number | boolean>; description: string; source_ref: { quote: string } }[];
+}
+let backendPlaybooks: Promise<Playbook[]> | undefined;
+/** Playbooks the orchestrator runs, for backend cases whose playbook has no fixture. */
+function orchestratorPlaybooks(): Promise<Playbook[]> {
+  return backendPlaybooks ??= (async () => {
+    if (!await orchestratorAvailable()) { backendPlaybooks = undefined; return []; }
+    try {
+      const kinds: Record<string, PlaybookRule["kind"]> = { required_present: "document-obligatoriu", not_expired: "valabilitate", max_age_days: "vechime", fields_match: "potrivire", sanctions: "screening", pep: "screening", adverse_media: "screening" };
+      return (await orchestratorHttp<OrchestratorPlaybook[]>("/playbooks")).map((p) => ({
+        id: p.playbook_id, processName: p.process_name, customerType: p.customer_type, sourceDocumentText: "",
+        requiredDocuments: [...new Set(p.required_documents.map((d) => d.doc_type))],
+        rules: p.rules.map((r) => ({ id: r.rule_id, kind: kinds[r.check] ?? "prag", text: r.description, params: r.params, sourceSentence: r.source_ref.quote })),
+      }));
+    } catch { backendPlaybooks = undefined; return []; }
+  })();
+}
+/** Backend playbook a new portal case runs on (the same ones the dataset cases use). */
+const PORTAL_PLAYBOOKS: Record<CustomerType, string> = { PF: "pb_cont_pf_v1", PJ: "pb_cont_pj_v1" };
 
 export async function listPlaybooks(): Promise<Playbook[]> {
   if (!USE_MOCK) return http("/playbooks");
@@ -322,7 +384,29 @@ export async function dismissFlag(caseId: string, flagId: string, note: string) 
   return { ok: true };
 }
 
-export async function createPortalCase(type: CustomerType, persons: Person[]): Promise<Case> {
+const MY_LIVE_KEY = "raif2future-my-live-cases-v1";
+function readMyLiveCases(): string[] {
+ if (typeof window === "undefined") return [];
+ try { return JSON.parse(window.localStorage.getItem(MY_LIVE_KEY) ?? "[]") as string[]; } catch { return []; }
+}
+function rememberLiveCase(id: string) {
+ try { window.localStorage.setItem(MY_LIVE_KEY, JSON.stringify([...readMyLiveCases().filter((x) => x !== id), id])); } catch { /* the case still exists in the backend */ }
+}
+const backendRoles: Record<Person["role"], string> = { titular: "applicant", UBO: "ubo", semnatar: "signatory", administrator: "administrator" };
+
+/** Opens the case in the orchestrator when it is up, so uploads go through OCR and every check; otherwise a local demo case. */
+export async function createPortalCase(type: CustomerType, persons: Person[], companyName = ""): Promise<Case> {
+ if (await orchestratorAvailable()) {
+  const now = new Date().toISOString();
+  const raw = await orchestratorHttp<OrchestratorCase>("/cases", { method: "POST", body: JSON.stringify({
+   case_id: `${LIVE_PREFIX}${type.toLowerCase()}_${Date.now()}`, playbook_id: PORTAL_PLAYBOOKS[type], customer_type: type,
+   created_at: now, updated_at: now, company: type === "PJ" && companyName.trim() ? { name: companyName.trim() } : null,
+   persons: persons.map((p) => ({ person_id: p.id, role: backendRoles[p.role], full_name: p.name.trim() })),
+  }) });
+  backendIds.add(raw.case_id); rememberLiveCase(raw.case_id); notifyCaseChange();
+  const playbook = await getPlaybook(raw.playbook_id);
+  return fromOrchestratorCase(raw, undefined, playbook?.rules, playbook?.requiredDocuments);
+ }
  const m = await mocks(); const p = m.playbooks.find((p) => p.customerType === type);
  if (!p) throw new Error("Documentele necesare nu sunt disponibile.");
  const base = m.cases.find((c) => c.customerType === type && c.id.endsWith("00_corect_control"));
@@ -353,7 +437,10 @@ export async function getClientPortalCase(caseId: string): Promise<ClientPortalC
 
 export async function listMyPortalCases(): Promise<ClientPortalCase[]> {
  const m = await mocks();
- return readDemoCases(m.cases).filter((c) => c.id.startsWith("demo_")).map((c) => toClientPortalCase(c, c.portalDocuments ?? []));
+ const demo = readDemoCases(m.cases).filter((c) => c.id.startsWith("demo_")).map((c) => toClientPortalCase(c, c.portalDocuments ?? []));
+ // Cases opened in the backend from this browser; skipped while the service is down.
+ const live = await Promise.all(readMyLiveCases().map((id) => getClientPortalCase(id).catch(() => null)));
+ return [...live.filter((c): c is ClientPortalCase => !!c), ...demo];
 }
 
 export async function checkPortalDocument(caseId: string, step: number, file: File, expectedKey?: string) {
@@ -368,11 +455,13 @@ export async function checkPortalDocument(caseId: string, step: number, file: Fi
      const raw = await orchestratorHttp<OrchestratorCase>(`/cases/${encodeURIComponent(caseId)}/documents${query}`, { method: "POST", body: form }, true);
      const added = raw.documents.filter((d) => !current.documents.some((old) => old.id === d.doc_id));
      const doc = added.length === 1 ? added[0] : undefined;
+     if (doc) rememberUploadSlot(caseId, doc.doc_id, slot.key, slot.documentId);
+     if (doc?.doc_type === "unknown" && (doc.classification_confidence ?? 0) > 0) return { ok: false, message: `Nu am recunoscut fișierul ca ${slot.label.toLocaleLowerCase("ro")}. Încarcă documentul cerut la acest pas.` };
      if (!doc || doc.doc_type === "unknown" || !Object.keys(doc.fields).length) return { ok: false, message: "Fișierul a fost primit, dar citirea documentului nu este finalizată. Continuă cu verificarea dosarului; dacă problema persistă, contactează banca." };
      if (slot.type !== "unknown" && doc.doc_type !== slot.type) return { ok: false, message: "Fișierul primit nu este tipul de document cerut la acest pas. Încarcă documentul solicitat." };
-     if ((slot.personId ?? null) !== doc.owner_person_id) return { ok: false, message: "Documentul primit nu a putut fi asociat persoanei cerute la acest pas. Verifică documentul și persoana." };
-     const messages = raw.flags.filter((f) => f.client_fixable && ["open", "sent_to_client"].includes(f.status) && f.evidence.some((e) => e.doc_id === doc.doc_id)).map((f) => f.fix_message).filter((m): m is string => !!m);
-     return messages.length ? { ok: false, message: [...new Set(messages)].join(" ") } : { ok: true, message: "Documentul a fost primit și verificat." };
+     if (slot.personId !== undefined && slot.personId !== doc.owner_person_id) return { ok: false, message: "Documentul primit nu a putut fi asociat persoanei cerute la acest pas. Verifică documentul și persoana." };
+     const messages = clientMessagesFor(raw, doc.doc_id);
+     return messages.length ? { ok: false, message: messages.join(" ") } : { ok: true, message: "Documentul a fost primit și verificat." };
    } finally { notifyCaseChange(); }
  }
  await delay(2300);
@@ -447,7 +536,68 @@ export async function getGroundTruth(): Promise<GroundTruth> {
 export async function resetDemo() {
  clearDemoCases();
  writeBuiltPlaybooks([]);
+ try { for (const k of [ONBOARDING_KEY, SESSION_KEY, MY_LIVE_KEY]) window.localStorage.removeItem(k); } catch { /* nothing stored */ }
  return { ok: true };
+}
+
+// Onboarding: no backend endpoint yet (consent, selfie, account), so this browser keeps it.
+// The officer reads it through the same functions, so it shows up when both run in one browser (the demo).
+const ONBOARDING_KEY = "raif2future-onboarding-v1";
+const SESSION_KEY = "raif2future-session-v1";
+function readOnboardingStore(): Record<string, Onboarding> {
+ if (typeof window === "undefined") return {};
+ try { return JSON.parse(window.localStorage.getItem(ONBOARDING_KEY) ?? "{}") as Record<string, Onboarding>; } catch { return {}; }
+}
+function writeOnboarding(caseId: string, patch: Onboarding) {
+ const store = readOnboardingStore(); store[caseId] = { ...store[caseId], ...patch };
+ try { window.localStorage.setItem(ONBOARDING_KEY, JSON.stringify(store)); }
+ catch { throw new Error("Browserul nu a putut salva pasul. Eliberează spațiu sau folosește alt browser."); }
+ notifyCaseChange();
+}
+export async function getOnboarding(caseId: string): Promise<Onboarding> {
+ return readOnboardingStore()[caseId] ?? {};
+}
+function auditOnboarding(caseId: string, action: string, output: unknown) {
+ if (isRealCase(caseId)) return; // backend cases keep their own audit chain
+ void mocks().then((m) => m.auditLog.push({ id: `${caseId}-onboarding-${Date.now()}`, caseId, timestamp: new Date().toLocaleString("ro-RO").replace(",", "") + ".000", actor: "human", stage: "Încărcări client", action, status: "ok", durationMs: 0, input: "{}", output: JSON.stringify(output) }));
+}
+export async function saveConsent(caseId: string, items: ConsentId[]) {
+ const consent: Consent = { at: new Date().toISOString(), items: [...new Set(items)] };
+ if (!hasRequiredConsent(consent)) throw new Error("Bifează acordurile obligatorii ca să continui.");
+ writeOnboarding(caseId, { consent });
+ auditOnboarding(caseId, "Consimțământ acordat de client", consent);
+ return consent;
+}
+export async function saveIdentityCheck(caseId: string, check: Omit<IdentityCheck, "capturedAt" | "faceMatch">) {
+ if (!/^data:image\/(jpeg|png);base64,/.test(check.selfie)) throw new Error("Fotografia nu a putut fi citită. Încearcă din nou.");
+ const identity: IdentityCheck = { ...check, capturedAt: new Date().toISOString(), faceMatch: "pending" };
+ writeOnboarding(caseId, { identity });
+ auditOnboarding(caseId, "Fotografie de verificare a identității primită", { liveness: identity.liveness, fallbackReason: identity.fallbackReason ?? null });
+ return identity;
+}
+
+/** Demo sign-in: any 6-digit code is accepted. Production uses the bank's own login (SSO or mobile banking). */
+export function getSession(): ClientSession | null {
+ if (typeof window === "undefined") return null;
+ try { return JSON.parse(window.localStorage.getItem(SESSION_KEY) ?? "null") as ClientSession | null; } catch { return null; }
+}
+export async function requestSignInCode(email: string, phone: string) {
+ if (!isValidEmail(email)) throw new Error("Adresa de e-mail nu este validă.");
+ if (!isValidPhone(phone)) throw new Error("Introdu un număr de mobil românesc, de exemplu 0722 123 456.");
+ await delay(600);
+ return { sentTo: phone.replace(/[\s.-]/g, "").replace(/\d(?=\d{3})/g, "•") };
+}
+export async function verifySignInCode(email: string, phone: string, code: string): Promise<ClientSession> {
+ if (!/^\d{6}$/.test(code)) throw new Error("Codul are 6 cifre.");
+ await delay(500);
+ const session: ClientSession = { email: email.trim().toLowerCase(), phone: phone.replace(/[\s.-]/g, ""), createdAt: new Date().toISOString() };
+ try { window.localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch { /* the session lasts for this page only */ }
+ window.dispatchEvent(new Event("raif2future-session-change"));
+ return session;
+}
+export function signOut() {
+ try { window.localStorage.removeItem(SESSION_KEY); } catch { /* already gone */ }
+ window.dispatchEvent(new Event("raif2future-session-change"));
 }
 
 export async function uploadDocument(file: File): Promise<{ ok: boolean; message: string; severity: "ok" | "medium" | "high" }> {

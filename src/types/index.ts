@@ -98,7 +98,7 @@ export interface Case {
   ownership?: { registry: OwnershipPerson[]; declared: OwnershipPerson[] };
   screeningSummary?: ScreeningSummary;
   executedRuleIds?: string[];
-  portalDocuments?: { key: string; type: string; label: string; personId?: string; personName?: string; fileName?: string; ok: boolean; officerIssue?: boolean; documentId?: string; processingPending?: boolean }[];
+  portalDocuments?: { key: string; type: string; label: string; personId?: string; personName?: string; fileName?: string; ok: boolean; officerIssue?: boolean; documentId?: string; processingPending?: boolean; issue?: "unrecognized" | "wrong_type"; clientMessage?: string }[];
   officerNote?: string;
   requestedStep?: number;
 }

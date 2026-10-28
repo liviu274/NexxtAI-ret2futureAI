@@ -7,6 +7,8 @@ export interface OrchestratorEvidence { doc_id: string; page: number; bbox: numb
 export interface OrchestratorField { field_id: string; name: string; value: unknown; confidence: number; source: OrchestratorEvidence }
 export interface OrchestratorDocument {
   doc_id: string; file: string; doc_type: string; pages: number; owner_person_id: string | null;
+  /** 0 until a classifier ran; "unknown" with a confidence above 0 means it ran and did not recognize the file. */
+  classification_confidence?: number;
   fields: Record<string, OrchestratorField>;
 }
 export interface OrchestratorFlag {
@@ -69,7 +71,24 @@ function declaredOwners(value: unknown): OwnershipPerson[] {
     return name && p["ownership_pct"] != null && Number.isFinite(pct) ? [{ id: text(p["person_id"]) || name, name, pct }] : [];
   });
 }
-export function fromOrchestratorCase(raw: OrchestratorCase, mock?: Case, rules: Playbook["rules"] = [], requiredDocuments?: string[]): Case {
+const IDENTITY_TYPES = ["id_card", "passport"];
+/**
+ * Documents the client has to replace for a flag. A cross-check cites both sides; the identity document is the
+ * reference, so the other side is the one to replace (a payslip with another name, not the ID it was compared with).
+ */
+export function blamedDocuments(raw: Pick<OrchestratorCase, "documents">, flag: Pick<OrchestratorFlag, "evidence">): string[] {
+  const typeOf = (id: string) => raw.documents.find((d) => d.doc_id === id)?.doc_type;
+  const ids = [...new Set(flag.evidence.map((e) => e.doc_id))].filter((id) => typeOf(id) !== undefined);
+  const others = ids.filter((id) => !IDENTITY_TYPES.includes(typeOf(id) ?? ""));
+  return ids.length > 1 && others.length && others.length < ids.length ? others : ids;
+}
+/** Client-safe messages for one document: only open, client-fixable flags (validate / cross-check) carry them. */
+export function clientMessagesFor(raw: Pick<OrchestratorCase, "documents" | "flags">, docId: string): string[] {
+  return [...new Set(raw.flags.filter((f) => f.client_fixable && f.fix_message && ["open", "sent_to_client"].includes(f.status) && blamedDocuments(raw, f).includes(docId)).map((f) => f.fix_message as string))];
+}
+
+/** `uploadSlots` maps a doc_id to the portal step it was uploaded at, so an unrecognized file stays on that step. */
+export function fromOrchestratorCase(raw: OrchestratorCase, mock?: Case, rules: Playbook["rules"] = [], requiredDocuments?: string[], uploadSlots: Record<string, string> = {}): Case {
   const allFields = raw.documents.flatMap((d) => Object.values(d.fields));
   const flags = raw.flags.map((f) => fromOrchestratorFlag(f, rules, allFields));
   const certificate = raw.documents.find((d) => d.doc_type === "certificat_constatator");
@@ -79,23 +98,42 @@ export function fromOrchestratorCase(raw: OrchestratorCase, mock?: Case, rules: 
   const persons = raw.persons.flatMap((p) => { const role = roles[p.role]; return role ? [{ id: p.person_id, name: p.full_name, role }] : []; });
   const plan = portalDocumentPlan(raw.customer_type, requiredDocuments ?? [...new Set(raw.documents.map((d) => d.doc_type).filter((t) => t !== "unknown"))], persons);
   const used = new Set<string>();
-  const uploaded = (d: OrchestratorDocument) => ({
-    documentId: d.doc_id, fileName: d.file.split(/[\\/]/).at(-1) ?? d.file,
-    processingPending: d.doc_type === "unknown" || !Object.keys(d.fields).length,
-    ok: d.doc_type !== "unknown" && Object.keys(d.fields).length > 0 && !flags.some((f) => f.client_fixable && ["open", "sent_to_client"].includes(f.status ?? "open") && f.evidence.some((e) => e.documentId === d.doc_id)),
-  });
+  const unrecognized = (d: OrchestratorDocument) => d.doc_type === "unknown" && (d.classification_confidence ?? 0) > 0;
+  const uploaded = (d: OrchestratorDocument) => {
+    const messages = clientMessagesFor(raw, d.doc_id);
+    return {
+      documentId: d.doc_id, fileName: d.file.split(/[\\/]/).at(-1) ?? d.file,
+      processingPending: !unrecognized(d) && (d.doc_type === "unknown" || !Object.keys(d.fields).length),
+      ok: d.doc_type !== "unknown" && Object.keys(d.fields).length > 0 && !messages.length,
+      ...(messages.length ? { clientMessage: messages.join(" ") } : {}),
+    };
+  };
   const portalDocuments: NonNullable<Case["portalDocuments"]> = plan.map((slot) => {
     const key = slot.personId ? `${slot.personId}-${slot.type}` : `company-${slot.type}`;
-    const matches = raw.documents.filter((d) => d.doc_type === slot.type && (d.owner_person_id ?? undefined) === slot.personId && !used.has(d.doc_id));
-    const d = matches.length === 1 ? matches[0] : undefined;
+    // PF steps name no person (the applicant is implied), so any owner fits; PJ steps belong to one person.
+    const ownerFits = (d: OrchestratorDocument) => slot.personId === undefined || d.owner_person_id === slot.personId;
+    const matches = raw.documents.filter((d) => d.doc_type === slot.type && ownerFits(d) && !used.has(d.doc_id));
+    // Otherwise the file the client uploaded at this step, even if it was not recognized or is another document type.
+    const d = matches.length === 1 ? matches[0] : raw.documents.find((x) => uploadSlots[x.doc_id] === key && !used.has(x.doc_id));
     if (d) used.add(d.doc_id);
-    return { ...slot, key, ...(d ? uploaded(d) : {}) };
+    if (!d) return { ...slot, key };
+    const issue = unrecognized(d) ? "unrecognized" as const : d.doc_type !== "unknown" && (d.doc_type !== slot.type || !ownerFits(d)) ? "wrong_type" as const : undefined;
+    return { ...slot, key, ...uploaded(d), ...(issue ? { issue, ok: false } : {}) };
   });
   // Unclassified files and ambiguous/extra documents stay visible and can be reprocessed.
+  // An unclassified file with no remembered step (uploaded before steps were remembered, or in another browser)
+  // goes to the first empty step: the portal walks the client through the steps in order.
+  for (const d of raw.documents.filter((d) => !used.has(d.doc_id) && d.doc_type === "unknown")) {
+    const i = portalDocuments.findIndex((slot) => !slot.fileName);
+    const slot = portalDocuments[i];
+    if (!slot) break;
+    used.add(d.doc_id);
+    portalDocuments[i] = { ...slot, ...uploaded(d), ...(unrecognized(d) ? { issue: "unrecognized" as const, ok: false } : {}) };
+  }
   for (const d of raw.documents.filter((d) => !used.has(d.doc_id))) portalDocuments.push({
     key: d.doc_id, type: d.doc_type, label: documentLabels[d.doc_type] ?? documentNames[d.doc_type] ?? "Document neidentificat",
     ...(d.owner_person_id ? { personId: d.owner_person_id, personName: raw.persons.find((p) => p.person_id === d.owner_person_id)?.full_name ?? "" } : {}),
-    ...uploaded(d),
+    ...uploaded(d), ...(unrecognized(d) ? { issue: "unrecognized" as const, ok: false } : {}),
   });
   return {
     id: raw.case_id, source: "backend", playbookId: raw.playbook_id, customerType: raw.customer_type,
@@ -106,7 +144,8 @@ export function fromOrchestratorCase(raw: OrchestratorCase, mock?: Case, rules: 
       const basename = d.file.split(/[\\/]/).at(-1) ?? d.file;
       const imageName = basename.replace(/\.[^.]+$/, "") + ".png";
       return { id: d.doc_id, type: documentNames[d.doc_type] ?? "Document", ownerPersonId: d.owner_person_id ?? "", fileName: basename,
-        pageImages: [`/mocks/${raw.case_id}/images/${imageName}`],
+        // Only dataset cases have rendered pages; portal uploads stay in the backend.
+        pageImages: raw.case_id.startsWith("live_") ? [] : [`/mocks/${raw.case_id}/images/${imageName}`],
         status: flags.some((f) => !["resolved", "dismissed"].includes(f.status ?? "open") && f.evidence.some((e) => e.documentId === d.doc_id)) ? "cu-probleme" as const : "valid" as const,
         extractedFields: Object.values(d.fields).map((f) => ({ name: f.name, value: text(f.value), confidence: f.confidence, source: fromOrchestratorEvidence(f.source, f.name) })) };
     }), flags,

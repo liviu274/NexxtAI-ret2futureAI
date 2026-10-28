@@ -1,10 +1,10 @@
 # Tasks
-- [ ] Build landing/start, per-document portal steps, summary, submission and client timeline.
-- [ ] Share demo cases/uploads/officer requests across browser tabs and verify PF/PJ flows.
-- [ ] Enforce approval blocking, flag statuses/dismissal and client-message eligibility on PF/PJ.
-- [ ] Add PF tabs, playbook list and statistics navigation; restore original clause-based procedure review.
-- [ ] Correct portal steps/feedback, full grouped PF pipeline audit and real passed-check counts.
-- [ ] Test business rules and verify changed flows.
+- [x] Build landing/start, per-document portal steps, summary, submission and client timeline.
+- [x] Share demo cases/uploads/officer requests across browser tabs and verify PF/PJ flows.
+- [x] Enforce approval blocking, flag statuses/dismissal and client-message eligibility on PF/PJ.
+- [x] Add PF tabs, playbook list and statistics navigation; restore original clause-based procedure review (statistics based on current data; earlier specification unavailable).
+- [x] Correct portal steps/feedback, full grouped PF pipeline audit and real passed-check counts.
+- [x] Test business rules and verify changed flows (39 tests; complete PF/PJ and cross-tab browser checks).
 - [x] Add mock-only screening list evidence and PJ screening scenario.
 - [x] Match screening comparison/media panels and officer confirm/ignore actions to existing style.
 - [x] Test screening rules and verify PEP/sanctions officer actions and audit in the browser; adverse media fixture covered by tests.

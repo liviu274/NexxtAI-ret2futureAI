@@ -2,6 +2,7 @@ import type { AuditEntry, Case, OwnershipEdge, OwnershipNode, Playbook } from "@
 import { resolveEvidence } from "@/lib/dataset";
 import { validateScreeningResolution } from "@/lib/screening";
 import type { ScreeningMatch } from "@/types/extensions";
+import { blockingFlags } from "@/lib/review";
 
 export const USE_MOCK = true;
 const BASE = import.meta.env["VITE_API_BASE_URL"] ?? "";
@@ -74,6 +75,7 @@ export async function resolveScreeningMatch(caseId: string, flagId: string, reso
   await delay(300);
   flag.screeningResolution = resolution;
   flag.screeningReason = reason.trim();
+  if (resolution === "dismissed") { flag.status = "dismissed"; flag.dismissedBy = "Elena Radu"; flag.dismissalNote = reason.trim(); }
   m.auditLog.push({ id: `${flagId}-${Date.now()}`, caseId, timestamp: "28.10.2026 13:50:00.000", actor: "human", stage: "Screening", action: resolution === "confirmed" ? "Potrivire confirmată de ofițer" : "Potrivire ignorată cu motiv", status: "ok", durationMs: 0, input: JSON.stringify({ flagId, evidence: flag.evidence }), output: JSON.stringify({ resolution, reason: reason.trim() }) });
   return { ok: true };
 }
@@ -105,8 +107,27 @@ export async function listPlaybooks(): Promise<Playbook[]> {
 }
 
 export async function submitDecision(caseId: string, decision: "aprobat" | "respins" | "documente", comment: string) {
+  const c = await getCase(caseId);
+  if (!c) throw new Error("Dosarul nu a fost găsit.");
+  if (decision === "aprobat" && blockingFlags(c.flags).length) throw new Error("Aprobarea este blocată de probleme nerezolvate.");
   if (!USE_MOCK) return http(`/cases/${caseId}/decision`, { method: "POST", body: JSON.stringify({ decision, comment }) });
   await delay(700);
+  const m = await mocks(); const source = m.cases.find((item) => item.id === caseId);
+  if (source) {
+    source.status = decision === "aprobat" ? "Aprobat" : decision === "respins" ? "Respins" : "Documente solicitate";
+    if (decision === "documente") for (const f of source.flags) if (f.status === "open" && f.client_fixable) f.status = "sent_to_client";
+  }
+  return { ok: true };
+}
+
+export async function dismissFlag(caseId: string, flagId: string, note: string) {
+  if (!note.trim()) throw new Error("Motivul este obligatoriu.");
+  if (!USE_MOCK) throw new Error("Ignorarea cu motiv nu este conectată la serviciul real.");
+  const m = await mocks(); const f = m.cases.find((c) => c.id === caseId)?.flags.find((f) => f.id === flagId);
+  if (!f) throw new Error("Problema nu a fost găsită.");
+  f.status = "dismissed"; f.dismissedBy = "Elena Radu"; f.dismissalNote = note.trim();
+  if (f.stage === "screening") { f.screeningResolution = "dismissed"; f.screeningReason = note.trim(); }
+  m.auditLog.push({ id: `${flagId}-dismiss-${Date.now()}`, caseId, timestamp: "28.10.2026 13:59:00.000", actor: "human", stage: "Revizuire", action: "Problemă ignorată de Elena Radu", status: "ok", durationMs: 0, input: JSON.stringify({ flagId }), output: JSON.stringify({ status: "dismissed", note: note.trim() }) });
   return { ok: true };
 }
 

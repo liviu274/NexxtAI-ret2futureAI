@@ -23,11 +23,11 @@ export function findTruthBBox(truth: unknown, documentId: string, field: string)
       const bbox = normalizedBBox(obj["bbox"]);
       if (bbox) return bbox;
     }
-    return undefined;
     for (const [key, child] of Object.entries(obj)) {
       const bbox = walk(child, inDoc || key === documentId, inField || key === field);
       if (bbox) return bbox;
     }
+    return undefined;
   }
   return walk(truth);
 }

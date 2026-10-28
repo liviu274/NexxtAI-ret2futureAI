@@ -60,6 +60,10 @@ and human-review diagrams are in
 The simple-language story and use cases are in
 [`docs/use-cases-and-story.md`](./docs/use-cases-and-story.md).
 
+The runnable PF flow is in [`pipeline/`](./pipeline/). It executes intake,
+classification, rule-driven extraction, cross-document checks, tamper
+detection, synthetic screening, risk drafting, and human-review handoff.
+
 ## Validate the rules
 
 From the repository root:

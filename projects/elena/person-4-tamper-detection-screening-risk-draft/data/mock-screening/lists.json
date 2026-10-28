@@ -1,0 +1,9 @@
+{
+  "sanctions": [
+    {"name": "Nume Fictiv Sancționat", "country": "ZZ", "source": "synthetic_sanctions_list"}
+  ],
+  "pep": [
+    {"name": "Persoană Fictivă PEP", "role": "synthetic public official", "source": "synthetic_pep_list"}
+  ],
+  "adverse_media": []
+}

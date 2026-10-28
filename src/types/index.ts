@@ -1,8 +1,8 @@
 export type CustomerType = "PF" | "PJ";
-export type Severity = "high" | "medium" | "low";
+export type Severity = "critical" | "high" | "medium" | "low";
 export type CaseStatus = "Nou" | "Se verifică" | "În analiză" | "Documente solicitate" | "Aprobat" | "Respins";
 export type DocumentStatus = "valid" | "cu-probleme" | "se-verifica" | "lipsa";
-export type RiskLevel = "scăzut" | "mediu" | "ridicat";
+export type RiskLevel = "low" | "medium" | "high" | "critical";
 
 export interface BBox {
   x: number;
@@ -14,7 +14,8 @@ export interface BBox {
 export interface Evidence {
   documentId: string;
   page: number;
-  bbox: BBox;
+  bbox?: BBox;
+  field?: string;
 }
 
 export interface ExtractedField {
@@ -30,6 +31,7 @@ export interface Document {
   ownerPersonId: string;
   fileName: string;
   pageImages: string[];
+  pdfUrl?: string;
   status: DocumentStatus;
   extractedFields: ExtractedField[];
 }
@@ -76,7 +78,12 @@ export interface Case {
   documents: Document[];
   flags: Flag[];
   riskDraft: RiskDraft;
+  playbookId?: string;
+  company?: { name: string; cui: string; registration: string; caen: string; address: string };
+  ownership?: { registry: OwnershipPerson[]; declared: OwnershipPerson[] };
 }
+
+export interface OwnershipPerson { id: string; name: string; pct: number }
 
 export interface PlaybookRule {
   id: string;

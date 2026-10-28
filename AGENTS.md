@@ -13,4 +13,6 @@
 - All data access goes through `src/api/client.ts` (USE_MOCK flag; mocks loaded lazily from `src/mocks/`). Components never import mocks — keeps the swap to a real REST backend a one-line change.
 - Design tokens (brand, ink, line, beige, teal, sev-*) live in `src/styles.css` `@theme inline` (Tailwind v4, no tailwind.config) — the single source for colors.
 - Routing is TanStack Router file routes (React Router is not supported on this stack).
-- Mock bboxes are normalized 0–1 against the SVG viewBox of files in `public/mocks/docs/`; move SVG text and bbox together.
+- Mock documents use per-case PNG pages with PDF fallback; normalized top-left evidence boxes resolve through the API from per-case truth fixtures, never guessed coordinates.
+- Direct PJ ownership comparisons are derived from case.company and case.ownership, with React Flow rendered client-side to keep SSR browser-safe.
+- Screenshot-mapped content routes share focused presentation components; /upload remains a client-portal alias to preserve its existing address.

@@ -1,0 +1,39 @@
+{
+  "PF-ONB-01": {
+    "playbook": "pb_cont_pf_v1.json",
+    "not_automated": [
+      { "clause": "1.1", "status": "context", "reason": "Definește scopul procedurii; nu conține o cerință verificabilă." },
+      { "clause": "1.2", "status": "context", "reason": "Definește cui se aplică procedura; clientul e încadrat ca PF la deschiderea dosarului." },
+      { "clause": "1.3", "status": "context", "reason": "Obligație generală a clientului; se aplică prin regulile pentru fiecare document." },
+      { "clause": "2.2", "status": "covered", "reason": "Pașaportul este acceptat ca alternativă la cartea de identitate (R-PF-001)." },
+      { "clause": "2.4", "status": "covered", "reason": "Câmpurile listate sunt extrase din actul de identitate (lista de câmpuri a documentului)." },
+      { "clause": "3.2", "status": "covered", "reason": "Acoperită de R-PF-008: numele trebuie să fie același pe toate documentele." },
+      { "clause": "4.3", "status": "covered", "reason": "Câmpurile listate sunt extrase din fluturașul de salariu (lista de câmpuri a documentului)." },
+      { "clause": "5.3", "status": "covered", "reason": "Este mesajul trimis clientului de regulile R-PF-008 și R-PF-009." },
+      { "clause": "7.3", "status": "manual", "reason": "Măsurile suplimentare și aprobarea conformității sunt pași umani, declanșați de R-PF-014." },
+      { "clause": "9.1", "status": "covered", "reason": "Regulile marcate client_fixable trimit automat clientului cererea de document valabil." },
+      { "clause": "9.2", "status": "manual", "reason": "Decizia finală este întotdeauna a angajatului; agentul nu decide." },
+      { "clause": "9.3", "status": "manual", "reason": "Refuzul îl decide analistul, pe baza semnalărilor generate." },
+      { "clause": "9.4", "status": "covered", "reason": "Jurnalul de audit înregistrează fiecare verificare și rezultatul ei." }
+    ]
+  },
+  "PJ-ONB-01": {
+    "playbook": "pb_cont_pj_v1.json",
+    "not_automated": [
+      { "clause": "1.1", "status": "context", "reason": "Definește scopul procedurii; nu conține o cerință verificabilă." },
+      { "clause": "1.2", "status": "context", "reason": "Definește cui se aplică procedura; clientul e încadrat ca PJ la deschiderea dosarului." },
+      { "clause": "1.3", "status": "context", "reason": "Obligație generală a clientului; se aplică prin regulile pentru fiecare document." },
+      { "clause": "2.3", "status": "covered", "reason": "Câmpurile listate sunt extrase din certificatul constatator (lista de câmpuri a documentului)." },
+      { "clause": "2.5", "status": "covered", "reason": "Câmpurile listate sunt extrase din actul constitutiv (lista de câmpuri a documentului)." },
+      { "clause": "3.2", "status": "context", "reason": "Definiția beneficiarului real, folosită de R-PJ-006." },
+      { "clause": "4.3", "status": "context", "reason": "Definește delegații, care corespund rolului signatory." },
+      { "clause": "5.3", "status": "manual", "reason": "Catalogul nu are încă o verificare în ONRC și BPI; analistul le consultă manual." },
+      { "clause": "6.1", "status": "covered", "reason": "Acoperită de verificările de alterare R-PJ-018 și R-PJ-019, aplicate tuturor documentelor." },
+      { "clause": "9.1", "status": "covered", "reason": "Regulile marcate client_fixable trimit automat clientului cererea de document valabil." },
+      { "clause": "9.2", "status": "manual", "reason": "Decizia finală este întotdeauna a angajatului; agentul nu decide." },
+      { "clause": "9.3", "status": "context", "reason": "Obligație a clientului după deschiderea contului, în afara procesului de onboarding." },
+      { "clause": "9.4", "status": "context", "reason": "Se aplică după deschiderea contului, în afara procesului de onboarding." },
+      { "clause": "9.5", "status": "covered", "reason": "Jurnalul de audit înregistrează fiecare verificare și rezultatul ei." }
+    ]
+  }
+}

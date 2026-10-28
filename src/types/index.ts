@@ -1,3 +1,4 @@
+import type { ScreeningEvidence, ScreeningFlagExtension, ScreeningSummary } from "./extensions";
 export type CustomerType = "PF" | "PJ";
 export type Severity = "critical" | "high" | "medium" | "low";
 export type CaseStatus = "Nou" | "Se verifică" | "În analiză" | "Documente solicitate" | "Aprobat" | "Respins";
@@ -11,12 +12,13 @@ export interface BBox {
   height: number;
 }
 
-export interface Evidence {
+export interface DocumentEvidence {
   documentId: string;
   page: number;
   bbox?: BBox;
   field?: string;
 }
+export type Evidence = DocumentEvidence | ScreeningEvidence;
 
 export interface ExtractedField {
   name: string;
@@ -36,7 +38,7 @@ export interface Document {
   extractedFields: ExtractedField[];
 }
 
-export interface Flag {
+export interface Flag extends ScreeningFlagExtension {
   id: string;
   severity: Severity;
   title: string;
@@ -64,6 +66,9 @@ export interface Person {
   role: "titular" | "UBO" | "semnatar" | "administrator";
   cnp?: string;
   ownershipPct?: number;
+  birthYear?: number;
+  citizenship?: string;
+  identityDocument?: string;
 }
 
 export interface Case {
@@ -81,6 +86,7 @@ export interface Case {
   playbookId?: string;
   company?: { name: string; cui: string; registration: string; caen: string; address: string };
   ownership?: { registry: OwnershipPerson[]; declared: OwnershipPerson[] };
+  screeningSummary?: ScreeningSummary;
 }
 
 export interface OwnershipPerson { id: string; name: string; pct: number }

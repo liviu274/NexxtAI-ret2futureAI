@@ -1,0 +1,1308 @@
+{
+ "playbook": {
+  "playbook_id": "pb_cont_pj_v1",
+  "version": 1,
+  "process_name": "Deschiderea contului curent pentru persoane juridice",
+  "customer_type": "PJ",
+  "source_procedure": {
+   "file": "procedures/PJ-ONB-01.pdf",
+   "generated_at": "2026-10-28T12:30:00+02:00"
+  },
+  "required_documents": [
+   {
+    "doc_type": "certificat_constatator",
+    "applies_to": "company",
+    "min_count": 1,
+    "alternatives": [],
+    "fields": [
+     "company_name",
+     "cui",
+     "registration_number",
+     "registered_office",
+     "caen_code",
+     "administrators",
+     "shareholders",
+     "issue_date"
+    ],
+    "source_ref": {
+     "page": 1,
+     "clause": "2.1",
+     "quote": "Clientul prezintă un certificat constatator emis de ONRC."
+    }
+   },
+   {
+    "doc_type": "act_constitutiv",
+    "applies_to": "company",
+    "min_count": 1,
+    "alternatives": [],
+    "fields": [
+     "company_name",
+     "cui",
+     "legal_representatives"
+    ],
+    "source_ref": {
+     "page": 1,
+     "clause": "2.4",
+     "quote": "Clientul prezintă actul constitutiv al societății, în forma actualizată."
+    }
+   },
+   {
+    "doc_type": "ubo_declaration",
+    "applies_to": "company",
+    "min_count": 1,
+    "alternatives": [],
+    "fields": [
+     "company_name",
+     "cui",
+     "ubos",
+     "signed_by"
+    ],
+    "source_ref": {
+     "page": 1,
+     "clause": "3.1",
+     "quote": "Clientul prezintă o declarație privind beneficiarul real, semnată de reprezentantul legal."
+    }
+   },
+   {
+    "doc_type": "id_card",
+    "applies_to": "ubo",
+    "min_count": 1,
+    "alternatives": [
+     "passport"
+    ],
+    "fields": [
+     "full_name",
+     "cnp",
+     "date_of_birth",
+     "address",
+     "series_number",
+     "expiry_date"
+    ],
+    "source_ref": {
+     "page": 2,
+     "clause": "3.4",
+     "quote": "Clientul prezintă un act de identitate valabil pentru fiecare beneficiar real."
+    }
+   },
+   {
+    "doc_type": "id_card",
+    "applies_to": "administrator",
+    "min_count": 1,
+    "alternatives": [
+     "passport"
+    ],
+    "fields": [
+     "full_name",
+     "cnp",
+     "date_of_birth",
+     "address",
+     "series_number",
+     "expiry_date"
+    ],
+    "source_ref": {
+     "page": 2,
+     "clause": "4.1",
+     "quote": "Clientul prezintă un act de identitate valabil pentru fiecare reprezentant legal (administrator)."
+    }
+   },
+   {
+    "doc_type": "id_card",
+    "applies_to": "signatory",
+    "min_count": 1,
+    "alternatives": [
+     "passport"
+    ],
+    "fields": [
+     "full_name",
+     "cnp",
+     "date_of_birth",
+     "address",
+     "series_number",
+     "expiry_date"
+    ],
+    "source_ref": {
+     "page": 2,
+     "clause": "4.5",
+     "quote": "Fiecare reprezentant legal, delegat și beneficiar real parcurge verificările prevăzute pentru persoane fizice în procedura PF-ONB-01."
+    }
+   },
+   {
+    "doc_type": "signature_specimen",
+    "applies_to": "administrator",
+    "min_count": 1,
+    "alternatives": [],
+    "fields": [
+     "full_name"
+    ],
+    "source_ref": {
+     "page": 2,
+     "clause": "4.4",
+     "quote": "Fiecare reprezentant legal și fiecare delegat depune un specimen de semnătură."
+    }
+   },
+   {
+    "doc_type": "signature_specimen",
+    "applies_to": "signatory",
+    "min_count": 1,
+    "alternatives": [],
+    "fields": [
+     "full_name"
+    ],
+    "source_ref": {
+     "page": 2,
+     "clause": "4.4",
+     "quote": "Fiecare reprezentant legal și fiecare delegat depune un specimen de semnătură."
+    }
+   }
+  ],
+  "rules": [
+   {
+    "rule_id": "R-PJ-001",
+    "stage": "validate",
+    "check": "required_present",
+    "params": {
+     "doc_type": "certificat_constatator",
+     "min_count": 1
+    },
+    "applies_to": "company",
+    "severity": "high",
+    "description": "Societatea trebuie să prezinte un certificat constatator emis de ONRC.",
+    "client_fixable": true,
+    "fix_message": "Vă rugăm să încărcați certificatul constatator emis de ONRC.",
+    "source_ref": {
+     "page": 1,
+     "clause": "2.1",
+     "quote": "Clientul prezintă un certificat constatator emis de ONRC."
+    }
+   },
+   {
+    "rule_id": "R-PJ-002",
+    "stage": "validate",
+    "check": "max_age_days",
+    "params": {
+     "doc_type": "certificat_constatator",
+     "field": "issue_date",
+     "days": 30
+    },
+    "applies_to": "company",
+    "severity": "high",
+    "description": "Certificatul constatator nu trebuie să fie mai vechi de 30 de zile.",
+    "client_fixable": true,
+    "fix_message": "Certificatul constatator este emis la {issue_date}. Vă rugăm să încărcați unul emis în ultimele 30 de zile.",
+    "source_ref": {
+     "page": 1,
+     "clause": "2.2",
+     "quote": "Certificatul constatator nu trebuie să fie mai vechi de 30 de zile la data cererii."
+    }
+   },
+   {
+    "rule_id": "R-PJ-003",
+    "stage": "validate",
+    "check": "required_present",
+    "params": {
+     "doc_type": "act_constitutiv",
+     "min_count": 1
+    },
+    "applies_to": "company",
+    "severity": "high",
+    "description": "Societatea trebuie să prezinte actul constitutiv actualizat.",
+    "client_fixable": true,
+    "fix_message": "Vă rugăm să încărcați actul constitutiv al societății, în forma actualizată.",
+    "source_ref": {
+     "page": 1,
+     "clause": "2.4",
+     "quote": "Clientul prezintă actul constitutiv al societății, în forma actualizată."
+    }
+   },
+   {
+    "rule_id": "R-PJ-004",
+    "stage": "validate",
+    "check": "required_present",
+    "params": {
+     "doc_type": "ubo_declaration",
+     "min_count": 1
+    },
+    "applies_to": "company",
+    "severity": "high",
+    "description": "Societatea trebuie să prezinte declarația privind beneficiarul real.",
+    "client_fixable": true,
+    "fix_message": "Vă rugăm să încărcați declarația privind beneficiarul real, semnată de reprezentantul legal.",
+    "source_ref": {
+     "page": 1,
+     "clause": "3.1",
+     "quote": "Clientul prezintă o declarație privind beneficiarul real, semnată de reprezentantul legal."
+    }
+   },
+   {
+    "rule_id": "R-PJ-005",
+    "stage": "validate",
+    "check": "field_present",
+    "params": {
+     "doc_type": "ubo_declaration",
+     "field": "signed_by"
+    },
+    "applies_to": "company",
+    "severity": "high",
+    "description": "Declarația privind beneficiarul real trebuie să fie semnată de reprezentantul legal.",
+    "client_fixable": true,
+    "fix_message": "Declarația privind beneficiarul real nu este semnată. Vă rugăm să încărcați declarația semnată de reprezentantul legal.",
+    "source_ref": {
+     "page": 1,
+     "clause": "3.1",
+     "quote": "Clientul prezintă o declarație privind beneficiarul real, semnată de reprezentantul legal."
+    }
+   },
+   {
+    "rule_id": "R-PJ-006",
+    "stage": "cross_check",
+    "check": "registry_vs_declaration",
+    "params": {},
+    "applies_to": "company",
+    "severity": "high",
+    "description": "Beneficiarii reali declarați trebuie să corespundă cu asociații și cotele din certificatul constatator.",
+    "client_fixable": false,
+    "fix_message": null,
+    "source_ref": {
+     "page": 2,
+     "clause": "3.3",
+     "quote": "Beneficiarii reali declarați trebuie să corespundă cu asociații și cotele din certificatul constatator."
+    }
+   },
+   {
+    "rule_id": "R-PJ-007",
+    "stage": "validate",
+    "check": "required_present",
+    "params": {
+     "doc_type": "id_card",
+     "min_count": 1
+    },
+    "applies_to": "ubo",
+    "severity": "high",
+    "description": "Fiecare beneficiar real trebuie să aibă un act de identitate.",
+    "client_fixable": true,
+    "fix_message": "Vă rugăm să încărcați actul de identitate pentru beneficiarul real {person_name}.",
+    "source_ref": {
+     "page": 2,
+     "clause": "3.4",
+     "quote": "Clientul prezintă un act de identitate valabil pentru fiecare beneficiar real."
+    }
+   },
+   {
+    "rule_id": "R-PJ-008",
+    "stage": "validate",
+    "check": "not_expired",
+    "params": {
+     "doc_type": "id_card",
+     "field": "expiry_date"
+    },
+    "applies_to": "ubo",
+    "severity": "high",
+    "description": "Actul de identitate al fiecărui beneficiar real trebuie să fie valabil.",
+    "client_fixable": true,
+    "fix_message": "Actul de identitate al lui {person_name} a expirat la {expiry_date}. Vă rugăm să încărcați un act valabil.",
+    "source_ref": {
+     "page": 2,
+     "clause": "3.4",
+     "quote": "Clientul prezintă un act de identitate valabil pentru fiecare beneficiar real."
+    }
+   },
+   {
+    "rule_id": "R-PJ-009",
+    "stage": "validate",
+    "check": "required_present",
+    "params": {
+     "doc_type": "id_card",
+     "min_count": 1
+    },
+    "applies_to": "administrator",
+    "severity": "high",
+    "description": "Fiecare administrator trebuie să aibă un act de identitate.",
+    "client_fixable": true,
+    "fix_message": "Vă rugăm să încărcați actul de identitate pentru administratorul {person_name}.",
+    "source_ref": {
+     "page": 2,
+     "clause": "4.1",
+     "quote": "Clientul prezintă un act de identitate valabil pentru fiecare reprezentant legal (administrator)."
+    }
+   },
+   {
+    "rule_id": "R-PJ-010",
+    "stage": "validate",
+    "check": "not_expired",
+    "params": {
+     "doc_type": "id_card",
+     "field": "expiry_date"
+    },
+    "applies_to": "administrator",
+    "severity": "high",
+    "description": "Actul de identitate al fiecărui administrator trebuie să fie valabil.",
+    "client_fixable": true,
+    "fix_message": "Actul de identitate al lui {person_name} a expirat la {expiry_date}. Vă rugăm să încărcați un act valabil.",
+    "source_ref": {
+     "page": 2,
+     "clause": "4.1",
+     "quote": "Clientul prezintă un act de identitate valabil pentru fiecare reprezentant legal (administrator)."
+    }
+   },
+   {
+    "rule_id": "R-PJ-011",
+    "stage": "cross_check",
+    "check": "fields_match",
+    "params": {
+     "field_map": {
+      "id_card": "full_name",
+      "certificat_constatator": "administrators"
+     },
+     "doc_types": [
+      "id_card",
+      "certificat_constatator"
+     ],
+     "mode": "fuzzy"
+    },
+    "applies_to": "administrator",
+    "severity": "high",
+    "description": "Numele administratorului din actul de identitate trebuie să apară printre administratorii din certificatul constatator.",
+    "client_fixable": false,
+    "fix_message": null,
+    "source_ref": {
+     "page": 2,
+     "clause": "4.2",
+     "quote": "Numele reprezentantului legal din actul de identitate trebuie să corespundă cu numele administratorului din certificatul constatator."
+    }
+   },
+   {
+    "rule_id": "R-PJ-012",
+    "stage": "validate",
+    "check": "required_present",
+    "params": {
+     "doc_type": "signature_specimen",
+     "min_count": 1
+    },
+    "applies_to": "administrator",
+    "severity": "high",
+    "description": "Fiecare administrator depune un specimen de semnătură.",
+    "client_fixable": true,
+    "fix_message": "Vă rugăm să depuneți specimenul de semnătură pentru {person_name}.",
+    "source_ref": {
+     "page": 2,
+     "clause": "4.4",
+     "quote": "Fiecare reprezentant legal și fiecare delegat depune un specimen de semnătură."
+    }
+   },
+   {
+    "rule_id": "R-PJ-013",
+    "stage": "validate",
+    "check": "required_present",
+    "params": {
+     "doc_type": "signature_specimen",
+     "min_count": 1
+    },
+    "applies_to": "signatory",
+    "severity": "high",
+    "description": "Fiecare delegat depune un specimen de semnătură.",
+    "client_fixable": true,
+    "fix_message": "Vă rugăm să depuneți specimenul de semnătură pentru delegatul {person_name}.",
+    "source_ref": {
+     "page": 2,
+     "clause": "4.4",
+     "quote": "Fiecare reprezentant legal și fiecare delegat depune un specimen de semnătură."
+    }
+   },
+   {
+    "rule_id": "R-PJ-014",
+    "stage": "validate",
+    "check": "required_present",
+    "params": {
+     "doc_type": "id_card",
+     "min_count": 1
+    },
+    "applies_to": "signatory",
+    "severity": "high",
+    "description": "Fiecare delegat trebuie să aibă un act de identitate.",
+    "client_fixable": true,
+    "fix_message": "Vă rugăm să încărcați actul de identitate pentru delegatul {person_name}.",
+    "source_ref": {
+     "page": 2,
+     "clause": "4.5",
+     "quote": "Fiecare reprezentant legal, delegat și beneficiar real parcurge verificările prevăzute pentru persoane fizice în procedura PF-ONB-01."
+    }
+   },
+   {
+    "rule_id": "R-PJ-015",
+    "stage": "validate",
+    "check": "not_expired",
+    "params": {
+     "doc_type": "id_card",
+     "field": "expiry_date"
+    },
+    "applies_to": "signatory",
+    "severity": "high",
+    "description": "Actul de identitate al fiecărui delegat trebuie să fie valabil.",
+    "client_fixable": true,
+    "fix_message": "Actul de identitate al lui {person_name} a expirat la {expiry_date}. Vă rugăm să încărcați un act valabil.",
+    "source_ref": {
+     "page": 2,
+     "clause": "4.5",
+     "quote": "Fiecare reprezentant legal, delegat și beneficiar real parcurge verificările prevăzute pentru persoane fizice în procedura PF-ONB-01."
+    }
+   },
+   {
+    "rule_id": "R-PJ-016",
+    "stage": "cross_check",
+    "check": "fields_match",
+    "params": {
+     "field": "cui",
+     "doc_types": [
+      "certificat_constatator",
+      "act_constitutiv",
+      "ubo_declaration"
+     ],
+     "mode": "exact"
+    },
+    "applies_to": "company",
+    "severity": "high",
+    "description": "CUI-ul trebuie să fie identic pe certificatul constatator, actul constitutiv și declarația BR.",
+    "client_fixable": false,
+    "fix_message": null,
+    "source_ref": {
+     "page": 2,
+     "clause": "5.1",
+     "quote": "CUI-ul societății trebuie să fie identic pe certificatul constatator, actul constitutiv și declarația privind beneficiarul real."
+    }
+   },
+   {
+    "rule_id": "R-PJ-017",
+    "stage": "cross_check",
+    "check": "fields_match",
+    "params": {
+     "field": "company_name",
+     "doc_types": [
+      "certificat_constatator",
+      "act_constitutiv",
+      "ubo_declaration"
+     ],
+     "mode": "normalized"
+    },
+    "applies_to": "company",
+    "severity": "medium",
+    "description": "Denumirea societății trebuie să fie aceeași pe toate documentele.",
+    "client_fixable": true,
+    "fix_message": "Denumirea societății diferă între documente. Vă rugăm să încărcați documentele în forma actualizată.",
+    "source_ref": {
+     "page": 2,
+     "clause": "5.2",
+     "quote": "Denumirea societății trebuie să fie aceeași pe toate documentele prezentate."
+    }
+   },
+   {
+    "rule_id": "R-PJ-018",
+    "stage": "tamper",
+    "check": "pdf_metadata",
+    "params": {},
+    "applies_to": "company",
+    "severity": "critical",
+    "description": "Documentele cu semne de modificare ulterioară emiterii se escaladează la conformitate.",
+    "client_fixable": false,
+    "fix_message": null,
+    "source_ref": {
+     "page": 2,
+     "clause": "6.2",
+     "quote": "Documentele care prezintă semne de modificare ulterioară emiterii sunt escaladate către ofițerul de conformitate."
+    }
+   },
+   {
+    "rule_id": "R-PJ-019",
+    "stage": "tamper",
+    "check": "font_consistency",
+    "params": {},
+    "applies_to": "company",
+    "severity": "critical",
+    "description": "Fonturile diferite în același câmp sau rând indică o posibilă alterare.",
+    "client_fixable": false,
+    "fix_message": null,
+    "source_ref": {
+     "page": 2,
+     "clause": "6.3",
+     "quote": "Textul dintr-un singur câmp sau rând care folosește fonturi diferite este tratat ca semn de alterare."
+    }
+   },
+   {
+    "rule_id": "R-PJ-020",
+    "stage": "screening",
+    "check": "sanctions",
+    "params": {
+     "list": "mock_sanctions_v1"
+    },
+    "applies_to": "company",
+    "severity": "critical",
+    "description": "Societatea nu trebuie să fie entitate desemnată sau parte restricționată.",
+    "client_fixable": false,
+    "fix_message": null,
+    "source_ref": {
+     "page": 3,
+     "clause": "7.2",
+     "quote": "Nu se deschide cont pentru o persoană sau entitate desemnată ori o parte restricționată (CGB PJ 1.5)."
+    }
+   },
+   {
+    "rule_id": "R-PJ-021",
+    "stage": "screening",
+    "check": "sanctions",
+    "params": {
+     "list": "mock_sanctions_v1"
+    },
+    "applies_to": "administrator",
+    "severity": "critical",
+    "description": "Administratorii se verifică în listele de sancțiuni internaționale.",
+    "client_fixable": false,
+    "fix_message": null,
+    "source_ref": {
+     "page": 2,
+     "clause": "7.1",
+     "quote": "Societatea și fiecare persoană fizică legată de ea sunt verificate în listele de sancțiuni internaționale înainte de deschiderea contului."
+    }
+   },
+   {
+    "rule_id": "R-PJ-022",
+    "stage": "screening",
+    "check": "sanctions",
+    "params": {
+     "list": "mock_sanctions_v1"
+    },
+    "applies_to": "ubo",
+    "severity": "critical",
+    "description": "Beneficiarii reali se verifică în listele de sancțiuni internaționale.",
+    "client_fixable": false,
+    "fix_message": null,
+    "source_ref": {
+     "page": 2,
+     "clause": "7.1",
+     "quote": "Societatea și fiecare persoană fizică legată de ea sunt verificate în listele de sancțiuni internaționale înainte de deschiderea contului."
+    }
+   },
+   {
+    "rule_id": "R-PJ-023",
+    "stage": "screening",
+    "check": "sanctions",
+    "params": {
+     "list": "mock_sanctions_v1"
+    },
+    "applies_to": "signatory",
+    "severity": "critical",
+    "description": "Delegații se verifică în listele de sancțiuni internaționale.",
+    "client_fixable": false,
+    "fix_message": null,
+    "source_ref": {
+     "page": 2,
+     "clause": "7.1",
+     "quote": "Societatea și fiecare persoană fizică legată de ea sunt verificate în listele de sancțiuni internaționale înainte de deschiderea contului."
+    }
+   },
+   {
+    "rule_id": "R-PJ-024",
+    "stage": "screening",
+    "check": "pep",
+    "params": {
+     "list": "mock_pep_v1"
+    },
+    "applies_to": "administrator",
+    "severity": "high",
+    "description": "Se verifică dacă administratorii sunt persoane expuse public sau apropiați ai acestora.",
+    "client_fixable": false,
+    "fix_message": null,
+    "source_ref": {
+     "page": 3,
+     "clause": "7.3",
+     "quote": "Banca verifică dacă reprezentanții legali sau beneficiarii reali sunt persoane expuse public, membri de familie sau asociați apropiați ai acestora (Legea 129/2019, art. 3; CGB PJ 1.5)."
+    }
+   },
+   {
+    "rule_id": "R-PJ-025",
+    "stage": "screening",
+    "check": "pep",
+    "params": {
+     "list": "mock_pep_v1"
+    },
+    "applies_to": "ubo",
+    "severity": "high",
+    "description": "Se verifică dacă beneficiarii reali sunt persoane expuse public sau apropiați ai acestora.",
+    "client_fixable": false,
+    "fix_message": null,
+    "source_ref": {
+     "page": 3,
+     "clause": "7.3",
+     "quote": "Banca verifică dacă reprezentanții legali sau beneficiarii reali sunt persoane expuse public, membri de familie sau asociați apropiați ai acestora (Legea 129/2019, art. 3; CGB PJ 1.5)."
+    }
+   },
+   {
+    "rule_id": "R-PJ-026",
+    "stage": "screening",
+    "check": "adverse_media",
+    "params": {},
+    "applies_to": "company",
+    "severity": "medium",
+    "description": "Denumirea societății se verifică în surse publice pentru informații negative.",
+    "client_fixable": false,
+    "fix_message": null,
+    "source_ref": {
+     "page": 3,
+     "clause": "7.4",
+     "quote": "Denumirea societății este verificată în surse publice pentru informații negative."
+    }
+   },
+   {
+    "rule_id": "R-PJ-027",
+    "stage": "risk",
+    "check": "risk_factors",
+    "params": {
+     "factors": [
+      "country",
+      "caen_code",
+      "pep"
+     ]
+    },
+    "applies_to": "company",
+    "severity": "info",
+    "description": "Gradul de risc (scăzut, mediu, ridicat) se stabilește după țara de înregistrare, codul CAEN și statutul PEP al reprezentanților sau BR.",
+    "client_fixable": false,
+    "fix_message": null,
+    "source_ref": {
+     "page": 3,
+     "clause": "8.1",
+     "quote": "Fiecare client primește un grad de risc scăzut, mediu sau ridicat, în funcție de țara de înregistrare, codul CAEN al activității și calitatea de persoană expusă public a reprezentanților sau beneficiarilor reali."
+    }
+   }
+  ],
+  "person_flows": null
+ },
+ "report": {
+  "playbook_id": "pb_cont_pj_v1",
+  "procedure": {
+   "code": "PJ-ONB-01",
+   "title": "Procedura PJ-ONB-01: Deschiderea contului curent pentru persoane juridice",
+   "file": "procedures/PJ-ONB-01.pdf"
+  },
+  "generated_by": {
+   "source": "llm",
+   "model": "claude-sonnet-5-5",
+   "attempts": 1,
+   "duration_s": 74.2,
+   "fallback_reason": null
+  },
+  "coverage": {
+   "total": 33,
+   "automated": 19,
+   "covered": 5,
+   "manual": 2,
+   "context": 7,
+   "unreviewed": 0,
+   "pct": 92
+  },
+  "clauses": [
+   {
+    "clause": "1.1",
+    "page": 1,
+    "section": "1. Scop și domeniu de aplicare",
+    "text": "Prezenta procedură stabilește documentele și verificările necesare înainte de deschiderea unui cont curent pentru un client persoană juridică.",
+    "status": "context",
+    "rules": [],
+    "documents": [],
+    "reason": "Definește scopul procedurii; nu conține o cerință verificabilă."
+   },
+   {
+    "clause": "1.2",
+    "page": 1,
+    "section": "1. Scop și domeniu de aplicare",
+    "text": "Procedura se aplică societăților comerciale cu sediul în România, înregistrate la Oficiul Național al Registrului Comerțului (ONRC).",
+    "status": "context",
+    "rules": [],
+    "documents": [],
+    "reason": "Definește cui se aplică procedura; clientul e încadrat ca PJ la deschiderea dosarului."
+   },
+   {
+    "clause": "1.3",
+    "page": 1,
+    "section": "1. Scop și domeniu de aplicare",
+    "text": "Clientul furnizează documentele și informațiile necesare evaluării riscului înainte de încheierea contractului (CGB PJ 2.1.4.2).",
+    "status": "context",
+    "rules": [],
+    "documents": [],
+    "reason": "Obligație generală a clientului; se aplică prin regulile pentru fiecare document."
+   },
+   {
+    "clause": "2.1",
+    "page": 1,
+    "section": "2. Documentele societății",
+    "text": "Clientul prezintă un certificat constatator emis de ONRC.",
+    "status": "automated",
+    "rules": [
+     {
+      "rule_id": "R-PJ-001",
+      "check": "required_present",
+      "stage": "validate",
+      "applies_to": "company",
+      "severity": "high",
+      "description": "Societatea trebuie să prezinte un certificat constatator emis de ONRC."
+     }
+    ],
+    "documents": [
+     {
+      "doc_type": "certificat_constatator",
+      "applies_to": "company"
+     }
+    ],
+    "reason": null
+   },
+   {
+    "clause": "2.2",
+    "page": 1,
+    "section": "2. Documentele societății",
+    "text": "Certificatul constatator nu trebuie să fie mai vechi de 30 de zile la data cererii.",
+    "status": "automated",
+    "rules": [
+     {
+      "rule_id": "R-PJ-002",
+      "check": "max_age_days",
+      "stage": "validate",
+      "applies_to": "company",
+      "severity": "high",
+      "description": "Certificatul constatator nu trebuie să fie mai vechi de 30 de zile."
+     }
+    ],
+    "documents": [],
+    "reason": null
+   },
+   {
+    "clause": "2.3",
+    "page": 1,
+    "section": "2. Documentele societății",
+    "text": "Din certificatul constatator se înregistrează următoarele date: denumirea societății, codul unic de înregistrare (CUI), numărul de înregistrare, sediul social, codul CAEN al activității principale, administratorii și asociații.",
+    "status": "covered",
+    "rules": [],
+    "documents": [],
+    "reason": "Câmpurile listate sunt extrase din certificatul constatator (lista de câmpuri a documentului)."
+   },
+   {
+    "clause": "2.4",
+    "page": 1,
+    "section": "2. Documentele societății",
+    "text": "Clientul prezintă actul constitutiv al societății, în forma actualizată.",
+    "status": "automated",
+    "rules": [
+     {
+      "rule_id": "R-PJ-003",
+      "check": "required_present",
+      "stage": "validate",
+      "applies_to": "company",
+      "severity": "high",
+      "description": "Societatea trebuie să prezinte actul constitutiv actualizat."
+     }
+    ],
+    "documents": [
+     {
+      "doc_type": "act_constitutiv",
+      "applies_to": "company"
+     }
+    ],
+    "reason": null
+   },
+   {
+    "clause": "2.5",
+    "page": 1,
+    "section": "2. Documentele societății",
+    "text": "Din actul constitutiv se înregistrează denumirea societății, CUI-ul și persoanele care pot reprezenta societatea.",
+    "status": "covered",
+    "rules": [],
+    "documents": [],
+    "reason": "Câmpurile listate sunt extrase din actul constitutiv (lista de câmpuri a documentului)."
+   },
+   {
+    "clause": "3.1",
+    "page": 1,
+    "section": "3. Beneficiarul real",
+    "text": "Clientul prezintă o declarație privind beneficiarul real, semnată de reprezentantul legal.",
+    "status": "automated",
+    "rules": [
+     {
+      "rule_id": "R-PJ-004",
+      "check": "required_present",
+      "stage": "validate",
+      "applies_to": "company",
+      "severity": "high",
+      "description": "Societatea trebuie să prezinte declarația privind beneficiarul real."
+     },
+     {
+      "rule_id": "R-PJ-005",
+      "check": "field_present",
+      "stage": "validate",
+      "applies_to": "company",
+      "severity": "high",
+      "description": "Declarația privind beneficiarul real trebuie să fie semnată de reprezentantul legal."
+     }
+    ],
+    "documents": [
+     {
+      "doc_type": "ubo_declaration",
+      "applies_to": "company"
+     }
+    ],
+    "reason": null
+   },
+   {
+    "clause": "3.2",
+    "page": 1,
+    "section": "3. Beneficiarul real",
+    "text": "Beneficiar real este orice persoană fizică ce deține sau controlează în cele din urmă societatea, inclusiv prin deținerea a 25% plus una din acțiuni sau părți sociale (Legea 129/2019, art. 4; CGB PJ 1.5).",
+    "status": "context",
+    "rules": [],
+    "documents": [],
+    "reason": "Definiția beneficiarului real, folosită de R-PJ-006."
+   },
+   {
+    "clause": "3.3",
+    "page": 2,
+    "section": "3. Beneficiarul real",
+    "text": "Beneficiarii reali declarați trebuie să corespundă cu asociații și cotele din certificatul constatator.",
+    "status": "automated",
+    "rules": [
+     {
+      "rule_id": "R-PJ-006",
+      "check": "registry_vs_declaration",
+      "stage": "cross_check",
+      "applies_to": "company",
+      "severity": "high",
+      "description": "Beneficiarii reali declarați trebuie să corespundă cu asociații și cotele din certificatul constatator."
+     }
+    ],
+    "documents": [],
+    "reason": null
+   },
+   {
+    "clause": "3.4",
+    "page": 2,
+    "section": "3. Beneficiarul real",
+    "text": "Clientul prezintă un act de identitate valabil pentru fiecare beneficiar real.",
+    "status": "automated",
+    "rules": [
+     {
+      "rule_id": "R-PJ-007",
+      "check": "required_present",
+      "stage": "validate",
+      "applies_to": "ubo",
+      "severity": "high",
+      "description": "Fiecare beneficiar real trebuie să aibă un act de identitate."
+     },
+     {
+      "rule_id": "R-PJ-008",
+      "check": "not_expired",
+      "stage": "validate",
+      "applies_to": "ubo",
+      "severity": "high",
+      "description": "Actul de identitate al fiecărui beneficiar real trebuie să fie valabil."
+     }
+    ],
+    "documents": [
+     {
+      "doc_type": "id_card",
+      "applies_to": "ubo"
+     }
+    ],
+    "reason": null
+   },
+   {
+    "clause": "4.1",
+    "page": 2,
+    "section": "4. Reprezentanții legali și delegații",
+    "text": "Clientul prezintă un act de identitate valabil pentru fiecare reprezentant legal (administrator).",
+    "status": "automated",
+    "rules": [
+     {
+      "rule_id": "R-PJ-009",
+      "check": "required_present",
+      "stage": "validate",
+      "applies_to": "administrator",
+      "severity": "high",
+      "description": "Fiecare administrator trebuie să aibă un act de identitate."
+     },
+     {
+      "rule_id": "R-PJ-010",
+      "check": "not_expired",
+      "stage": "validate",
+      "applies_to": "administrator",
+      "severity": "high",
+      "description": "Actul de identitate al fiecărui administrator trebuie să fie valabil."
+     }
+    ],
+    "documents": [
+     {
+      "doc_type": "id_card",
+      "applies_to": "administrator"
+     }
+    ],
+    "reason": null
+   },
+   {
+    "clause": "4.2",
+    "page": 2,
+    "section": "4. Reprezentanții legali și delegații",
+    "text": "Numele reprezentantului legal din actul de identitate trebuie să corespundă cu numele administratorului din certificatul constatator.",
+    "status": "automated",
+    "rules": [
+     {
+      "rule_id": "R-PJ-011",
+      "check": "fields_match",
+      "stage": "cross_check",
+      "applies_to": "administrator",
+      "severity": "high",
+      "description": "Numele administratorului din actul de identitate trebuie să apară printre administratorii din certificatul constatator."
+     }
+    ],
+    "documents": [],
+    "reason": null
+   },
+   {
+    "clause": "4.3",
+    "page": 2,
+    "section": "4. Reprezentanții legali și delegații",
+    "text": "Persoanele care nu sunt reprezentanți legali pot opera în cont numai ca delegați, numiți prin formularul pus la dispoziție de bancă (CGB PJ 1.5).",
+    "status": "context",
+    "rules": [],
+    "documents": [],
+    "reason": "Definește delegații, care corespund rolului signatory."
+   },
+   {
+    "clause": "4.4",
+    "page": 2,
+    "section": "4. Reprezentanții legali și delegații",
+    "text": "Fiecare reprezentant legal și fiecare delegat depune un specimen de semnătură.",
+    "status": "automated",
+    "rules": [
+     {
+      "rule_id": "R-PJ-012",
+      "check": "required_present",
+      "stage": "validate",
+      "applies_to": "administrator",
+      "severity": "high",
+      "description": "Fiecare administrator depune un specimen de semnătură."
+     },
+     {
+      "rule_id": "R-PJ-013",
+      "check": "required_present",
+      "stage": "validate",
+      "applies_to": "signatory",
+      "severity": "high",
+      "description": "Fiecare delegat depune un specimen de semnătură."
+     }
+    ],
+    "documents": [
+     {
+      "doc_type": "signature_specimen",
+      "applies_to": "administrator"
+     },
+     {
+      "doc_type": "signature_specimen",
+      "applies_to": "signatory"
+     }
+    ],
+    "reason": null
+   },
+   {
+    "clause": "4.5",
+    "page": 2,
+    "section": "4. Reprezentanții legali și delegații",
+    "text": "Fiecare reprezentant legal, delegat și beneficiar real parcurge verificările prevăzute pentru persoane fizice în procedura PF-ONB-01.",
+    "status": "automated",
+    "rules": [
+     {
+      "rule_id": "R-PJ-014",
+      "check": "required_present",
+      "stage": "validate",
+      "applies_to": "signatory",
+      "severity": "high",
+      "description": "Fiecare delegat trebuie să aibă un act de identitate."
+     },
+     {
+      "rule_id": "R-PJ-015",
+      "check": "not_expired",
+      "stage": "validate",
+      "applies_to": "signatory",
+      "severity": "high",
+      "description": "Actul de identitate al fiecărui delegat trebuie să fie valabil."
+     }
+    ],
+    "documents": [
+     {
+      "doc_type": "id_card",
+      "applies_to": "signatory"
+     }
+    ],
+    "reason": null
+   },
+   {
+    "clause": "5.1",
+    "page": 2,
+    "section": "5. Concordanța între documente",
+    "text": "CUI-ul societății trebuie să fie identic pe certificatul constatator, actul constitutiv și declarația privind beneficiarul real.",
+    "status": "automated",
+    "rules": [
+     {
+      "rule_id": "R-PJ-016",
+      "check": "fields_match",
+      "stage": "cross_check",
+      "applies_to": "company",
+      "severity": "high",
+      "description": "CUI-ul trebuie să fie identic pe certificatul constatator, actul constitutiv și declarația BR."
+     }
+    ],
+    "documents": [],
+    "reason": null
+   },
+   {
+    "clause": "5.2",
+    "page": 2,
+    "section": "5. Concordanța între documente",
+    "text": "Denumirea societății trebuie să fie aceeași pe toate documentele prezentate.",
+    "status": "automated",
+    "rules": [
+     {
+      "rule_id": "R-PJ-017",
+      "check": "fields_match",
+      "stage": "cross_check",
+      "applies_to": "company",
+      "severity": "medium",
+      "description": "Denumirea societății trebuie să fie aceeași pe toate documentele."
+     }
+    ],
+    "documents": [],
+    "reason": null
+   },
+   {
+    "clause": "5.3",
+    "page": 2,
+    "section": "5. Concordanța între documente",
+    "text": "Datele societății pot fi verificate în baza de date a ONRC și în Buletinul Procedurilor de Insolvență (CGB PJ 2.1.4.3).",
+    "status": "manual",
+    "rules": [],
+    "documents": [],
+    "reason": "Catalogul nu are încă o verificare în ONRC și BPI; analistul le consultă manual."
+   },
+   {
+    "clause": "6.1",
+    "page": 2,
+    "section": "6. Autenticitatea documentelor",
+    "text": "Banca verifică autenticitatea actelor de identitate prezentate (CGB PJ 2.1.4.1).",
+    "status": "covered",
+    "rules": [],
+    "documents": [],
+    "reason": "Acoperită de verificările de alterare R-PJ-018 și R-PJ-019, aplicate tuturor documentelor."
+   },
+   {
+    "clause": "6.2",
+    "page": 2,
+    "section": "6. Autenticitatea documentelor",
+    "text": "Documentele care prezintă semne de modificare ulterioară emiterii sunt escaladate către ofițerul de conformitate.",
+    "status": "automated",
+    "rules": [
+     {
+      "rule_id": "R-PJ-018",
+      "check": "pdf_metadata",
+      "stage": "tamper",
+      "applies_to": "company",
+      "severity": "critical",
+      "description": "Documentele cu semne de modificare ulterioară emiterii se escaladează la conformitate."
+     }
+    ],
+    "documents": [],
+    "reason": null
+   },
+   {
+    "clause": "6.3",
+    "page": 2,
+    "section": "6. Autenticitatea documentelor",
+    "text": "Textul dintr-un singur câmp sau rând care folosește fonturi diferite este tratat ca semn de alterare.",
+    "status": "automated",
+    "rules": [
+     {
+      "rule_id": "R-PJ-019",
+      "check": "font_consistency",
+      "stage": "tamper",
+      "applies_to": "company",
+      "severity": "critical",
+      "description": "Fonturile diferite în același câmp sau rând indică o posibilă alterare."
+     }
+    ],
+    "documents": [],
+    "reason": null
+   },
+   {
+    "clause": "7.1",
+    "page": 2,
+    "section": "7. Verificarea pe liste",
+    "text": "Societatea și fiecare persoană fizică legată de ea sunt verificate în listele de sancțiuni internaționale înainte de deschiderea contului.",
+    "status": "automated",
+    "rules": [
+     {
+      "rule_id": "R-PJ-021",
+      "check": "sanctions",
+      "stage": "screening",
+      "applies_to": "administrator",
+      "severity": "critical",
+      "description": "Administratorii se verifică în listele de sancțiuni internaționale."
+     },
+     {
+      "rule_id": "R-PJ-022",
+      "check": "sanctions",
+      "stage": "screening",
+      "applies_to": "ubo",
+      "severity": "critical",
+      "description": "Beneficiarii reali se verifică în listele de sancțiuni internaționale."
+     },
+     {
+      "rule_id": "R-PJ-023",
+      "check": "sanctions",
+      "stage": "screening",
+      "applies_to": "signatory",
+      "severity": "critical",
+      "description": "Delegații se verifică în listele de sancțiuni internaționale."
+     }
+    ],
+    "documents": [],
+    "reason": null
+   },
+   {
+    "clause": "7.2",
+    "page": 3,
+    "section": "7. Verificarea pe liste",
+    "text": "Nu se deschide cont pentru o persoană sau entitate desemnată ori o parte restricționată (CGB PJ 1.5).",
+    "status": "automated",
+    "rules": [
+     {
+      "rule_id": "R-PJ-020",
+      "check": "sanctions",
+      "stage": "screening",
+      "applies_to": "company",
+      "severity": "critical",
+      "description": "Societatea nu trebuie să fie entitate desemnată sau parte restricționată."
+     }
+    ],
+    "documents": [],
+    "reason": null
+   },
+   {
+    "clause": "7.3",
+    "page": 3,
+    "section": "7. Verificarea pe liste",
+    "text": "Banca verifică dacă reprezentanții legali sau beneficiarii reali sunt persoane expuse public, membri de familie sau asociați apropiați ai acestora (Legea 129/2019, art. 3; CGB PJ 1.5).",
+    "status": "automated",
+    "rules": [
+     {
+      "rule_id": "R-PJ-024",
+      "check": "pep",
+      "stage": "screening",
+      "applies_to": "administrator",
+      "severity": "high",
+      "description": "Se verifică dacă administratorii sunt persoane expuse public sau apropiați ai acestora."
+     },
+     {
+      "rule_id": "R-PJ-025",
+      "check": "pep",
+      "stage": "screening",
+      "applies_to": "ubo",
+      "severity": "high",
+      "description": "Se verifică dacă beneficiarii reali sunt persoane expuse public sau apropiați ai acestora."
+     }
+    ],
+    "documents": [],
+    "reason": null
+   },
+   {
+    "clause": "7.4",
+    "page": 3,
+    "section": "7. Verificarea pe liste",
+    "text": "Denumirea societății este verificată în surse publice pentru informații negative.",
+    "status": "automated",
+    "rules": [
+     {
+      "rule_id": "R-PJ-026",
+      "check": "adverse_media",
+      "stage": "screening",
+      "applies_to": "company",
+      "severity": "medium",
+      "description": "Denumirea societății se verifică în surse publice pentru informații negative."
+     }
+    ],
+    "documents": [],
+    "reason": null
+   },
+   {
+    "clause": "8.1",
+    "page": 3,
+    "section": "8. Gradul de risc",
+    "text": "Fiecare client primește un grad de risc scăzut, mediu sau ridicat, în funcție de țara de înregistrare, codul CAEN al activității și calitatea de persoană expusă public a reprezentanților sau beneficiarilor reali.",
+    "status": "automated",
+    "rules": [
+     {
+      "rule_id": "R-PJ-027",
+      "check": "risk_factors",
+      "stage": "risk",
+      "applies_to": "company",
+      "severity": "info",
+      "description": "Gradul de risc (scăzut, mediu, ridicat) se stabilește după țara de înregistrare, codul CAEN și statutul PEP al reprezentanților sau BR."
+     }
+    ],
+    "documents": [],
+    "reason": null
+   },
+   {
+    "clause": "9.1",
+    "page": 3,
+    "section": "9. Rezultatul analizei",
+    "text": "Dacă un document obligatoriu lipsește, este expirat sau este prea vechi, clientului i se solicită un document valabil înainte de continuarea analizei.",
+    "status": "covered",
+    "rules": [],
+    "documents": [],
+    "reason": "Regulile marcate client_fixable trimit automat clientului cererea de document valabil."
+   },
+   {
+    "clause": "9.2",
+    "page": 3,
+    "section": "9. Rezultatul analizei",
+    "text": "Decizia finală de deschidere sau de refuz al contului este luată de angajatul băncii, niciodată automat.",
+    "status": "manual",
+    "rules": [],
+    "documents": [],
+    "reason": "Decizia finală este întotdeauna a angajatului; agentul nu decide."
+   },
+   {
+    "clause": "9.3",
+    "page": 3,
+    "section": "9. Rezultatul analizei",
+    "text": "După deschiderea contului, clientul notifică banca în scris și fără întârziere orice modificare a datelor de identificare sau a reprezentanților (CGB PJ 1.1.5).",
+    "status": "context",
+    "rules": [],
+    "documents": [],
+    "reason": "Obligație a clientului după deschiderea contului, în afara procesului de onboarding."
+   },
+   {
+    "clause": "9.4",
+    "page": 3,
+    "section": "9. Rezultatul analizei",
+    "text": "Dacă datele nu sunt actualizate la cererea băncii, accesul la anumite produse sau servicii poate fi restricționat după expirarea perioadei de preaviz (CGB PJ 2.1.4.1).",
+    "status": "context",
+    "rules": [],
+    "documents": [],
+    "reason": "Se aplică după deschiderea contului, în afara procesului de onboarding."
+   },
+   {
+    "clause": "9.5",
+    "page": 3,
+    "section": "9. Rezultatul analizei",
+    "text": "Fiecare verificare efectuată și rezultatul acesteia se consemnează în dosarul clientului.",
+    "status": "covered",
+    "rules": [],
+    "documents": [],
+    "reason": "Jurnalul de audit înregistrează fiecare verificare și rezultatul ei."
+   }
+  ]
+ }
+}

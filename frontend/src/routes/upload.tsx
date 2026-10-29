@@ -1,0 +1,3 @@
+import { createFileRoute, redirect } from "@tanstack/react-router";
+export const Route = createFileRoute("/upload")({ head: () => ({ meta: [{ title: "Încarcă documente · Raif2Future" }, { name: "description", content: "Portalul pentru documentele dosarului SPECIMEN." }, { property: "og:title", content: "Încarcă documente · Raif2Future" }, { property: "og:description", content: "Documente solicitate pentru verificare." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }), // Old address kept working: it now opens the client portal, which loads only client-safe data.
+  beforeLoad: () => { throw redirect({ to: "/portal" }); } });

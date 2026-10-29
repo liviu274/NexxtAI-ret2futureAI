@@ -12,6 +12,7 @@ Repository: https://github.com/liviu274/NexxtAI-ret2futureAI
 NexxtAI-ret2futureAI/
 ├── conventions/          CONTRACTS.md + example JSON: the shapes every module reads and writes
 ├── docs/                 challenge brief, build plan, bank procedures (PF-ONB-01, PJ-ONB-01)
+├── frontend/             analyst screens and client portal (React, TanStack Start)
 ├── data/                 synthetic test data (see data/README.md)
 └── projects/
     ├── playbook-builder/ procedure PDF → playbook JSON, validated, with the clause review report (Person 2)
@@ -20,10 +21,16 @@ NexxtAI-ret2futureAI/
     └── featherless-ai-client/  first Node prototype of the Featherless client
 ```
 
-The analyst screens and the client portal are a separate repository (`pixel-perfect-replay-22065`, Lovable). Its dev
-server proxies `/api/orch` to the orchestrator on port 8000 (`VITE_ORCHESTRATOR_URL` for deployed builds): backend cases
-appear next to the mock ones, and portal cases are created in the backend. `node scripts/seed-orchestrator.mjs` there
-loads its two reference PJ cases.
+The analyst screens and the client portal are in `frontend/` (imported with its history from the Lovable repository
+`pixel-perfect-replay-22065`). Its dev server proxies `/api/orch` to the orchestrator on port 8000
+(`VITE_ORCHESTRATOR_URL` for deployed builds): backend cases appear next to the mock ones, and portal cases are created
+in the backend. `node scripts/seed-orchestrator.mjs` there loads its two reference PJ cases.
+
+```sh
+cd frontend
+npm install
+npm run dev            # http://localhost:8080; the orchestrator must run on port 8000
+```
 
 ## Run it
 

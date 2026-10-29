@@ -13,7 +13,7 @@ describe("Approval and review rules", () => {
   expect(blockingFlags([{...f,severity,status:"open"},{...f,severity,status:"sent_to_client"}])).toHaveLength(2);
  });
  it.each(["resolved", "dismissed"] as const)("does not block %s flags", (status) => {expect(blockingFlags([{...f,status}])).toHaveLength(0);});
- it("does not block medium flags", () => {expect(blockingFlags([{...f,severity:"medium",status:"open"}])).toHaveLength(0);});
+ it("blocks medium flags until they are acknowledged", () => {expect(blockingFlags([{...f,severity:"medium",status:"open"}])).toHaveLength(1);expect(blockingFlags([{...f,severity:"medium",status:"dismissed"}])).toHaveLength(0);expect(blockingFlags([{...f,severity:"low",status:"open"}])).toHaveLength(0);});
  it("forbids approval through the API while a PF or PJ case is blocked", async () => {
   await expect(submitDecision("case_pf_12_modificari_combinate","aprobat","")).rejects.toThrow("blocată");
   await expect(submitDecision("case_pj_07_procente_diferite","aprobat","")).rejects.toThrow("nu răspunde");
@@ -45,7 +45,7 @@ describe("Portal demo rules", () => {
  it("has exactly three PF documents with address second", () => {const p=playbooks.find((p)=>p.customerType==="PF");expect(portalDocumentPlan("PF",p?.requiredDocuments??[],[]).map((d)=>d.type)).toEqual(["identity_document","utility_bill","payslip"]);});
  it("groups PJ documents by company and person", () => {const p=playbooks.find((p)=>p.customerType==="PJ");const docs=portalDocumentPlan("PJ",p?.requiredDocuments??[],[{id:"a",name:"Daria Model",role:"administrator"},{id:"b",name:"Tudor Exemplu",role:"UBO"}]);expect(docs.map((d)=>[d.type,d.personName??null])).toEqual([["certificat_constatator",null],["act_constitutiv",null],["ubo_declaration",null],["id_card","Daria Model"],["signature_specimen","Daria Model"],["id_card","Tudor Exemplu"]]);});
  it("rejects expired ID on 15.01.2025", () => {expect(simulatePortalResult("identity_document","act_expirat.pdf")).toEqual({ok:false,message:"Actul de identitate a expirat pe 15.01.2025. Încarcă un act valabil."});});
- it("rejects address mismatch on bill", () => {expect(simulatePortalResult("utility_bill","factura_adresa.pdf")).toEqual({ok:false,message:"Adresa de pe factură nu este aceeași cu cea din actul de identitate. Încarcă o factură pe adresa din act."});});
+ it("accepts a bill with another address: the officer decides, the client is not blocked", () => {expect(simulatePortalResult("utility_bill","factura_adresa.pdf")).toEqual({ok:true,message:"Documentul este în regulă."});});
  it("rejects name mismatch", () => {expect(simulatePortalResult("payslip","nume.pdf")).toEqual({ok:false,message:"Numele de pe document nu este același cu cel din actul de identitate."});});
  it("shows edited payslip OK to client", () => {expect(simulatePortalResult("payslip","fluturas_editat_font.pdf")).toEqual({ok:true,message:"Documentul este în regulă."});});
  it("blocks incomplete submission", async () => {const c=await createPortalCase("PF",[{id:"pf",name:"Mara Exemplu",role:"titular"}]);await expect(submitPortalCase(c.id)).rejects.toThrow();});
@@ -71,3 +71,15 @@ describe("Portal demo rules", () => {
   expect((await getCase(c.id))?.flags).toHaveLength(0);
  },30000);
 });
+
+import { acceptedFiles, fileProblem } from "@/lib/portal";
+describe("upload formats", () => {
+  const file = (name: string, size = 10) => new File(["x".repeat(size)], name);
+  it("takes the identity document as a photo or PDF, every other document as PDF only", () => {
+    expect(acceptedFiles("id_card")).toBe(".pdf,.png,.jpg,.jpeg"); expect(acceptedFiles("payslip")).toBe(".pdf");
+    expect(fileProblem("id_card", file("ci.jpg"))).toBeNull(); expect(fileProblem("id_card", file("ci.pdf"))).toBeNull();
+    expect(fileProblem("id_card", file("ci.heic"))).toMatch(/fotografie/);
+    expect(fileProblem("payslip", file("fluturas.png"))).toMatch(/PDF/); expect(fileProblem("proof_of_address", file("factura.pdf"))).toBeNull();
+  });
+});
+

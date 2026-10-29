@@ -22,10 +22,11 @@ export function ScreeningPanel({ caseId, flag }: { caseId: string; flag: Flag })
   async function resolve(resolution: "confirmed" | "dismissed") {
     setBusy(true);
     try {
-      await resolveScreeningMatch(caseId, flag.id, resolution, reason);
+      const result = await resolveScreeningMatch(caseId, flag.id, resolution, reason);
       await invalidateCaseQueries(queryClient);
       setOpen(false); setReason("");
-      toast.success(resolution === "confirmed" ? "Potrivire confirmată de ofițer." : "Potrivire ignorată cu motiv.");
+      if ("pending" in result && result.pending) toast.info(result.message);
+      else toast.success(resolution === "confirmed" ? "Potrivire confirmată de ofițer." : "Potrivire ignorată cu motiv.");
     } catch (e) { toast.error(e instanceof Error ? e.message : "Acțiunea nu a putut fi înregistrată."); await invalidateCaseQueries(queryClient); }
     finally { setBusy(false); }
   }

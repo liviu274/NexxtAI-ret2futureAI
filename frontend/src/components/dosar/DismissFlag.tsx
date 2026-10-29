@@ -12,7 +12,7 @@ export function DismissFlag({ caseId, flagId, outline = false }: { caseId: strin
   const [open, setOpen] = useState(false); const [note, setNote] = useState(""); const [busy, setBusy] = useState(false); const qc = useQueryClient();
   async function confirm() {
     setBusy(true);
-    try { await dismissFlag(caseId, flagId, note); await invalidateCaseQueries(qc); setOpen(false); setNote(""); }
+    try { const r = await dismissFlag(caseId, flagId, note); if (r.pending) toast.info(r.message); await invalidateCaseQueries(qc); setOpen(false); setNote(""); }
     catch (e) { toast.error(e instanceof Error ? e.message : "Acțiunea nu a reușit."); await invalidateCaseQueries(qc); }
     finally { setBusy(false); }
   }

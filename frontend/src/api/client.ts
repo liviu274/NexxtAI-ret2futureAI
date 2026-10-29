@@ -5,13 +5,13 @@ import type { ScreeningMatch } from "@/types/extensions";
 import { blockingFlags, isFinalCase, isTamper, riskFromFlags } from "@/lib/review";
 import { clearDemoCases, readDemoCases, writeDemoCases } from "./demo-store";
 import { ensureDocumentRequests, updateRequestedStep } from "@/lib/document-requests";
-import { portalDocumentPlan, simulatePortalResult } from "@/lib/portal";
+import { fileProblem, portalDocumentPlan, simulatePortalResult } from "@/lib/portal";
 import type { CustomerType, Person } from "@/types";
 import { toClientCaseStatus, toClientPortalCase, type ClientCaseStatus, type ClientPortalCase } from "@/lib/client-status";
 import { fromBuilder, type BuilderResult } from "@/lib/playbook-builder";
 import { hasRequiredConsent, isValidEmail, isValidPhone, type ClientSession, type Consent, type ConsentId, type IdentityCheck, type Onboarding } from "@/lib/onboarding";
 
-import { fromOrchestratorCase, fromOrchestratorAudit, clientMessagesFor, type OrchestratorCase, type OrchestratorAudit, type AuditLogResult } from "@/lib/orchestrator-adapter";
+import { fromOrchestratorCase, fromOrchestratorAudit, fromOrchestratorScreening, fromClientView, clientMessagesFor, type OrchestratorCase, type OrchestratorAudit, type AuditLogResult, type OrchestratorClientView, type OrchestratorScreeningMatch } from "@/lib/orchestrator-adapter";
 
 export const REAL_CASE_IDS = ["case_pj_07_procente_diferite", "case_pj_00_corect_control"] as const;
 /** Cases opened from the portal while the orchestrator is up live only in the backend. */
@@ -41,7 +41,8 @@ export function orchestratorAvailable(retry = false): Promise<boolean> {
   return availability ??= (async () => {
     const abort = new AbortController();
     const timer = setTimeout(() => abort.abort(), 1500);
-    try { return (await fetch(`${ORCHESTRATOR_BASE}/cases`, { signal: abort.signal })).ok; }
+    // /health answers without a login; /cases is for analysts once the server requires tokens.
+    try { return (await fetch(`${ORCHESTRATOR_BASE}/health`, { signal: abort.signal })).ok; }
     catch { return false; }
     finally { clearTimeout(timer); }
   })();
@@ -49,25 +50,54 @@ export function orchestratorAvailable(retry = false): Promise<boolean> {
 // OCR may perform a vision call for every page, followed by classification/extraction.
 const OCR_TIMEOUT_MS = 600_000;
 const OCR_UNCONFIRMED = "Serviciul de verificare nu răspunde. Confirmarea procesării nu a fost primită; fișierul poate fi deja salvat. Reîncearcă conexiunea, apoi verificarea dosarului înainte să încarci din nou.";
-async function orchestratorHttp<T>(path: string, init?: RequestInit, processing = false): Promise<T> {
+const TOKEN_KEY = "dosarai-analyst-token";
+function analystToken(): string | null {
+  try { return typeof window === "undefined" ? null : window.sessionStorage.getItem(TOKEN_KEY); } catch { return null; }
+}
+/** Who acts on a staff call: a bearer token once the server sets NEXXT_ANALYSTS; on a dev server, a name it trusts. */
+function analystHeaders(): Record<string, string> {
+  const token = analystToken();
+  return token ? { Authorization: `Bearer ${token}` } : { "X-Analyst": import.meta.env["VITE_ANALYST_NAME"] ?? "Elena Radu" };
+}
+async function orchestratorHttp<T>(path: string, init?: RequestInit, processing = false, retried = false): Promise<T> {
   let res: Response;
   const multipart = init?.body instanceof FormData;
-  try { res = await fetch(`${ORCHESTRATOR_BASE}${path}`, { ...init, headers: { ...(!multipart ? { "Content-Type": "application/json" } : {}), ...init?.headers }, signal: AbortSignal.timeout(processing ? OCR_TIMEOUT_MS : 10_000) }); }
+  const token = analystToken();
+  try { res = await fetch(`${ORCHESTRATOR_BASE}${path}`, { ...init, headers: { ...(!multipart ? { "Content-Type": "application/json" } : {}), ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init?.headers }, signal: AbortSignal.timeout(processing ? OCR_TIMEOUT_MS : 10_000) }); }
   catch { availability = Promise.resolve(false); throw new Error(processing ? OCR_UNCONFIRMED : SERVICE_UNAVAILABLE); }
+  if (res.status === 401 && !retried && typeof window !== "undefined" && typeof window.prompt === "function") {
+    // The server requires analyst tokens (NEXXT_ANALYSTS): ask once, keep it for this browser tab.
+    const entered = window.prompt("Tokenul tău de analist:")?.trim();
+    if (entered) {
+      try { window.sessionStorage.setItem(TOKEN_KEY, entered); } catch { /* used for this call only */ }
+      return orchestratorHttp(path, { ...init, headers: { ...init?.headers, Authorization: `Bearer ${entered}` } }, processing, true);
+    }
+  }
   if (!res.ok) {
     const body = await res.json().catch(() => null) as { detail?: unknown } | null;
     const detail = typeof body?.detail === "string" ? body.detail : "";
+    if (res.status === 401) throw new Error("Este necesară autentificarea analistului. Reîncarcă pagina și introdu tokenul.");
+    if (res.status === 503 && detail.includes("FEATHERLESS_API_KEY")) {
+      // The service is up; it only cannot read documents. Nothing was stored.
+      availability = Promise.resolve(true);
+      throw new Error("Citirea documentelor nu este configurată pe server. Fișierul nu a fost salvat; încearcă mai târziu.");
+    }
     if (processing && res.status === 502 && detail.startsWith("document processing failed:")) {
       availability = Promise.resolve(true);
       throw new Error("Documentul a fost primit, dar verificarea OCR nu a reușit. Reîncearcă verificarea dosarului fără să încarci fișierul din nou.");
     }
     if (res.status >= 500) { availability = Promise.resolve(false); throw new Error(processing ? OCR_UNCONFIRMED : SERVICE_UNAVAILABLE); }
     if (res.status === 403 && detail.includes("already decided")) throw new Error("Dosarul este închis. Modificările nu mai sunt permise.");
+    // The upload gate answers {code, message}: the message is written for the client (re-upload, not clear, not a Romanian ID).
+    const gate = body?.detail && typeof body.detail === "object" && typeof (body.detail as { message?: unknown }).message === "string" ? (body.detail as { message: string }).message : "";
+    if (gate) { availability = Promise.resolve(true); throw new Error(gate); }
     if (processing) {
       const errors: Record<number, string> = { 413: "Fișierul depășește 10 MB.", 415: "Încarcă un fișier PDF, PNG sau JPEG valid.", 422: "Documentul nu a putut fi citit sau dosarul nu poate fi procesat." };
       if (errors[res.status]) throw new Error(errors[res.status]);
     }
     if (res.status === 403 && path.endsWith("/decision")) {
+      if (detail.includes("full check")) throw new Error("Aprobarea așteaptă verificarea completă a dosarului (falsificare, screening, risc) după ultimul document încărcat.");
+      if (detail.includes("acknowledged")) throw new Error("Aprobarea este blocată: problemele de severitate medie trebuie confirmate, adică ignorate cu motiv.");
       throw new Error(detail.includes("unresolved high/critical") ? "Aprobarea este blocată de probleme nerezolvate." : "Decizia nu poate fi înregistrată. Verifică starea dosarului.");
     }
     throw new Error(res.status === 404 ? "Dosarul sau problema nu a fost găsită în backend." : `Acțiunea nu a reușit (eroare ${res.status}).`);
@@ -101,8 +131,26 @@ async function readOrchestratorCase(id: string): Promise<Case | null> {
     const raw = await orchestratorHttp<OrchestratorCase>(`/cases/${encodeURIComponent(id)}`);
     const m = await mocks();
     const playbook = await getPlaybook(raw.playbook_id);
-    return fromOrchestratorCase(raw, m.cases.find((c) => c.id === id), playbook?.rules, playbook?.requiredDocuments, uploadSlots(id));
+    return fromOrchestratorCase(raw, m.cases.find((c) => c.id === id), playbook?.rules, playbook?.requiredDocuments, uploadSlots(id), await liveExtras(raw));
   } catch { return null; } // Read failures retain the existing demo experience; mutations never silently write to mocks after a failed POST.
+}
+
+/** What only the orchestrator knows: the ONRC side of the ownership comparison, and page images of uploads. */
+async function liveExtras(raw: OrchestratorCase) {
+  const base = `${ORCHESTRATOR_BASE}/cases/${encodeURIComponent(raw.case_id)}`;
+  const pageUrl = (docId: string, page: number) => `${base}/documents/${encodeURIComponent(docId)}/pages/${page}.png`;
+  if (raw.customer_type !== "PJ") return { pageUrl };
+  const owners = await orchestratorHttp<{ registry?: { id: string; name: string; pct: number | null }[] }>(`/cases/${encodeURIComponent(raw.case_id)}/ownership`).catch(() => null);
+  return Array.isArray(owners?.registry) && owners.registry.length ? { pageUrl, ownership: { registry: owners.registry.map((p) => ({ ...p, pct: p.pct ?? 0 })) } } : { pageUrl };
+}
+/** The portal's view of a real case: GET /client-status, never the analyst's case file. */
+async function readPortalCase(id: string): Promise<Case | null> {
+  if (!isRealCase(id) || !await orchestratorAvailable()) return null;
+  try {
+    const raw = fromClientView(await orchestratorHttp<OrchestratorClientView | OrchestratorCase>(`/cases/${encodeURIComponent(id)}/client-status`));
+    const playbook = await getPlaybook(raw.playbook_id);
+    return fromOrchestratorCase(raw, undefined, playbook?.rules, playbook?.requiredDocuments, uploadSlots(id));
+  } catch { return null; }
 }
 
 export const SERVICE_UNAVAILABLE = "Serviciul de verificare nu răspunde, iar modificările nu au fost salvate.";
@@ -117,16 +165,20 @@ function assertEditable(c: Case | null | undefined): asserts c is Case {
   if (!c) throw new Error("Dosarul nu a fost găsit.");
   if (isFinalCase(c.status)) throw new Error("Dosarul este închis. Modificările nu mai sunt permise.");
 }
-async function mutationCase(id: string, withPortalPlan = false) {
+async function mutationCase(id: string, withPortalPlan = false, portal = false) {
   if (!isRealCase(id) && await orchestratorAvailable()) await listBackendIds();
   if (isRealCase(id)) {
     // Identity selects the source. Always retry a fresh authoritative read before a write.
-    const raw = await orchestratorHttp<OrchestratorCase>(`/cases/${encodeURIComponent(id)}`);
+    // The client portal reads its own view; the officer's screens read the case file.
+    const read = async () => portal
+      ? fromClientView(await orchestratorHttp<OrchestratorClientView | OrchestratorCase>(`/cases/${encodeURIComponent(id)}/client-status`))
+      : orchestratorHttp<OrchestratorCase>(`/cases/${encodeURIComponent(id)}`);
+    const raw = await read();
     const c = fromOrchestratorCase(raw); assertEditable(c);
     if (withPortalPlan) {
       const playbook = await getPlaybook(raw.playbook_id);
       // Loading the plan is asynchronous: recheck the authoritative status afterwards.
-      const latest = await orchestratorHttp<OrchestratorCase>(`/cases/${encodeURIComponent(id)}`);
+      const latest = await read();
       const current = fromOrchestratorCase(latest, undefined, playbook?.rules, playbook?.requiredDocuments, uploadSlots(id));
       assertEditable(current); return current;
     }
@@ -139,6 +191,8 @@ function mockCase(store: Case[], id: string) {
   const c = store.find((c) => c.id === id); assertEditable(c); return c;
 }
 export const USE_MOCK = true;
+/** Simulated document checks for an offline demo (and the tests); never on by default. */
+const DEMO_UPLOADS = import.meta.env["VITE_DEMO_UPLOADS"] === "true";
 const BASE = import.meta.env["VITE_API_BASE_URL"] ?? "";
 
 const delay = (ms = 500) => new Promise((r) => setTimeout(r, ms));
@@ -207,7 +261,10 @@ export async function getAuditLog(caseId: string): Promise<AuditEntry[]> {
 }
 
 export async function getScreeningMatch(caseId: string, flagId: string): Promise<ScreeningMatch | null> {
-  // Mock-only extension: do not invent a future REST endpoint.
+  if (isRealCase(caseId)) {
+    try { return fromOrchestratorScreening(await orchestratorHttp<OrchestratorScreeningMatch>(`/cases/${encodeURIComponent(caseId)}/flags/${encodeURIComponent(flagId)}/screening`)); }
+    catch { return null; } // no list entry behind the flag: the panel says the record is not available
+  }
   if (!USE_MOCK) throw new Error("Screeningul nu este încă conectat la serviciul real.");
   const [m, lists] = await Promise.all([mocks(), import("@/mocks/screening_lists")]);
   const c = readDemoCases(m.cases).find((item) => item.id === caseId);
@@ -222,8 +279,13 @@ export async function getScreeningMatch(caseId: string, flagId: string): Promise
 
 export async function resolveScreeningMatch(caseId: string, flagId: string, resolution: "confirmed" | "dismissed", reason = "") {
   await mutationCase(caseId);
-  if (isRealCase(caseId)) throw new Error("Rezoluția screening nu este conectată la serviciul real.");
   validateScreeningResolution(resolution, reason);
+  if (isRealCase(caseId)) {
+    if (resolution === "dismissed") return dismissFlag(caseId, flagId, reason);
+    // Confirming keeps the flag open (it still blocks approval) and records the analyst in the audit log.
+    await orchestratorHttp(`/cases/${encodeURIComponent(caseId)}/flags/${encodeURIComponent(flagId)}/confirm`, { method: "POST", headers: analystHeaders(), body: JSON.stringify({ note: reason.trim() }) });
+    notifyCaseChange(); return { ok: true };
+  }
   await delay(300);
   if (!USE_MOCK) throw new Error("Screeningul nu este încă conectat la serviciul real.");
   const m = await mocks();
@@ -333,7 +395,7 @@ export async function submitDecision(caseId: string, decision: "aprobat" | "resp
   await mutationCase(caseId);
   if (isRealCase(caseId)) {
     const outcomes = { aprobat: "approved", respins: "rejected", documente: "documents_requested" };
-    await orchestratorHttp(`/cases/${encodeURIComponent(caseId)}/decision`, { method: "POST", headers: { "X-Analyst": "Elena Radu" }, body: JSON.stringify({ outcome: outcomes[decision], note: comment }) });
+    await orchestratorHttp(`/cases/${encodeURIComponent(caseId)}/decision`, { method: "POST", headers: analystHeaders(), body: JSON.stringify({ outcome: outcomes[decision], note: comment }) });
     notifyCaseChange(); return { ok: true };
   }
   const c = await getCase(caseId);
@@ -371,8 +433,10 @@ export async function dismissFlag(caseId: string, flagId: string, note: string) 
   if (!note.trim()) throw new Error("Motivul este obligatoriu.");
   await mutationCase(caseId);
   if (isRealCase(caseId)) {
-    await orchestratorHttp(`/cases/${encodeURIComponent(caseId)}/flags/${encodeURIComponent(flagId)}/dismiss`, { method: "POST", headers: { "X-Analyst": "Elena Radu" }, body: JSON.stringify({ note: note.trim() }) });
-    notifyCaseChange(); return { ok: true };
+    const res = await orchestratorHttp<{ pending?: boolean }>(`/cases/${encodeURIComponent(caseId)}/flags/${encodeURIComponent(flagId)}/dismiss`, { method: "POST", headers: analystHeaders(), body: JSON.stringify({ note: note.trim() }) });
+    notifyCaseChange();
+    // A critical flag needs a second analyst: the server recorded this request and keeps the flag open.
+    return res.pending ? { ok: false, pending: true, message: "Problemă critică: ignorarea trebuie confirmată de un al doilea analist." } : { ok: true };
   }
   if (!USE_MOCK) throw new Error("Ignorarea cu motiv nu este conectată la serviciul real.");
   const m = await mocks(); const store = readDemoCases(m.cases); const f = mockCase(store, caseId).flags.find((f) => f.id === flagId);
@@ -417,7 +481,7 @@ export async function createPortalCase(type: CustomerType, persons: Person[], co
 
 /** Client portal only: returns a safe status object, never the full case. */
 export async function getClientCaseStatus(caseId: string): Promise<ClientCaseStatus | null> {
-  const c = await getCase(caseId);
+  const c = await readPortalCase(caseId) ?? await getCase(caseId);
   if (c && c.status === "Documente solicitate") {
     const p = c.playbookId ? await getPlaybook(c.playbookId) : null;
     c.portalDocuments ??= portalDocumentPlan(c.customerType, p?.requiredDocuments ?? [], c.persons);
@@ -427,7 +491,7 @@ export async function getClientCaseStatus(caseId: string): Promise<ClientCaseSta
 
 /** Builds an allowlisted portal view from the same source used by the officer. */
 export async function getClientPortalCase(caseId: string): Promise<ClientPortalCase | null> {
- const c = await getCase(caseId);
+ const c = await readPortalCase(caseId) ?? await getCase(caseId);
  if (!c) return null;
  const p = c.playbookId ? await getPlaybook(c.playbookId) : null;
  c.portalDocuments ??= portalDocumentPlan(c.customerType, p?.requiredDocuments ?? [], c.persons);
@@ -444,15 +508,17 @@ export async function listMyPortalCases(): Promise<ClientPortalCase[]> {
 }
 
 export async function checkPortalDocument(caseId: string, step: number, file: File, expectedKey?: string) {
- const current = await mutationCase(caseId, isRealCase(caseId));
+ const current = await mutationCase(caseId, isRealCase(caseId), true);
  if (file.size > 10 * 1024 * 1024 || !/\.(pdf|png|jpe?g)$/i.test(file.name)) throw new Error("Alege un fișier PDF, JPG sau PNG de cel mult 10 MB.");
  if (isRealCase(caseId)) {
    const slot = current.portalDocuments?.[step - 1];
    if (!slot || (expectedKey && slot.key !== expectedKey)) throw new Error("Lista documentelor s-a schimbat. Reîncarcă pagina înainte să încarci fișierul.");
    const form = new FormData(); form.append("file", file);
-   const query = slot.documentId ? `?replaces=${encodeURIComponent(slot.documentId)}` : "";
+   const formatProblem = fileProblem(slot.type, file); if (formatProblem) throw new Error(formatProblem);
+   // `expected` makes the server read the file first and keep it only if it is this step's document, fully readable.
+   const query = `?expected=${encodeURIComponent(slot.type)}${slot.documentId ? `&replaces=${encodeURIComponent(slot.documentId)}` : ""}`;
    try {
-     const raw = await orchestratorHttp<OrchestratorCase>(`/cases/${encodeURIComponent(caseId)}/documents${query}`, { method: "POST", body: form }, true);
+     const raw = fromClientView(await orchestratorHttp<OrchestratorClientView | OrchestratorCase>(`/cases/${encodeURIComponent(caseId)}/documents${query}`, { method: "POST", body: form }, true));
      const added = raw.documents.filter((d) => !current.documents.some((old) => old.id === d.doc_id));
      const doc = added.length === 1 ? added[0] : undefined;
      if (doc) rememberUploadSlot(caseId, doc.doc_id, slot.key, slot.documentId);
@@ -464,6 +530,8 @@ export async function checkPortalDocument(caseId: string, step: number, file: Fi
      return messages.length ? { ok: false, message: messages.join(" ") } : { ok: true, message: "Documentul a fost primit și verificat." };
    } finally { notifyCaseChange(); }
  }
+ // Without the orchestrator nothing can read the file: refuse it rather than pretend it was checked.
+ if (!DEMO_UPLOADS) throw new Error("Documentele nu pot fi verificate acum: serviciul de verificare nu este disponibil. Încearcă din nou mai târziu.");
  await delay(2300);
  const m = await mocks(); const store = readDemoCases(m.cases); const c = mockCase(store, caseId);
  const p = m.playbooks.find((p) => p.id === c.playbookId);
@@ -512,10 +580,10 @@ function attachDatasetDocument(c: Case, dataset: Case[], doc: NonNullable<Case["
 }
 
 export async function submitPortalCase(id: string) {
- await mutationCase(id);
+ await mutationCase(id, false, true);
  if (isRealCase(id)) {
    try {
-     const raw = await orchestratorHttp<OrchestratorCase>(`/cases/${encodeURIComponent(id)}/process`, { method: "POST" }, true);
+     const raw = fromClientView(await orchestratorHttp<OrchestratorClientView | OrchestratorCase>(`/cases/${encodeURIComponent(id)}/process`, { method: "POST" }, true));
      if (raw.documents.some((d) => d.doc_type === "unknown" || !Object.keys(d.fields).length)) throw new Error("Citirea unor documente nu este finalizată. Reîncearcă verificarea dosarului; dacă problema persistă, contactează banca.");
      return { ok: true, waitingForDocuments: raw.status === "waiting_client" };
    } finally { notifyCaseChange(); }

@@ -10,7 +10,7 @@ describe("Hybrid orchestrator client", () => {
     const api = await import("@/api/client");
     const c = await api.getCase(id); const list = await api.listCases();
     expect(c).toMatchObject({ id, source: "backend", serviceUnavailable: true }); expect(list.some((c) => c.id === id)).toBe(true);
-    expect(fetch.mock.calls.filter(([url]) => url === "/api/orch/cases")).toHaveLength(1);
+    expect(fetch.mock.calls.filter(([url]) => url === "/api/orch/health")).toHaveLength(1);
   });
   it("never probes the backend during SSR", async () => {
     const fetch = vi.fn(); vi.stubGlobal("fetch", fetch); vi.stubGlobal("window", undefined);
@@ -54,4 +54,62 @@ describe("Hybrid orchestrator client", () => {
     expect(await api.getAuditLogResult(id)).toMatchObject({ serviceUnavailable: true });
     expect((await api.getAuditLogResult(id)).chain_valid).toBeUndefined();
   });
+  it("gives the backend's real reasons for a refused approval and a missing OCR key", async () => {
+    const fetch = vi.fn().mockResolvedValueOnce(response(fixture)).mockResolvedValueOnce(response({ detail: "cannot approve until medium flags are acknowledged (dismissed with a note): flag_002" }, 403)); vi.stubGlobal("fetch", fetch);
+    const api = await import("@/api/client");
+    await expect(api.submitDecision(id, "respins", "")).rejects.toThrow("severitate medie");
+    fetch.mockResolvedValueOnce(response(fixture)).mockResolvedValueOnce(response({ detail: "cannot approve before the full check (tamper, screening, risk) has run on every document" }, 403));
+    await expect(api.submitDecision(id, "respins", "")).rejects.toThrow("verificarea completă");
+    fetch.mockResolvedValue(response({ detail: "Document reading is not configured on the server (FEATHERLESS_API_KEY)" }, 503));
+    await expect(api.dismissFlag(id, "flag_001", "Motiv")).rejects.toThrow("nu este configurată");
+    expect(await api.orchestratorAvailable()).toBe(true); // the service is up, it only cannot read documents
+  });
+  it("tells the analyst when a critical dismissal waits for a second analyst", async () => {
+    const fetch = vi.fn().mockResolvedValueOnce(response(fixture)).mockResolvedValueOnce(response({ detail: "second analyst", pending: true }, 202)); vi.stubGlobal("fetch", fetch);
+    const api = await import("@/api/client");
+    expect(await api.dismissFlag(id, "flag_001", "Motiv")).toMatchObject({ ok: false, pending: true, message: expect.stringContaining("al doilea analist") });
+  });
+  it("uses the analyst's token once the server asks for one", async () => {
+    sessionStorage.setItem("dosarai-analyst-token", "secret-1");
+    const fetch = vi.fn().mockResolvedValue(response(fixture)); vi.stubGlobal("fetch", fetch);
+    const api = await import("@/api/client"); await api.submitDecision(id, "respins", "Motiv");
+    expect(fetch).toHaveBeenLastCalledWith(`/api/orch/cases/${id}/decision`, expect.objectContaining({ headers: expect.objectContaining({ Authorization: "Bearer secret-1" }) }));
+    expect((fetch.mock.lastCall?.[1] as RequestInit).headers).not.toHaveProperty("X-Analyst");
+    sessionStorage.clear();
+  });
+  it("lets the client portal read only its own view, never the analyst's case file", async () => {
+    const view = { case_id: id, playbook_id: "pb_cont_pj_v1", customer_type: "PJ", status: "waiting_client", created_at: "2026-10-28T10:00:00+02:00", decision: null, request_note: null,
+      requests: [{ message: "Încărcați declarația semnată.", doc_ids: ["doc_003"] }], persons: fixture.persons, documents: [{ doc_id: "doc_003", doc_type: "ubo_declaration", owner_person_id: null }] };
+    const fetch = vi.fn((url: string) => Promise.resolve(response(url.endsWith("/client-status") ? view : url.endsWith("/health") ? { ok: true } : fixture))); vi.stubGlobal("fetch", fetch);
+    const api = await import("@/api/client");
+    expect(await api.getClientCaseStatus(id)).toMatchObject({ state: "action_needed", client_messages: ["Încărcați declarația semnată."] });
+    expect(fetch.mock.calls.some(([url]) => url === `/api/orch/cases/${id}`)).toBe(false);
+  });
+  it("confirms a screening match on the server and keeps the flag", async () => {
+    const fetch = vi.fn().mockResolvedValue(response(fixture)); vi.stubGlobal("fetch", fetch);
+    const api = await import("@/api/client");
+    expect(await api.resolveScreeningMatch(id, "flag_004", "confirmed", "Aceeași persoană")).toEqual({ ok: true });
+    expect(fetch).toHaveBeenLastCalledWith(`/api/orch/cases/${id}/flags/flag_004/confirm`, expect.objectContaining({ method: "POST", body: JSON.stringify({ note: "Aceeași persoană" }) }));
+  });
+  it("asks the server to check the upload is this step's document, and shows why it was refused", async () => {
+    const live = { ...fixture, case_id: "live_pf_1", customer_type: "PF", playbook_id: "pb_cont_pf_v1", status: "intake", company: null, documents: [], flags: [],
+      persons: [{ person_id: "p_pf", role: "applicant", full_name: "Mara Exemplu" }] };
+    const refused = { detail: { code: "not_clear", message: "Fotografia nu este clară: o parte din text nu poate fi citită." } };
+    const fetch = vi.fn((url: string, init?: RequestInit) => Promise.resolve(init?.method === "POST" ? response(refused, 422) : response(url.includes("/playbooks") ? [{ playbook_id: "pb_cont_pf_v1", process_name: "Cont PF", customer_type: "PF", required_documents: [{ doc_type: "id_card", applies_to: "applicant", alternatives: [] }, { doc_type: "payslip", applies_to: "applicant", alternatives: [] }], rules: [] }] : live)));
+    vi.stubGlobal("fetch", fetch);
+    const api = await import("@/api/client");
+    await expect(api.checkPortalDocument("live_pf_1", 1, new File(["x"], "ci.jpg", { type: "image/jpeg" }))).rejects.toThrow("Fotografia nu este clară");
+    const post = fetch.mock.calls.find(([, init]) => (init as RequestInit | undefined)?.method === "POST");
+    expect(post?.[0]).toMatch(/\/cases\/live_pf_1\/documents\?expected=/);
+    expect(await api.orchestratorAvailable()).toBe(true); // a refused document is not a service outage
+  });
+  it("refuses an upload it cannot verify instead of simulating a check", async () => {
+    vi.stubEnv("VITE_DEMO_UPLOADS", "false");
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("offline")));
+    const api = await import("@/api/client");
+    const c = await api.createPortalCase("PF", [{ id: "p_pf", name: "Mara Exemplu", role: "titular" }]);
+    await expect(api.checkPortalDocument(c.id, 1, new File(["x"], "orice.png"))).rejects.toThrow("nu pot fi verificate");
+    vi.unstubAllEnvs();
+  });
 });
+

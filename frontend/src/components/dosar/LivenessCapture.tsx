@@ -16,8 +16,30 @@ interface VisionModule {
   FaceLandmarker: { createFromOptions(fileset: unknown, options: Record<string, unknown>): Promise<FaceLandmarker> };
 }
 
-type Phase = "intro" | "loading" | "blink" | "turn" | "center" | "preview" | "error";
-const PROMPTS: Partial<Record<Phase, string>> = { blink: "Clipește de două ori.", turn: "Întoarce încet capul spre stânga sau spre dreapta.", center: "Acum privește drept în cameră." };
+type Phase = "intro" | "loading" | "blink" | "turn" | "center" | "manual" | "preview" | "error";
+const PROMPTS: Partial<Record<Phase, string>> = { blink: "Clipește de două ori.", turn: "Întoarce încet capul spre stânga sau spre dreapta.", center: "Acum privește drept în cameră.", manual: "Privește drept în cameră și apasă „Fă fotografia”." };
+const MODEL_TIMEOUT_MS = 20_000;
+
+/** Why the camera did not start, in words the client can act on. */
+export function cameraError(e: unknown): string {
+  const name = e instanceof DOMException ? e.name : "";
+  if (name === "NotAllowedError" || name === "SecurityError") return "Nu ai permis accesul la cameră. Îl poți permite din setările browserului (iconița din bara de adrese) sau poți încărca o fotografie.";
+  if (name === "NotFoundError" || name === "OverconstrainedError") return "Nu am găsit nicio cameră pe acest dispozitiv. Poți încărca o fotografie.";
+  if (name === "NotReadableError" || name === "AbortError") return "Camera este folosită de altă aplicație. Închide aplicația respectivă și încearcă din nou.";
+  return "Camera nu a pornit. Încearcă din nou sau încarcă o fotografie.";
+}
+
+/** The face model, on the GPU when the browser allows it, otherwise on the CPU; never waits forever. */
+async function loadLandmarker(): Promise<FaceLandmarker> {
+  const load = async () => {
+    const vision = await import(/* @vite-ignore */ `${TASKS_URL}/vision_bundle.mjs`) as VisionModule;
+    const fileset = await vision.FilesetResolver.forVisionTasks(`${TASKS_URL}/wasm`);
+    const options = (delegate: "GPU" | "CPU") => ({ baseOptions: { modelAssetPath: MODEL_URL, delegate }, outputFaceBlendshapes: true, runningMode: "VIDEO", numFaces: 2 });
+    try { return await vision.FaceLandmarker.createFromOptions(fileset, options("GPU")); }
+    catch { return await vision.FaceLandmarker.createFromOptions(fileset, options("CPU")); } // no WebGL2 / GPU on this machine
+  };
+  return Promise.race([load(), new Promise<never>((_, reject) => setTimeout(() => reject(new Error("model timeout")), MODEL_TIMEOUT_MS))]);
+}
 export type CapturedIdentity = Omit<IdentityCheck, "capturedAt" | "faceMatch">;
 
 /** Nose position between the cheeks: about 0.5 when facing the camera, near 0 or 1 when the head is turned. */
@@ -49,14 +71,25 @@ export function LivenessCapture({ onCaptured, disabled }: { onCaptured: (c: Capt
     setError(""); setHint(""); setResult(null); setPhase("loading");
     let stream: MediaStream | undefined; let landmarker: FaceLandmarker | undefined; let raf = 0; let stopped = false;
     stop.current = () => { stopped = true; cancelAnimationFrame(raf); stream?.getTracks().forEach((t) => t.stop()); landmarker?.close(); };
+    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+      // Browsers only expose the camera on https or localhost (e.g. not on http://192.168.x.x).
+      setError("Camera funcționează doar pe o conexiune securizată (https) sau pe localhost. Poți încărca o fotografie."); setPhase("error"); return;
+    }
     try {
-      if (!navigator.mediaDevices?.getUserMedia) throw new Error("Browserul nu are acces la cameră.");
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 640, height: 480 }, audio: false });
-      const vision = await import(/* @vite-ignore */ `${TASKS_URL}/vision_bundle.mjs`) as VisionModule;
-      const fileset = await vision.FilesetResolver.forVisionTasks(`${TASKS_URL}/wasm`);
-      landmarker = await vision.FaceLandmarker.createFromOptions(fileset, { baseOptions: { modelAssetPath: MODEL_URL, delegate: "GPU" }, outputFaceBlendshapes: true, runningMode: "VIDEO", numFaces: 2 });
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }, audio: false });
+    } catch (e) { stop.current(); setError(cameraError(e)); setPhase("error"); return; }
+    // Show the camera at once; the face model loads while the client sees themself.
+    if (stopped || !video.current) return;
+    video.current.srcObject = stream;
+    try { await video.current.play(); } catch { /* autoplay of a muted inline video is allowed; ignore a stray rejection */ }
+    try { landmarker = await loadLandmarker(); }
+    catch {
+      // The camera works but automatic liveness does not: the client takes the photo, an officer checks it.
+      if (!stopped) setPhase("manual");
+      return;
+    }
+    try {
       if (stopped || !video.current) return;
-      video.current.srcObject = stream; await video.current.play();
       let step: Phase = "blink"; let blinks = 0; let eyesClosed = false; let turned = false; setPhase(step);
       const loop = () => {
         if (stopped || !video.current || !landmarker) return;
@@ -82,12 +115,17 @@ export function LivenessCapture({ onCaptured, disabled }: { onCaptured: (c: Capt
         raf = requestAnimationFrame(loop);
       };
       raf = requestAnimationFrame(loop);
-    } catch (e) {
-      stop.current();
-      const denied = e instanceof DOMException && e.name === "NotAllowedError";
-      setError(denied ? "Nu ai permis accesul la cameră. Îl poți permite din setările browserului sau poți încărca o fotografie." : "Camera sau verificarea automată nu a pornit. Poți încărca o fotografie în schimb.");
-      setPhase("error");
+    } catch {
+      if (!stopped) setPhase("manual");
     }
+  }
+
+  function takeManual() {
+    const v = video.current;
+    if (!v || !v.videoWidth) { setHint("Camera încă pornește. Mai încearcă o dată."); return; }
+    const selfie = snapshot(v, v.videoWidth, v.videoHeight); stop.current();
+    setResult({ selfie, liveness: { blink: false, turn: false, method: "none" }, fallbackReason: "Verificarea automată a mișcării nu a pornit; fotografia a fost făcută cu camera și va fi verificată de un ofițer." });
+    setPhase("preview");
   }
 
   function fromFile(file?: File) {
@@ -103,14 +141,14 @@ export function LivenessCapture({ onCaptured, disabled }: { onCaptured: (c: Capt
     img.src = url;
   }
 
-  const live = phase === "loading" || phase === "blink" || phase === "turn" || phase === "center";
+  const live = phase === "loading" || phase === "blink" || phase === "turn" || phase === "center" || phase === "manual";
   return <div>
     <div className="relative mx-auto aspect-[4/3] w-full overflow-hidden rounded-[22px] bg-[#111111]">
       <video ref={video} playsInline muted className={`h-full w-full -scale-x-100 object-cover ${live ? "" : "hidden"}`} />
       {live && <div aria-hidden className="pointer-events-none absolute inset-0 flex items-center justify-center"><div className="h-[78%] w-[52%] rounded-[50%] border-[3px] border-brand/90 shadow-[0_0_0_999px_rgba(0,0,0,0.35)]" /></div>}
       {phase === "preview" && result && <img src={result.selfie} alt="Fotografia ta de verificare" className="h-full w-full object-cover" />}
       {(phase === "intro" || phase === "error") && <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center text-xs text-white/80"><Camera className="h-8 w-8" />Fața ta trebuie să fie bine luminată, fără ochelari de soare sau șapcă.</div>}
-      {phase === "loading" && <div className="absolute inset-0 flex items-center justify-center gap-2 text-xs text-white"><Loader2 className="h-4 w-4 animate-spin" />Pornim camera…</div>}
+      {phase === "loading" && <div className="absolute inset-x-0 bottom-3 flex items-center justify-center gap-2 text-xs text-white"><Loader2 className="h-4 w-4 animate-spin" />Pregătim verificarea…</div>}
     </div>
     <div aria-live="polite" className="mt-4 min-h-10 text-center">
       {PROMPTS[phase] && <p className="text-sm font-semibold">{PROMPTS[phase]}</p>}
@@ -122,6 +160,7 @@ export function LivenessCapture({ onCaptured, disabled }: { onCaptured: (c: Capt
     <div className="mt-4 flex flex-col gap-2">
       {phase === "intro" && <Button className="w-full" disabled={disabled} onClick={() => void start()}><Camera className="h-4 w-4" />Pornește camera</Button>}
       {phase === "error" && <><Button className="w-full" disabled={disabled} onClick={() => fileInput.current?.click()}><Upload className="h-4 w-4" />Încarcă o fotografie</Button><Button variant="outline" className="w-full" onClick={() => void start()}>Încearcă din nou camera</Button></>}
+      {phase === "manual" && <Button className="w-full" disabled={disabled} onClick={takeManual}><Camera className="h-4 w-4" />Fă fotografia</Button>}
       {live && <Button variant="outline" className="w-full" onClick={() => { stop.current(); setPhase("intro"); }}>Renunță</Button>}
       {phase === "preview" && result && <><Button className="w-full" disabled={disabled} onClick={() => onCaptured(result)}>Folosește fotografia</Button><Button variant="outline" className="w-full" onClick={() => { setResult(null); setPhase("intro"); }}><RotateCcw className="h-4 w-4" />Refă</Button></>}
     </div>

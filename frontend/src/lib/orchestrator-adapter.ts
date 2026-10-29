@@ -1,4 +1,5 @@
 import type { AuditEntry, Case, CaseStatus, DocumentEvidence, Flag, OwnershipPerson, Person, Playbook, Severity } from "@/types";
+import type { ScreeningListEntry, ScreeningMatch } from "@/types/extensions";
 import { normalizedBBox } from "@/lib/dataset";
 import { riskFromFlags } from "@/lib/review";
 import { documentLabels, portalDocumentPlan } from "@/lib/portal";
@@ -12,7 +13,7 @@ export interface OrchestratorDocument {
   fields: Record<string, OrchestratorField>;
 }
 export interface OrchestratorFlag {
-  flag_id: string; rule_id: string; person_id?: string | null; severity: Severity | "info";
+  flag_id: string; rule_id: string; person_id?: string | null; stage?: string; severity: Severity | "info";
   title: string; explanation: string; evidence: OrchestratorEvidence[];
   status: NonNullable<Flag["status"]>; client_fixable: boolean; fix_message: string | null; resolution_note?: string | null;
 }
@@ -60,6 +61,49 @@ export function fromOrchestratorFlag(flag: OrchestratorFlag, rules: Playbook["ru
     status: flag.status, client_fixable: flag.client_fixable, fix_message: flag.fix_message, clientFixMessage: flag.fix_message ?? "",
     ...(flag.person_id ? { personId: flag.person_id } : {}),
     ...(flag.resolution_note ? { dismissalNote: flag.resolution_note, dismissedBy: flag.resolution_note.split(":")[0] ?? "Elena Radu" } : {}),
+    ...(flag.stage === "screening" ? screeningState(flag) : {}),
+  };
+}
+/** Screening flags open the side-by-side panel; the analyst's confirmation is kept in resolution_note. */
+function screeningState(flag: OrchestratorFlag): Partial<Flag> {
+  const confirmed = flag.resolution_note?.match(/^confirmed by [^:]+(?:: ([\s\S]*))?$/);
+  const note = flag.resolution_note?.split(": ").slice(1).join(": ") ?? "";
+  return { stage: "screening", ...(flag.person_id ? { screeningPersonId: flag.person_id } : {}),
+    ...(confirmed ? { screeningResolution: "confirmed" as const, screeningReason: confirmed[1] ?? "" } : flag.status === "dismissed" ? { screeningResolution: "dismissed" as const, screeningReason: note } : {}) };
+}
+
+/** `GET /cases/{id}/flags/{flag}/screening`: the list entry behind a screening flag and what the case knows of the client. */
+export interface OrchestratorScreeningMatch { entry: Record<string, unknown>; score: number; client: { name: string; birth_year: number | null; citizenship: string | null; identity_document: string | null } }
+export function fromOrchestratorScreening(m: OrchestratorScreeningMatch): ScreeningMatch {
+  const e = m.entry; const s = (k: string) => (e[k] == null ? "" : String(e[k]));
+  const entry: ScreeningListEntry = "id_stire" in e
+    ? { key: s("key") || s("id_stire"), id_stire: s("id_stire"), nume_subiect: s("nume_subiect"), titlu_stire: s("titlu_stire"), sursa_stire: s("sursa_stire"), an_publicare: Number(e["an_publicare"]) || 0, tara_subiect: s("tara_subiect"), cuvinte_cheie_risc: Array.isArray(e["cuvinte_cheie_risc"]) ? e["cuvinte_cheie_risc"].map(String) : [], nivel_risc: s("nivel_risc") === "high" || s("nivel_risc") === "low" ? s("nivel_risc") as "high" | "low" : "medium" }
+    : { key: s("pk_match_key") || s("id_sursa"), id_sursa: s("id_sursa"), nume_complet: s("nume_complet"), anul_nasterii: Number(e["anul_nasterii"]) || 0, cetatenie: s("cetatenie"), categorie_risc: s("categorie_risc") === "PEP" ? "PEP" : "SANCTIONS", motiv_includere: s("motiv_includere"), act_identitate_cunoscut: s("act_identitate_cunoscut") || "—" };
+  const c = m.client;
+  return { entry, score: m.score, client: { name: c.name, ...(c.birth_year ? { birthYear: c.birth_year } : {}), ...(c.citizenship ? { citizenship: c.citizenship } : {}), ...(c.identity_document ? { identityDocument: c.identity_document } : {}) } };
+}
+
+/** `GET /cases/{id}/client-status` (and the upload/process answer a client gets): no flags, screening, risk or fields. */
+export interface OrchestratorClientView {
+  case_id: string; playbook_id: string; customer_type: "PF" | "PJ"; status: OrchestratorCase["status"]; created_at: string;
+  decision: "approved" | "rejected" | "documents_requested" | null; request_note: string | null;
+  requests: { message: string; doc_ids: string[] }[]; persons: OrchestratorCase["persons"];
+  documents: { doc_id: string; doc_type: string; owner_person_id: string | null; pages?: number; file?: string }[];
+}
+/**
+ * The client view in the case shape the portal projections read. Each request for the client becomes an open,
+ * client-fixable flag on its documents; documents count as read once classified (the view carries no fields).
+ * A full case file (dev-mode server, tests) passes through unchanged.
+ */
+export function fromClientView(view: OrchestratorClientView | OrchestratorCase): OrchestratorCase {
+  if ("flags" in view) return view;
+  return {
+    case_id: view.case_id, playbook_id: view.playbook_id, customer_type: view.customer_type, status: view.status, created_at: view.created_at,
+    company: null, persons: view.persons, risk_draft: null, decision: view.decision ? { outcome: view.decision } : null,
+    documents: view.documents.map((d) => ({ doc_id: d.doc_id, file: d.file ?? d.doc_id, doc_type: d.doc_type, pages: d.pages ?? 1, owner_person_id: d.owner_person_id,
+      classification_confidence: d.doc_type === "unknown" ? 0 : 1, fields: d.doc_type === "unknown" ? {} : { read: { field_id: `${d.doc_id}_read`, name: "read", value: true, confidence: 1, source: { doc_id: d.doc_id, page: 1, bbox: [0, 0, 1, 1] } } } })),
+    flags: view.requests.map((r, i) => ({ flag_id: `request_${i + 1}`, rule_id: "", severity: "medium", title: r.message, explanation: r.message,
+      evidence: r.doc_ids.map((doc_id) => ({ doc_id, page: 1, bbox: [0, 0, 1, 1] })), status: "sent_to_client", client_fixable: true, fix_message: r.message })),
   };
 }
 function declaredOwners(value: unknown): OwnershipPerson[] {
@@ -88,7 +132,8 @@ export function clientMessagesFor(raw: Pick<OrchestratorCase, "documents" | "fla
 }
 
 /** `uploadSlots` maps a doc_id to the portal step it was uploaded at, so an unrecognized file stays on that step. */
-export function fromOrchestratorCase(raw: OrchestratorCase, mock?: Case, rules: Playbook["rules"] = [], requiredDocuments?: string[], uploadSlots: Record<string, string> = {}): Case {
+export function fromOrchestratorCase(raw: OrchestratorCase, mock?: Case, rules: Playbook["rules"] = [], requiredDocuments?: string[], uploadSlots: Record<string, string> = {},
+  live: { ownership?: { registry: OwnershipPerson[] }; pageUrl?: (docId: string, page: number) => string } = {}): Case {
   const allFields = raw.documents.flatMap((d) => Object.values(d.fields));
   const flags = raw.flags.map((f) => fromOrchestratorFlag(f, rules, allFields));
   const certificate = raw.documents.find((d) => d.doc_type === "certificat_constatator");
@@ -144,15 +189,15 @@ export function fromOrchestratorCase(raw: OrchestratorCase, mock?: Case, rules: 
       const basename = d.file.split(/[\\/]/).at(-1) ?? d.file;
       const imageName = basename.replace(/\.[^.]+$/, "") + ".png";
       return { id: d.doc_id, type: documentNames[d.doc_type] ?? "Document", ownerPersonId: d.owner_person_id ?? "", fileName: basename,
-        // Only dataset cases have rendered pages; portal uploads stay in the backend.
-        pageImages: raw.case_id.startsWith("live_") ? [] : [`/mocks/${raw.case_id}/images/${imageName}`],
+        // Dataset cases have rendered pages in /mocks; portal uploads are rendered by the orchestrator, page by page.
+        pageImages: raw.case_id.startsWith("live_") ? (live.pageUrl ? Array.from({ length: Math.max(1, d.pages) }, (_, i) => live.pageUrl!(d.doc_id, i + 1)) : []) : [`/mocks/${raw.case_id}/images/${imageName}`],
         status: flags.some((f) => !["resolved", "dismissed"].includes(f.status ?? "open") && f.evidence.some((e) => e.documentId === d.doc_id)) ? "cu-probleme" as const : "valid" as const,
         extractedFields: Object.values(d.fields).map((f) => ({ name: f.name, value: text(f.value), confidence: f.confidence, source: fromOrchestratorEvidence(f.source, f.name) })) };
     }), flags,
     riskDraft: raw.risk_draft ? { level: raw.risk_draft.level, reasons: raw.risk_draft.reasons.map((r) => ({ factor: r.flag_ids.map((id) => flags.find((f) => f.id === id)?.ruleId ?? id).join(", ") || "Evaluare dosar", value: r.flag_ids.map((id) => flags.find((f) => f.id === id)?.explanation).filter(Boolean).join("; ") || (flags.length ? "Propunere de risc pentru revizuirea analistului." : "Nu au fost semnalate probleme."), impact: r.flag_ids.length ? "crește" as const : "neutru" as const })) } : riskFromFlags(flags),
     ownership: {
-      // Mock-only: the orchestrator has no registry endpoint. Only this reference side comes from the matching fixture.
-      registry: structuredClone(mock?.ownership?.registry ?? []),
+      // The ONRC side comes from GET /cases/{id}/ownership; without it, from the matching fixture.
+      registry: structuredClone(live.ownership?.registry ?? mock?.ownership?.registry ?? []),
       declared: declaredOwners(raw.documents.find((d) => d.doc_type === "ubo_declaration")?.fields["ubos"]?.value),
     },
   };

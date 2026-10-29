@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import fixture from "./fixtures/orchestrator-pj.json";
-import { fromOrchestratorCase, fromOrchestratorEvidence, fromOrchestratorFlag, fromOrchestratorAudit, type OrchestratorCase, type OrchestratorFlag } from "@/lib/orchestrator-adapter";
+import { fromClientView, fromOrchestratorCase, fromOrchestratorEvidence, fromOrchestratorFlag, fromOrchestratorAudit, fromOrchestratorScreening, type OrchestratorCase, type OrchestratorFlag } from "@/lib/orchestrator-adapter";
 import type { Case } from "@/types";
 const raw = fixture as OrchestratorCase;
 const flag: OrchestratorFlag = { flag_id: "flag_001", rule_id: "R-PJ-006", person_id: "p_ubo_1", severity: "high", title: "English backend title", explanation: "ONRC registry: Tudor Exemplu 60%. Declaration: Tudor Exemplu 50%.", evidence: [{ doc_id: "doc_003", page: 2, bbox: [0.1, 0.2, 0.8, 0.6], field_id: "doc_003_ubos" }], status: "open", client_fixable: false, fix_message: null };
@@ -56,3 +56,29 @@ describe("Orchestrator adapter", () => {
     expect(fromOrchestratorAudit({ chain_valid: false, entries: [] }).chain_valid).toBe(false);
   });
 });
+
+describe("Orchestrator adapter: screening and the client view", () => {
+  it("opens screening flags in the side-by-side panel and keeps the analyst's confirmation", () => {
+    const screening = { ...flag, stage: "screening", resolution_note: "confirmed by Maria: aceeași persoană" };
+    expect(fromOrchestratorFlag(screening)).toMatchObject({ stage: "screening", screeningPersonId: "p_ubo_1", screeningResolution: "confirmed", screeningReason: "aceeași persoană" });
+    expect(fromOrchestratorFlag({ ...screening, status: "dismissed", resolution_note: "Elena: an diferit" })).toMatchObject({ screeningResolution: "dismissed", screeningReason: "an diferit" });
+    expect(fromOrchestratorFlag(flag).stage).toBeUndefined();
+  });
+  it("maps a list entry and the client's data for the comparison table", () => {
+    const pep = fromOrchestratorScreening({ entry: { pk_match_key: "PEP-RO-101#X", id_sursa: "PEP-RO-101", nume_complet: "Nikola Dimitrov", anul_nasterii: "1958", cetatenie: "RO", categorie_risc: "PEP", motiv_includere: "m", act_identitate_cunoscut: null }, score: 97, client: { name: "Nikola Dimitrov", birth_year: 1958, citizenship: "RO", identity_document: null } });
+    expect(pep).toMatchObject({ score: 97, entry: { anul_nasterii: 1958, categorie_risc: "PEP", act_identitate_cunoscut: "—" }, client: { birthYear: 1958, citizenship: "RO" } });
+    const media = fromOrchestratorScreening({ entry: { key: "m", id_stire: "NEWS-DEMO-001", nume_subiect: "S", titlu_stire: "t", sursa_stire: "s", an_publicare: 2026, tara_subiect: "ZZ", cuvinte_cheie_risc: ["fraudă"], nivel_risc: "high" }, score: 100, client: { name: "S", birth_year: null, citizenship: null, identity_document: null } });
+    expect(media.entry).toMatchObject({ id_stire: "NEWS-DEMO-001", nivel_risc: "high" }); expect(media.client).toEqual({ name: "S" });
+  });
+  it("turns the client view into requests on the right documents, and leaves a full case file alone", () => {
+    const view = { case_id: "live_pf_1", playbook_id: "pb_cont_pf_v1", customer_type: "PF" as const, status: "waiting_client" as const, created_at: "2026-10-28T10:00:00+02:00", decision: null, request_note: null,
+      requests: [{ message: "Încărcați o factură recentă.", doc_ids: ["doc_002"] }], persons: [{ person_id: "p_pf", role: "applicant" as const, full_name: "Mara Exemplu" }],
+      documents: [{ doc_id: "doc_001", doc_type: "id_card", owner_person_id: "p_pf" }, { doc_id: "doc_002", doc_type: "proof_of_address", owner_person_id: "p_pf" }, { doc_id: "doc_003", doc_type: "unknown", owner_person_id: null }] };
+    const c = fromClientView(view);
+    expect(c.flags).toMatchObject([{ client_fixable: true, status: "sent_to_client", fix_message: "Încărcați o factură recentă.", evidence: [{ doc_id: "doc_002" }] }]);
+    expect(c.documents.map((d) => Object.keys(d.fields).length > 0)).toEqual([true, true, false]); // unread until classified
+    expect(c.risk_draft).toBeNull();
+    expect(fromClientView(raw)).toBe(raw);
+  });
+});
+

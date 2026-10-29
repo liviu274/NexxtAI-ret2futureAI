@@ -2,7 +2,9 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 const base = (process.env.ORCH_URL ?? "http://localhost:8000").replace(/\/$/, "");
-const casesRoot = "C:/Users/LENOVO/Desktop/elena/NexxtAI-ret2futureAI/data/client data/KYC_PF_PJ/PJ/cases";
+// This repo's root (the frontend lives in frontend/), or set NEXXT_REPO to another checkout.
+const repo = process.env.NEXXT_REPO ?? path.resolve(import.meta.dirname, "../..");
+const casesRoot = path.join(repo, "data/client data/KYC_PF_PJ/PJ/cases");
 const ids = ["case_pj_07_procente_diferite", "case_pj_00_corect_control"];
 async function request(route, body) {
   const response = await fetch(`${base}${route}`, { method: body === undefined ? "GET" : "POST", headers: { "Content-Type": "application/json" }, ...(body !== undefined ? { body: JSON.stringify(body) } : {}), signal: AbortSignal.timeout(30_000) });
@@ -18,6 +20,8 @@ try {
       result = await request(`/cases/${id}`);
     } else {
       const fixture = JSON.parse(await readFile(path.join(casesRoot, id, "case_file.extracted.json"), "utf8"));
+      // Absolute paths, so the tamper checks can open the PDFs (otherwise they report "could not run").
+      for (const doc of fixture.documents) doc.file = path.join(casesRoot, id, doc.file);
       // submit() accepts all extracted documents; no upload or ingestion step is needed.
       await request("/cases", fixture);
       result = await request(`/cases/${id}/process`, {});

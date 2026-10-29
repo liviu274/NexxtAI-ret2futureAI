@@ -68,7 +68,9 @@ describe("Stare comună și protecția dosarelor reale", () => {
     fetch.mockResolvedValue(response(fixture));
     expect(await api.orchestratorAvailable(true)).toBe(true);
     await expect(api.submitDecision(realId, "respins", "Motiv")).resolves.toEqual({ ok: true });
-    await expect(api.checkPortalDocument(realId, 1, new File(["x"], "act.pdf"))).rejects.toThrow("nu confirmă separat");
+    // Uploads to real cases now go to the orchestrator; the server here returns no new document, so the client is
+    // told the reading is not finished. The playbook loader's simulated delay needs the fake clock advanced.
+    await expect(finish(api.checkPortalDocument(realId, 1, new File(["x"], "act.pdf")))).resolves.toMatchObject({ ok: false, message: expect.stringContaining("nu este finalizată") });
     expect(localStorage.getItem(key)).toBe(before);
   });
   it("nu scrie mock când POST răspunde 503", async () => {

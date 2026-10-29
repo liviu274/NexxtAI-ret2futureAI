@@ -18,7 +18,9 @@ from pypdf import PdfReader
 from .audit import AuditLog
 from .checks.registry import compact_cui, load_registry, person_list
 from .checks.tamper import document_path
+from .checks.face_match import face_result
 from .gate import UploadRejected, check_format, make_gate
+from .identity import IdentityStore, decode_image
 from .ingest import make_ingest
 from .models import CaseFile, Document, Outcome
 from .orchestrator import CaseExists, NeedsSecondAnalyst, Orchestrator
@@ -30,6 +32,7 @@ store = CaseStore(DEFAULT_RUNS_DIR)
 audit = AuditLog(DEFAULT_RUNS_DIR)
 playbooks = PlaybookStore()
 orchestrator = Orchestrator(store, audit, playbooks)
+identities = IdentityStore(store.root)
 OCR_ENABLED = bool(os.environ.get("FEATHERLESS_API_KEY"))
 if OCR_ENABLED:
     classify, extract = make_ingest(playbooks, store.root)
@@ -297,6 +300,8 @@ def client_view(case: CaseFile) -> dict:
             "request_note": case.decision.note if case.decision and case.decision.outcome == "documents_requested" else None,
             "client_messages": [r["message"] for r in requests], "requests": requests,
             "persons": [p.model_dump() for p in case.persons],
+            # Whether the onboarding steps are done, so a portal in another browser knows (never the face result).
+            "onboarding": {"consent": "consent" in identities.load(case.case_id), "identity": "identity" in identities.load(case.case_id)},
             "documents": [{"doc_id": d.doc_id, "doc_type": d.doc_type, "owner_person_id": d.owner_person_id,
                            "mime_type": d.mime_type, "pages": d.pages, "file": d.file, "uploaded_at": d.uploaded_at}
                           for d in case.documents]}
@@ -305,6 +310,86 @@ def client_view(case: CaseFile) -> dict:
 @app.get("/cases/{case_id}/client-status")
 def client_status(case_id: str):
     return client_view(_guard(lambda: store.load(case_id)))
+
+
+class ConsentBody(BaseModel):
+    items: list[str]
+
+
+class Liveness(BaseModel):
+    blink: bool = False
+    turn: bool = False
+    method: str = "none"
+
+
+class IdentityBody(BaseModel):
+    selfie: str  # JPEG or PNG data URL
+    liveness: Liveness = Liveness()
+    fallback_reason: str | None = None
+
+
+def _open_case(case_id: str) -> CaseFile:
+    case = _guard(lambda: store.load(case_id))
+    if case.status == "decided":
+        raise HTTPException(403, "case is already decided")
+    return case
+
+
+@app.post("/cases/{case_id}/consent")
+def save_consent(case_id: str, body: ConsentBody):
+    _open_case(case_id)
+    consent = _guard(lambda: identities.save_consent(case_id, body.items))
+    audit.record(case_id, "client", "consent", {"items": consent["items"]}, {"at": consent["at"]}, 0)
+    return consent
+
+
+@app.post("/cases/{case_id}/identity")
+def save_identity(case_id: str, body: IdentityBody):
+    """The verification selfie. One face must be visible; the comparison with the ID runs for the analyst, and its
+    result is never sent to the client."""
+    from . import face
+
+    _open_case(case_id)
+    try:
+        image = decode_image(body.selfie)
+    except ValueError as exc:
+        raise HTTPException(422, {"code": "invalid_image", "message": "Fotografia nu a putut fi citită. Fă una nouă."}) from exc
+    try:
+        faces = face.count_faces(face.load_image_bytes(image))
+    except face.FaceError:
+        faces = None  # model or image problem: kept, and the analyst's check reports "could not run"
+    if faces == 0:
+        raise HTTPException(422, {"code": "no_face", "message": "Nu îți vedem fața în fotografie. Privește drept în cameră, cu lumină bună, și încearcă din nou."})
+    if faces is not None and faces > 1:
+        raise HTTPException(422, {"code": "several_faces", "message": "În fotografie trebuie să fii doar tu. Încearcă din nou."})
+    saved = identities.save_selfie(case_id, image, body.liveness.model_dump(), body.fallback_reason)
+    audit.record(case_id, "client", "identity_selfie", {"bytes": len(image), "liveness": saved["liveness"],
+                 "fallback_reason": body.fallback_reason}, {"sha256": saved["selfie_sha256"]}, 0)
+    return {"ok": True, "captured_at": saved["captured_at"]}
+
+
+@app.get("/cases/{case_id}/identity", dependencies=[Depends(staff)])
+def identity_review(case_id: str):
+    """The analyst's view: consent, liveness, and the selfie compared with the ID photo."""
+    case = _guard(lambda: store.load(case_id))
+    record = identities.load(case_id)
+    applicants = {p.person_id for p in case.persons if p.role == "applicant"}
+    face_view = face_result(case, store.root, applicants) if record.get("identity") else None
+    if face_view:
+        face_view = {k: v for k, v in face_view.items() if k != "selfie_sha256"}
+    identity_view = dict(record["identity"], selfie_url=f"/cases/{case_id}/identity/selfie") if record.get("identity") else None
+    if identity_view:
+        identity_view.pop("selfie_sha256", None)
+    return {"consent": record.get("consent"), "identity": identity_view, "face": face_view}
+
+
+@app.get("/cases/{case_id}/identity/selfie", dependencies=[Depends(staff)])
+def identity_selfie(case_id: str):
+    path = identities.selfie_path(case_id) if store.exists(case_id) else None
+    if path is None or not path.is_file():
+        raise HTTPException(404, "no selfie")
+    data = path.read_bytes()
+    return Response(data, media_type="image/png" if data.startswith(b"\x89PNG") else "image/jpeg")
 
 
 @app.get("/cases/{case_id}/client-messages")

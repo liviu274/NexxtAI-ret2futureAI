@@ -111,5 +111,30 @@ describe("Hybrid orchestrator client", () => {
     await expect(api.checkPortalDocument(c.id, 1, new File(["x"], "orice.png"))).rejects.toThrow("nu pot fi verificate");
     vi.unstubAllEnvs();
   });
+  it("stores consent and the selfie with the case, and shows the client why a selfie was refused", async () => {
+    const live = { ...fixture, case_id: "live_pf_2", customer_type: "PF", playbook_id: "pb_cont_pf_v1", status: "intake", company: null, documents: [], flags: [],
+      persons: [{ person_id: "p_pf", role: "applicant", full_name: "Mara Exemplu" }] };
+    const refused = { detail: { code: "no_face", message: "Nu îți vedem fața în fotografie." } };
+    const fetch = vi.fn((url: string, init?: RequestInit) => Promise.resolve(
+      init?.method === "POST" && url.endsWith("/identity") ? response(refused, 422)
+        : init?.method === "POST" && url.endsWith("/consent") ? response({ at: "2026-10-29T10:00:00+02:00", items: ["biometric", "kyc", "screening"] })
+          : url.endsWith("/client-status") ? response({ ...live, onboarding: { consent: true, identity: true } }) : response(live)));
+    vi.stubGlobal("fetch", fetch);
+    const api = await import("@/api/client");
+    expect((await api.saveConsent("live_pf_2", ["kyc", "biometric", "screening"])).at).toBe("2026-10-29T10:00:00+02:00");
+    await expect(api.saveIdentityCheck("live_pf_2", { selfie: "data:image/jpeg;base64,/9j/", liveness: { blink: true, turn: true, method: "mediapipe" } })).rejects.toThrow("Nu îți vedem fața");
+    const body = JSON.parse(fetch.mock.calls.find(([url]) => String(url).endsWith("/identity"))?.[1]?.body as string);
+    expect(body).toMatchObject({ selfie: "data:image/jpeg;base64,/9j/", liveness: { method: "mediapipe" }, fallback_reason: null });
+    // Done in another browser: the orchestrator says so.
+    expect((await api.getOnboarding("live_pf_2")).stored).toEqual({ consent: true, identity: true });
+  });
+  it("gives the officer the stored selfie and the face comparison", async () => {
+    const review = { consent: { at: "2026-10-29T10:00:00+02:00", items: ["kyc"] }, face: { status: "no_match", score: 0.12, threshold: 0.363 },
+      identity: { captured_at: "2026-10-29T10:01:00+02:00", liveness: { blink: false, turn: false, method: "none" }, fallback_reason: "camera", selfie_url: "/cases/live_pf_3/identity/selfie" } };
+    vi.stubGlobal("fetch", vi.fn((url: string) => Promise.resolve(response(url.endsWith("/identity") ? review : { ok: true }))));
+    const api = await import("@/api/client");
+    expect(await api.getIdentityReview("live_pf_3")).toMatchObject({ stored: true, face: { status: "no_match", score: 0.12 },
+      identity: { selfie: "/api/orch/cases/live_pf_3/identity/selfie", fallbackReason: "camera", liveness: { method: "none" } } });
+  });
 });
 

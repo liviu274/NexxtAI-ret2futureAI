@@ -54,6 +54,7 @@ CATALOG_DOC = """\
 | fields_match | cross_check | {field, doc_types, mode} or {field_map, doc_types, mode}; mode: exact, normalized, fuzzy | values differ across documents; use field_map when the field has a different name per document; a person_list side matches if any person matches |
 | income_vs_deposits | cross_check | {tolerance_pct} | net salary differs from statement deposits by more than the tolerance |
 | registry_vs_declaration | cross_check | {} | UBOs in the registry extract differ from the UBO declaration |
+| face_match | cross_check | {} | the selfie taken in the portal does not match the portrait on the identity document |
 | pdf_metadata | tamper | {} | editing software or modification date after issue (runs on every document) |
 | font_consistency | tamper | {} | mixed fonts inside one field or line (runs on every document) |
 | totals_consistency | tamper | {doc_type} | lines do not add up to stated totals |

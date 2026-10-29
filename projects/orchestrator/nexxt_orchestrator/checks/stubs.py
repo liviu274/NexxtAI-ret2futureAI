@@ -8,7 +8,7 @@ from . import CHECKS, CheckContext, register, whole_doc_evidence
 
 CATALOG = [
     "required_present", "not_expired", "max_age_days", "field_present",
-    "fields_match", "income_vs_deposits", "registry_vs_declaration",
+    "fields_match", "income_vs_deposits", "registry_vs_declaration", "face_match",
     "pdf_metadata", "font_consistency", "totals_consistency", "id_integrity",
     "sanctions", "pep", "adverse_media", "risk_factors",
 ]

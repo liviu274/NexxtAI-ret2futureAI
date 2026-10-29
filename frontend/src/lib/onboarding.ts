@@ -1,4 +1,5 @@
-/** Client onboarding state that has no backend endpoint yet: demo session, consent and the identity check. */
+/** Client onboarding: demo session, consent and the identity check. For cases in the orchestrator, consent and the
+ * selfie are sent to it (POST /consent, /identity) and the selfie is compared there with the ID photo. */
 
 export interface ClientSession { email: string; phone: string; createdAt: string }
 
@@ -12,16 +13,22 @@ export type ConsentId = (typeof CONSENT_ITEMS)[number]["id"];
 export interface Consent { at: string; items: ConsentId[] }
 
 export interface IdentityCheck {
-  /** JPEG data URL, downscaled; stays in this browser until the backend endpoint exists. */
+  /** JPEG data URL, downscaled. For orchestrator cases a copy is stored with the case; this one shows it to the client. */
   selfie: string;
   capturedAt: string;
   liveness: { blink: boolean; turn: boolean; method: "mediapipe" | "none" };
-  /** Face comparison with the ID photo runs in the backend; until then it is always pending. */
+  /** The comparison with the ID photo runs in the orchestrator, for the officer; the client never sees its result. */
   faceMatch: "pending";
   /** Set when the client could not use the camera and uploaded a photo instead. */
   fallbackReason?: string;
 }
-export interface Onboarding { consent?: Consent; identity?: IdentityCheck }
+/** What the orchestrator has stored for the case, so a step done in another browser counts as done. */
+export interface StoredOnboarding { consent: boolean; identity: boolean }
+export interface Onboarding { consent?: Consent; identity?: IdentityCheck; stored?: StoredOnboarding }
+
+/** The officer's view of the face comparison (orchestrator cases). */
+export interface FaceComparison { status: "match" | "no_match" | "not_compared"; score: number | null; threshold: number; reason?: string }
+export interface IdentityReview { consent?: Consent; identity?: Omit<IdentityCheck, "faceMatch">; face?: FaceComparison | null; stored: boolean }
 
 export const ONBOARDING_STEPS = [
   { key: "cont", label: "Cont" },
@@ -38,4 +45,5 @@ export const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(
 export const isValidPhone = (v: string) => /^(\+?40|0)7\d{8}$/.test(v.replace(/[\s.-]/g, ""));
 export const hasRequiredConsent = (c?: Consent) => !!c && CONSENT_ITEMS.filter((i) => i.required).every((i) => c.items.includes(i.id));
 /** The identity step is done once a selfie exists; a missing liveness result is shown to the officer, not blocked here. */
-export const identityDone = (o?: Onboarding) => !!o?.identity?.selfie;
+export const identityDone = (o?: Onboarding) => !!o?.identity?.selfie || !!o?.stored?.identity;
+export const consentDone = (o?: Onboarding) => hasRequiredConsent(o?.consent) || !!o?.stored?.consent;

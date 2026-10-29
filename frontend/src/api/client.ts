@@ -9,7 +9,7 @@ import { fileProblem, portalDocumentPlan, simulatePortalResult } from "@/lib/por
 import type { CustomerType, Person } from "@/types";
 import { toClientCaseStatus, toClientPortalCase, type ClientCaseStatus, type ClientPortalCase } from "@/lib/client-status";
 import { fromBuilder, type BuilderResult } from "@/lib/playbook-builder";
-import { hasRequiredConsent, isValidEmail, isValidPhone, type ClientSession, type Consent, type ConsentId, type IdentityCheck, type Onboarding } from "@/lib/onboarding";
+import { hasRequiredConsent, isValidEmail, isValidPhone, type ClientSession, type Consent, type ConsentId, type FaceComparison, type IdentityCheck, type IdentityReview, type Onboarding, type StoredOnboarding } from "@/lib/onboarding";
 
 import { fromOrchestratorCase, fromOrchestratorAudit, fromOrchestratorScreening, fromClientView, clientMessagesFor, type OrchestratorCase, type OrchestratorAudit, type AuditLogResult, type OrchestratorClientView, type OrchestratorScreeningMatch } from "@/lib/orchestrator-adapter";
 
@@ -623,7 +623,26 @@ function writeOnboarding(caseId: string, patch: Onboarding) {
  notifyCaseChange();
 }
 export async function getOnboarding(caseId: string): Promise<Onboarding> {
- return readOnboardingStore()[caseId] ?? {};
+ const local = readOnboardingStore()[caseId] ?? {};
+ if (!isRealCase(caseId) || !await orchestratorAvailable()) return local;
+ // The orchestrator says which steps are stored, so a step done in another browser counts as done.
+ const view = await orchestratorHttp<{ onboarding?: StoredOnboarding }>(`/cases/${encodeURIComponent(caseId)}/client-status`).catch(() => null);
+ return view?.onboarding ? { ...local, stored: view.onboarding } : local;
+}
+
+/** The officer's identity panel: consent, the selfie with its liveness result, and the face comparison with the ID. */
+export async function getIdentityReview(caseId: string): Promise<IdentityReview> {
+ if (isRealCase(caseId) && await orchestratorAvailable()) {
+  const r = await orchestratorHttp<{ consent: Consent | null; face: FaceComparison | null;
+   identity: { captured_at: string; liveness: IdentityCheck["liveness"]; fallback_reason: string | null; selfie_url: string } | null }>(`/cases/${encodeURIComponent(caseId)}/identity`);
+  return {
+   stored: true, face: r.face,
+   ...(r.consent ? { consent: r.consent } : {}),
+   ...(r.identity ? { identity: { selfie: `${ORCHESTRATOR_BASE}${r.identity.selfie_url}`, capturedAt: r.identity.captured_at, liveness: r.identity.liveness, ...(r.identity.fallback_reason ? { fallbackReason: r.identity.fallback_reason } : {}) } } : {}),
+  };
+ }
+ const o = readOnboardingStore()[caseId] ?? {};
+ return { stored: false, ...(o.consent ? { consent: o.consent } : {}), ...(o.identity ? { identity: o.identity } : {}) };
 }
 function auditOnboarding(caseId: string, action: string, output: unknown) {
  if (isRealCase(caseId)) return; // backend cases keep their own audit chain
@@ -632,12 +651,22 @@ function auditOnboarding(caseId: string, action: string, output: unknown) {
 export async function saveConsent(caseId: string, items: ConsentId[]) {
  const consent: Consent = { at: new Date().toISOString(), items: [...new Set(items)] };
  if (!hasRequiredConsent(consent)) throw new Error("Bifează acordurile obligatorii ca să continui.");
+ if (isRealCase(caseId)) {
+  await mutationCase(caseId, false, true);
+  const stored = await orchestratorHttp<Consent>(`/cases/${encodeURIComponent(caseId)}/consent`, { method: "POST", body: JSON.stringify({ items: consent.items }) });
+  consent.at = stored.at;
+ }
  writeOnboarding(caseId, { consent });
  auditOnboarding(caseId, "Consimțământ acordat de client", consent);
  return consent;
 }
 export async function saveIdentityCheck(caseId: string, check: Omit<IdentityCheck, "capturedAt" | "faceMatch">) {
  if (!/^data:image\/(jpeg|png);base64,/.test(check.selfie)) throw new Error("Fotografia nu a putut fi citită. Încearcă din nou.");
+ if (isRealCase(caseId)) {
+  // Stored with the case for the officer; a photo without exactly one face is refused here, with a message to retake it.
+  await mutationCase(caseId, false, true);
+  await orchestratorHttp(`/cases/${encodeURIComponent(caseId)}/identity`, { method: "POST", body: JSON.stringify({ selfie: check.selfie, liveness: check.liveness, fallback_reason: check.fallbackReason ?? null }) });
+ }
  const identity: IdentityCheck = { ...check, capturedAt: new Date().toISOString(), faceMatch: "pending" };
  writeOnboarding(caseId, { identity });
  auditOnboarding(caseId, "Fotografie de verificare a identității primită", { liveness: identity.liveness, fallbackReason: identity.fallbackReason ?? null });

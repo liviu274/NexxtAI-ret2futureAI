@@ -22,6 +22,7 @@ cp .env.example .env                               # then set FEATHERLESS_API_KE
 | `NEXXT_RUNS_DIR` | `projects/orchestrator/runs` | Where cases, uploads, OCR cache and audit logs live |
 | `NEXXT_FIXTURE_API` | unset | `1` enables `POST /cases/{id}/documents/extracted` (tests and fixtures only) |
 | `NEXXT_ALLOW_UPLOAD_WITHOUT_OCR` | unset | `1` stores uploads without a key (tests) |
+| `NEXXT_MODELS_DIR` | `projects/orchestrator/models` | Where the two OpenCV face models (about 39 MB) are downloaded on first use, checked against their SHA-256 |
 | `NEXXT_ACCEPT_SPECIMEN` | unset | `1` (demo only) lets documents marked SPECIMEN, like the synthetic dataset's identity sheet, pass the "official Romanian ID" checks of the upload gate. They must still be fully legible |
 
 ## Flow
@@ -61,6 +62,25 @@ Tested live with real OCR: a gym membership card, a payslip, a blurred ID photo,
 ID with an impossible CNP are all refused; well-formed IDs, bills and payslips pass. The gate does not judge whether a
 well-formed Romanian ID is genuine: that is `id_integrity`, `pdf_metadata` and the analyst. Every refusal is in the
 audit log (`reject_upload`). Without `expected` (fixtures, older clients) uploads are not gated.
+
+## Identity: consent, selfie, face match (`identity.py`, `face.py`, `checks/face_match.py`)
+
+| Call | Who | What |
+|---|---|---|
+| `POST /cases/{id}/consent` `{items}` | client portal | stores the consent; `kyc`, `biometric` and `screening` are required |
+| `POST /cases/{id}/identity` `{selfie, liveness, fallback_reason}` | client portal | the verification selfie (JPEG/PNG data URL, max 2 MB). Refused with 422 `{code, message}` when no face or more than one face is visible, so the client retakes it |
+| `GET /cases/{id}/identity`, `.../identity/selfie` | analyst | consent, liveness, the selfie, and the face comparison |
+
+Stored in `runs/<case>/identity/`, outside the case file (the contract has no field for it). The client view only says
+whether consent and the selfie are stored; it never carries the comparison. Every step is in the audit log.
+
+`face_match` (rule R-PF-019, high) compares the selfie with the portrait on the applicant's latest identity document,
+with OpenCV's YuNet detector and SFace embeddings (cosine similarity, threshold 0.363, OpenCV's published value). On the
+ID photos in `data/id_photos`, the same face re-shot scores 0.92-0.97 and different people -0.02 to 0.18. A mismatch is a
+flag that blocks approval and never reaches the client; a comparison that cannot be made (no portrait on the document,
+as on the dataset's specimen sheets) becomes the usual "could not run" flag the analyst must acknowledge. Without a
+selfie there is no flag: the portal asks for it before submitting. The result is cached until the selfie or the identity
+document changes. It is an aid for the analyst, not a decision, and it is not a liveness check (the portal's camera step is).
 
 ## Plugging a module in (Persons 3 and 4)
 

@@ -35,6 +35,7 @@ CATALOG = {
     "fields_match": ("cross_check", {"doc_types", "mode"}),  # plus field OR field_map
     "income_vs_deposits": ("cross_check", {"tolerance_pct"}),
     "registry_vs_declaration": ("cross_check", set()),
+    "face_match": ("cross_check", set()),
     "pdf_metadata": ("tamper", set()),
     "font_consistency": ("tamper", set()),
     "totals_consistency": ("tamper", {"doc_type"}),

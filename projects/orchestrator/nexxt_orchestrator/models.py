@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -16,6 +16,10 @@ Outcome = Literal["approved", "rejected", "documents_requested"]
 SEVERITY_RANK: dict[str, int] = {"info": 0, "low": 1, "medium": 2, "high": 3, "critical": 4}
 BLOCKING = {"high", "critical"}
 CLIENT_VISIBLE_STAGES = {"validate", "cross_check"}
+
+# Case and document ids become folder and file names, so they can never hold a path.
+SAFE_ID_PATTERN = r"^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$"
+SafeId = Annotated[str, Field(pattern=SAFE_ID_PATTERN)]
 
 
 class Model(BaseModel):
@@ -97,7 +101,7 @@ class Person(Model):
 
 
 class Document(Model):
-    doc_id: str
+    doc_id: SafeId
     file: str
     mime_type: str
     pages: int
@@ -154,7 +158,7 @@ class Decision(Model):
 
 
 class CaseFile(Model):
-    case_id: str
+    case_id: SafeId
     playbook_id: str
     customer_type: CustomerType
     status: CaseStatus = "intake"

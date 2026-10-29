@@ -1,10 +1,12 @@
 {
   "case_id": "case_pf_07_cnp_fluturas_diferit",
   "playbook_id": "pb_cont_pf_v1",
-  "rule_ids": [],
-  "flag_count": 0,
+  "rule_ids": [
+    "R-PF-018"
+  ],
+  "flag_count": 1,
   "decision": null,
   "project_pipeline_run": false,
   "expected_result_kind": "Scenario expectation for pb_cont_pf_v1, derived from procedure PF-ONB-01.",
-  "out_of_procedure": "Procedura PF-ONB-01 nu înregistrează CNP-ul de pe fluturaș (4.3) și compară doar numele (5.1). Playbook-ul nu are regulă pentru acest caz."
+  "procedure_basis": "Procedura PF-ONB-01 compară doar numele (5.1), dar un fluturaș cu CNP-ul altei persoane ridică suspiciuni privind valabilitatea (9.3): regula R-PF-018."
 }

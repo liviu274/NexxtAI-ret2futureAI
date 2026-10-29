@@ -1,6 +1,6 @@
 {
   "playbook_id": "pb_cont_pf_v1",
-  "version": 1,
+  "version": 3,
   "process_name": "Deschiderea contului curent pentru persoane fizice",
   "customer_type": "PF",
   "source_procedure": {
@@ -29,7 +29,7 @@
       "applies_to": "applicant",
       "min_count": 1,
       "alternatives": ["income_certificate"],
-      "fields": ["full_name", "employer", "gross_salary", "deductions", "net_salary", "period_end"],
+      "fields": ["full_name", "cnp", "employer", "gross_salary", "deductions", "net_salary", "period_end"],
       "source_ref": { "page": 2, "clause": "4.1", "quote": "Clientul prezintă un document care atestă sursa fondurilor: un fluturaș de salariu sau o adeverință de venit (CGB 3.1.3)." }
     }
   ],
@@ -136,10 +136,10 @@
       "check": "fields_match",
       "params": { "field": "address", "doc_types": ["id_card", "proof_of_address"], "mode": "normalized" },
       "applies_to": "applicant",
-      "severity": "medium",
-      "description": "Adresa din actul de identitate trebuie să corespundă cu dovada adresei.",
-      "client_fixable": true,
-      "fix_message": "Adresa din actul de identitate diferă de cea din dovada adresei. Vă rugăm să încărcați un document care confirmă adresa actuală.",
+      "severity": "low",
+      "description": "Adresa din actul de identitate diferă de cea din dovada adresei. Nu blochează dosarul: clientul se poate fi mutat; analistul decide dacă cere un document care confirmă adresa actuală.",
+      "client_fixable": false,
+      "fix_message": null,
       "source_ref": { "page": 2, "clause": "5.2", "quote": "Adresa din actul de identitate trebuie să corespundă cu adresa din dovada adresei." }
     },
     {
@@ -237,6 +237,18 @@
       "client_fixable": false,
       "fix_message": null,
       "source_ref": { "page": 2, "clause": "8.1", "quote": "Fiecare client primește un grad de risc scăzut, mediu sau ridicat, în funcție de țara de rezidență, ocupație și calitatea de persoană expusă public (CGB 3.1.4 lit. k)." }
+    },
+    {
+      "rule_id": "R-PF-018",
+      "stage": "cross_check",
+      "check": "fields_match",
+      "params": { "field": "cnp", "doc_types": ["id_card", "payslip"], "mode": "exact" },
+      "applies_to": "applicant",
+      "severity": "high",
+      "description": "CNP-ul de pe fluturașul de salariu, când este tipărit, trebuie să fie cel din actul de identitate; altfel fluturașul poate aparține altei persoane.",
+      "client_fixable": false,
+      "fix_message": null,
+      "source_ref": { "page": 3, "clause": "9.3", "quote": "Deschiderea contului poate fi refuzată dacă documentele sunt incomplete, neconforme cu realitatea sau ridică suspiciuni privind valabilitatea lor (CGB 3.1.4 lit. b și c)." }
     }
   ],
   "person_flows": null

@@ -60,7 +60,7 @@ def files(tmp_path, monkeypatch):
 
 
 def tamper_flags(tmp_path, case=None):
-    runs = tmp_path / "runs"
+    runs = tmp_path / f"runs_{len(list(tmp_path.glob('runs_*')))}"  # a case id is never submitted twice
     orch = Orchestrator(CaseStore(runs), AuditLog(runs), PlaybookStore(), today=lambda: date(2026, 10, 28))
     case = case or build_case()
     orch.submit(case)

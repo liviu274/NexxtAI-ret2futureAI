@@ -20,6 +20,7 @@ def orch(tmp_path):
 def screen(orch, name, cnp="1900514123456", series=None):
     case = CaseFile.model_validate(json.loads((CONVENTIONS / "case_file.example.json").read_text()))
     case.flags, case.risk_draft, case.decision = [], None, None
+    case.case_id = f"case_screen_{len(orch.store.list_ids()) + 1}"  # a case id is never submitted twice
     case.persons[0].full_name = name
     case.documents[0].fields["cnp"].value = cnp
     if series:

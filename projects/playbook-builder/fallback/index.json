@@ -9,11 +9,10 @@
       { "clause": "2.4", "status": "covered", "reason": "Câmpurile listate sunt extrase din actul de identitate (lista de câmpuri a documentului)." },
       { "clause": "3.2", "status": "covered", "reason": "Acoperită de R-PF-008: numele trebuie să fie același pe toate documentele." },
       { "clause": "4.3", "status": "covered", "reason": "Câmpurile listate sunt extrase din fluturașul de salariu (lista de câmpuri a documentului)." },
-      { "clause": "5.3", "status": "covered", "reason": "Este mesajul trimis clientului de regulile R-PF-008 și R-PF-009." },
+      { "clause": "5.3", "status": "covered", "reason": "Mesajul trimis clientului de R-PF-008. Pentru adresă (R-PF-009) analistul decide dacă cere un document: o adresă diferită poate însemna doar o mutare." },
       { "clause": "7.3", "status": "manual", "reason": "Măsurile suplimentare și aprobarea conformității sunt pași umani, declanșați de R-PF-014." },
       { "clause": "9.1", "status": "covered", "reason": "Regulile marcate client_fixable trimit automat clientului cererea de document valabil." },
       { "clause": "9.2", "status": "manual", "reason": "Decizia finală este întotdeauna a angajatului; agentul nu decide." },
-      { "clause": "9.3", "status": "manual", "reason": "Refuzul îl decide analistul, pe baza semnalărilor generate." },
       { "clause": "9.4", "status": "covered", "reason": "Jurnalul de audit înregistrează fiecare verificare și rezultatul ei." }
     ]
   },

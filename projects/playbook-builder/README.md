@@ -77,7 +77,7 @@ Raportul are câte o intrare pe clauză, gata de afișat cu procedura în stâng
 - `context`: definiție sau domeniu de aplicare
 - `unreviewed`: builder-ul n-a explicat-o; trebuie verificată
 
-`coverage.pct` = (automated + covered) / (total − context), adică ce parte din cerințele reale aplică agentul. Pe procedurile noastre: PF 88%, PJ 92%.
+`coverage.pct` = (automated + covered) / (total − context), adică ce parte din cerințele reale aplică agentul. Pe procedurile noastre: PF 92%, PJ 92%.
 
 ## Repetiția momentului live
 

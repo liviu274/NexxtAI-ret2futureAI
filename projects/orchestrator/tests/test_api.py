@@ -4,6 +4,7 @@ import tempfile
 from pathlib import Path
 
 os.environ["NEXXT_RUNS_DIR"] = tempfile.mkdtemp(prefix="nexxt_api_")
+os.environ["NEXXT_ALLOW_UPLOAD_WITHOUT_OCR"] = "1"  # these tests store files; no model reads them
 
 from fastapi.testclient import TestClient
 
@@ -21,7 +22,7 @@ def test_full_flow_over_http():
     assert processed["status"] == "waiting_client"
     assert len(client.get("/cases/case_api/client-messages").json()) == 2
 
-    assert client.post("/cases/case_api/decision", json={"outcome": "rejected"}).status_code == 422
+    assert client.post("/cases/case_api/decision", json={"outcome": "rejected"}).status_code == 401
     assert client.post("/cases/case_api/decision", json={"outcome": "approved"}, headers={"X-Analyst": "maria"}).status_code == 403
     done = client.post("/cases/case_api/decision", json={"outcome": "rejected", "note": "expired ID"}, headers={"X-Analyst": "maria"})
     assert done.status_code == 200 and done.json()["decision"]["decided_by"] == "maria"

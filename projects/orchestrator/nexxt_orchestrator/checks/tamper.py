@@ -40,11 +40,12 @@ EDIT_GRACE = timedelta(seconds=60)
 MONEY_TOLERANCE = Decimal("0.01")
 
 
-def document_path(case_id: str, doc: Document) -> Path:
+def document_path(case_id: str, doc: Document, runs_dir: Path | None = None) -> Path:
     """Where the uploaded file lives: absolute, in the case's upload folder (<runs>/<case_id>/<doc.file>, where the
     upload API stores it), under NEXXT_DOCS_DIR, or under NEXXT_DOCS_DIR/<case_id>."""
     docs_dir = Path(os.environ.get("NEXXT_DOCS_DIR", REPO_ROOT / "data"))
-    for candidate in (Path(doc.file), DEFAULT_RUNS_DIR / case_id / doc.file, docs_dir / doc.file, docs_dir / case_id / doc.file):
+    uploads = Path(runs_dir or DEFAULT_RUNS_DIR) / case_id
+    for candidate in (Path(doc.file), uploads / doc.file, docs_dir / doc.file, docs_dir / case_id / doc.file):
         if candidate.is_file():
             return candidate
     raise FileNotFoundError(f"{doc.doc_id}: file not found ({doc.file}); set NEXXT_DOCS_DIR")
@@ -197,7 +198,7 @@ def pdf_metadata(ctx: CheckContext) -> list[Flag]:
     """File metadata of every uploaded document: PDF revisions and producers, or EXIF/XMP of a photo."""
     flags = []
     for doc in owned_documents(ctx, ctx.rule.params.get("doc_types")):
-        path = document_path(ctx.case.case_id, doc)
+        path = document_path(ctx.case.case_id, doc, ctx.runs_dir)
         kind = file_kind(path)
         if kind == "pdf":
             facts = read_pdf_facts(path)
@@ -271,7 +272,7 @@ def overlapping_field(doc: Document, page: int, bbox: list[float]) -> ExtractedF
 def font_consistency(ctx: CheckContext) -> list[Flag]:
     flags = []
     for doc in owned_documents(ctx, ctx.rule.params.get("doc_types")):
-        path = document_path(ctx.case.case_id, doc)
+        path = document_path(ctx.case.case_id, doc, ctx.runs_dir)
         if file_kind(path) != "pdf":
             continue  # a photo has no text layer; the ID photo is covered by pdf_metadata
         lines = mixed_font_lines(path)

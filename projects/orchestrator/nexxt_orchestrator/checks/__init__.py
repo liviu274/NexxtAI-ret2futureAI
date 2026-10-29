@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime
+from pathlib import Path
 from typing import Callable
 
 from ..models import CLIENT_VISIBLE_STAGES, CaseFile, Document, Evidence, Flag, Playbook, RiskDraft, Rule
@@ -37,6 +38,7 @@ class CheckContext:
     today: date
     person_id: str | None = None
     created_by: str = "orchestrator"
+    runs_dir: Path | None = None  # where uploads live (<runs_dir>/<case_id>/docs); None means the default folder
 
     @property
     def owner_ids(self) -> set[str]:
@@ -84,4 +86,4 @@ class CheckContext:
 
 
 def load_stubs() -> None:
-    from . import stubs, screening, registry, cross_check, validate, tamper, id_integrity
+    from . import stubs, screening, registry, cross_check, validate, tamper, id_integrity, risk

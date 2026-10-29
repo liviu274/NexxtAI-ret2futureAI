@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import threading
 from pathlib import Path
 
-from .models import CaseFile, Playbook
+from .models import SAFE_ID_PATTERN, CaseFile, Playbook
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_RUNS_DIR = Path(os.environ.get("NEXXT_RUNS_DIR", Path(__file__).resolve().parents[1] / "runs"))
@@ -17,17 +18,30 @@ DEFAULT_PLAYBOOK_DIRS = [
 ]
 
 
+def safe_id(value: str) -> str:
+    """An id that is used as a folder or file name; anything that could escape the runs folder is unknown."""
+    if not re.fullmatch(SAFE_ID_PATTERN, value or ""):
+        raise KeyError(value)
+    return value
+
+
 class CaseStore:
     def __init__(self, root: Path = DEFAULT_RUNS_DIR):
         self.root = Path(root)
         self._lock = threading.Lock()
 
     def _path(self, case_id: str) -> Path:
-        return self.root / case_id / "case.json"
+        return self.root / safe_id(case_id) / "case.json"
 
     def files_dir(self, case_id: str) -> Path:
         """Uploaded document files of a case; Document.file is relative to the case folder."""
-        return self.root / case_id / "docs"
+        return self.root / safe_id(case_id) / "docs"
+
+    def exists(self, case_id: str) -> bool:
+        try:
+            return self._path(case_id).exists()
+        except KeyError:
+            return False
 
     def save(self, case: CaseFile) -> None:
         with self._lock:

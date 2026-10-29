@@ -1,0 +1,280 @@
+{
+  "case_id": "case_pj_07_procente_diferite",
+  "playbook_id": "pb_cont_pj_v1",
+  "customer_type": "PJ",
+  "status": "intake",
+  "created_at": "2026-10-28T12:00:00+02:00",
+  "updated_at": "2026-10-28T12:00:00+02:00",
+  "company": {
+    "name": "Atelier Exemplu Demo SRL",
+    "cui": "987654310",
+    "registration_number": "J40/99999/2026",
+    "registered_office": "Str. Modelului nr. 24, București",
+    "caen_code": "6201",
+    "share_capital": {
+      "amount": 1000,
+      "currency": "RON"
+    },
+    "country": "RO"
+  },
+  "persons": [
+    {
+      "person_id": "p_admin",
+      "role": "administrator",
+      "full_name": "Daria Model"
+    },
+    {
+      "person_id": "p_ubo_1",
+      "role": "ubo",
+      "full_name": "Tudor Exemplu"
+    },
+    {
+      "person_id": "p_ubo_2",
+      "role": "ubo",
+      "full_name": "Irina Model"
+    },
+    {
+      "person_id": "p_sign",
+      "role": "signatory",
+      "full_name": "Victor Test"
+    }
+  ],
+  "documents": [
+    {
+      "doc_id": "doc_001",
+      "file": "docs/doc_001_certificat_constatator.pdf",
+      "mime_type": "application/pdf",
+      "pages": 1,
+      "uploaded_at": "2026-10-28T12:00:00+02:00",
+      "doc_type": "certificat_constatator",
+      "classification_confidence": 1.0,
+      "owner_person_id": null,
+      "fields": {
+        "company_name": {
+          "field_id": "doc_001_company_name",
+          "name": "company_name",
+          "value": "Atelier Exemplu Demo SRL",
+          "value_type": "string",
+          "raw_text": "Atelier Exemplu Demo SRL",
+          "confidence": 1.0,
+          "source": {
+            "doc_id": "doc_001",
+            "page": 1,
+            "bbox": [
+              0.067196,
+              0.262505,
+              0.305426,
+              0.280322
+            ]
+          },
+          "extracted_by": "mock_ground_truth_v1"
+        },
+        "cui": {
+          "field_id": "doc_001_cui",
+          "name": "cui",
+          "value": "987654310",
+          "value_type": "cui",
+          "raw_text": "987654310",
+          "confidence": 1.0,
+          "source": {
+            "doc_id": "doc_001",
+            "page": 1,
+            "bbox": [
+              0.067196,
+              0.312392,
+              0.159689,
+              0.330209
+            ]
+          },
+          "extracted_by": "mock_ground_truth_v1"
+        },
+        "registration_number": {
+          "field_id": "doc_001_registration_number",
+          "name": "registration_number",
+          "value": "J40/99999/2026",
+          "value_type": "string",
+          "raw_text": "J40/99999/2026",
+          "confidence": 1.0,
+          "source": {
+            "doc_id": "doc_001",
+            "page": 1,
+            "bbox": [
+              0.067196,
+              0.36228,
+              0.200788,
+              0.380097
+            ]
+          },
+          "extracted_by": "mock_ground_truth_v1"
+        },
+        "registered_office": {
+          "field_id": "doc_001_registered_office",
+          "name": "registered_office",
+          "value": "Str. Modelului nr. 24, București",
+          "value_type": "address",
+          "raw_text": "Str. Modelului nr. 24, București",
+          "confidence": 1.0,
+          "source": {
+            "doc_id": "doc_001",
+            "page": 1,
+            "bbox": [
+              0.067196,
+              0.412168,
+              0.339289,
+              0.429985
+            ]
+          },
+          "extracted_by": "mock_ground_truth_v1"
+        },
+        "caen_code": {
+          "field_id": "doc_001_caen_code",
+          "name": "caen_code",
+          "value": "6201",
+          "value_type": "string",
+          "raw_text": "6201",
+          "confidence": 1.0,
+          "source": {
+            "doc_id": "doc_001",
+            "page": 1,
+            "bbox": [
+              0.067196,
+              0.462056,
+              0.108304,
+              0.479873
+            ]
+          },
+          "extracted_by": "mock_ground_truth_v1"
+        }
+      }
+    },
+    {
+      "doc_id": "doc_003",
+      "file": "docs/doc_003_ubo_declaration.pdf",
+      "mime_type": "application/pdf",
+      "pages": 1,
+      "uploaded_at": "2026-10-28T12:00:00+02:00",
+      "doc_type": "ubo_declaration",
+      "classification_confidence": 1.0,
+      "owner_person_id": null,
+      "fields": {
+        "company_name": {
+          "field_id": "doc_003_company_name",
+          "name": "company_name",
+          "value": "Atelier Exemplu Demo SRL",
+          "value_type": "string",
+          "raw_text": "Atelier Exemplu Demo SRL",
+          "confidence": 1.0,
+          "source": {
+            "doc_id": "doc_003",
+            "page": 1,
+            "bbox": [
+              0.067196,
+              0.248251,
+              0.305426,
+              0.266068
+            ]
+          },
+          "extracted_by": "mock_ground_truth_v1"
+        },
+        "cui": {
+          "field_id": "doc_003_cui",
+          "name": "cui",
+          "value": "987654310",
+          "value_type": "cui",
+          "raw_text": "987654310",
+          "confidence": 1.0,
+          "source": {
+            "doc_id": "doc_003",
+            "page": 1,
+            "bbox": [
+              0.067196,
+              0.293387,
+              0.159689,
+              0.311205
+            ]
+          },
+          "extracted_by": "mock_ground_truth_v1"
+        },
+        "registration_number": {
+          "field_id": "doc_003_registration_number",
+          "name": "registration_number",
+          "value": "J40/99999/2026",
+          "value_type": "string",
+          "raw_text": "J40/99999/2026",
+          "confidence": 1.0,
+          "source": {
+            "doc_id": "doc_003",
+            "page": 1,
+            "bbox": [
+              0.067196,
+              0.338524,
+              0.200788,
+              0.356341
+            ]
+          },
+          "extracted_by": "mock_ground_truth_v1"
+        },
+        "registered_office": {
+          "field_id": "doc_003_registered_office",
+          "name": "registered_office",
+          "value": "Str. Modelului nr. 24, București",
+          "value_type": "address",
+          "raw_text": "Str. Modelului nr. 24, București",
+          "confidence": 1.0,
+          "source": {
+            "doc_id": "doc_003",
+            "page": 1,
+            "bbox": [
+              0.067196,
+              0.383661,
+              0.339289,
+              0.401478
+            ]
+          },
+          "extracted_by": "mock_ground_truth_v1"
+        },
+        "caen_code": {
+          "field_id": "doc_003_caen_code",
+          "name": "caen_code",
+          "value": "6201",
+          "value_type": "string",
+          "raw_text": "6201",
+          "confidence": 1.0,
+          "source": {
+            "doc_id": "doc_003",
+            "page": 1,
+            "bbox": [
+              0.067196,
+              0.428797,
+              0.108304,
+              0.446614
+            ]
+          },
+          "extracted_by": "mock_ground_truth_v1"
+        },
+        "ubos": {
+          "field_id": "doc_003_ubos",
+          "name": "ubos",
+          "value": "[{\"full_name\": \"Tudor Exemplu\", \"cnp\": \"1850520408137\", \"ownership_pct\": 50, \"person_id\": \"p_ubo_1\"}, {\"full_name\": \"Irina Model\", \"cnp\": \"2900910408141\", \"ownership_pct\": 50, \"person_id\": \"p_ubo_2\"}]",
+          "value_type": "string",
+          "raw_text": "Tudor Exemplu 50% / Irina Model 50%",
+          "confidence": 1.0,
+          "source": {
+            "doc_id": "doc_003",
+            "page": 1,
+            "bbox": [
+              0.067196,
+              0.609343,
+              0.398867,
+              0.62716
+            ]
+          },
+          "extracted_by": "mock_ground_truth_v1"
+        }
+      }
+    }
+  ],
+  "flags": [],
+  "risk_draft": null,
+  "decision": null
+}

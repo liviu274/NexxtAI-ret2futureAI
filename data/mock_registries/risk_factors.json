@@ -1,0 +1,16 @@
+{
+  "_note": "Demo values for the synthetic cases. In production these come from the bank's own risk methodology and the current FATF lists.",
+  "countries": {
+    "low": ["RO"],
+    "high": {"KP": "listă neagră FATF", "IR": "listă neagră FATF", "MM": "listă neagră FATF", "ZZ": "țară fictivă de test cu risc ridicat"},
+    "medium": {"SY": "jurisdicție cu monitorizare sporită", "YE": "jurisdicție cu monitorizare sporită", "HT": "jurisdicție cu monitorizare sporită", "SS": "jurisdicție cu monitorizare sporită"}
+  },
+  "caen": {
+    "high": {"9200": "jocuri de noroc și pariuri", "6419": "alte activități de intermediere monetară", "6499": "alte intermedieri financiare", "4677": "comerț cu ridicata al deșeurilor și resturilor"},
+    "medium": {"6810": "cumpărarea și vânzarea de bunuri imobiliare proprii", "6831": "agenții imobiliare", "4648": "comerț cu ridicata al ceasurilor și bijuteriilor", "6612": "intermedieri ale tranzacțiilor financiare"}
+  },
+  "occupation": {
+    "high": ["cazino", "jocuri de noroc", "pariuri", "criptomonede", "crypto", "arme", "schimb valutar"],
+    "medium": ["bijuter", "imobiliar", "notar", "avocat", "politic", "consultanță financiară"]
+  }
+}

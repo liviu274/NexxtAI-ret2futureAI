@@ -341,6 +341,25 @@
             ]
           },
           "extracted_by": "mock_ground_truth_v1"
+        },
+        "cnp": {
+          "field_id": "doc_003_cnp",
+          "name": "cnp",
+          "value": "1850520408137",
+          "value_type": "cnp",
+          "raw_text": "1850520408137",
+          "confidence": 1.0,
+          "source": {
+            "doc_id": "doc_003",
+            "page": 1,
+            "bbox": [
+              0.067196,
+              0.293387,
+              0.200797,
+              0.311205
+            ]
+          },
+          "extracted_by": "mock_ground_truth_v1"
         }
       }
     }

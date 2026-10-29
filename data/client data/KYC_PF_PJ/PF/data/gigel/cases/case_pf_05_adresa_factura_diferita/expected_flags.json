@@ -2,7 +2,7 @@
   {
     "rule_id": "R-PF-009",
     "check": "fields_match",
-    "severity": "medium",
-    "description": "Adresa din actul de identitate trebuie să corespundă cu dovada adresei."
+    "severity": "low",
+    "description": "Adresa din actul de identitate diferă de cea din dovada adresei. Nu blochează dosarul: clientul se poate fi mutat; analistul decide dacă cere un document care confirmă adresa actuală."
   }
 ]

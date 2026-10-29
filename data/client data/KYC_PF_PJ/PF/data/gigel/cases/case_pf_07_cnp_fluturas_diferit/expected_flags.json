@@ -1,1 +1,8 @@
-[]
+[
+  {
+    "rule_id": "R-PF-018",
+    "check": "fields_match",
+    "severity": "high",
+    "description": "CNP-ul de pe fluturașul de salariu, când este tipărit, trebuie să fie cel din actul de identitate; altfel fluturașul poate aparține altei persoane."
+  }
+]

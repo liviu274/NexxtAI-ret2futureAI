@@ -94,3 +94,42 @@ def fields_match(ctx: CheckContext) -> list[Flag]:
             fix_vars={"person_name": person.full_name} if person else None,
         ))
     return flags
+
+
+def money(field: ExtractedField | None) -> list[dict]:
+    """Money amounts of a field: one {amount, currency}, or a list of them (one deposit per month)."""
+    if field is None or field.value in (None, ""):
+        return []
+    values = field.value if isinstance(field.value, list) else [field.value]
+    return [v for v in values if isinstance(v, dict) and isinstance(v.get("amount"), (int, float))]
+
+
+@register("income_vs_deposits")
+def income_vs_deposits(ctx: CheckContext) -> list[Flag]:
+    """Declared net salary against the salary actually paid into the account (average of the deposits)."""
+    if ctx.person_id is None and ctx.owner_ids:
+        return [f for pid in sorted(ctx.owner_ids) for f in income_vs_deposits(replace(ctx, person_id=pid))]
+    tolerance = float(ctx.rule.params.get("tolerance_pct", 10))
+    payslip = next(((d, d.fields.get("net_salary")) for d in ctx.documents("payslip", "income_certificate")
+                    if money(d.fields.get("net_salary"))), None)
+    statement = next(((d, d.fields.get("salary_deposits")) for d in ctx.documents("bank_statement")
+                      if money(d.fields.get("salary_deposits"))), None)
+    if payslip is None or statement is None:
+        return []  # a missing document or field is another rule's flag
+    (pay_doc, net_field), (bank_doc, dep_field) = payslip, statement
+    net, deposits = money(net_field)[0], money(dep_field)
+    currencies = {net["currency"], *(d["currency"] for d in deposits)}
+    sides = [evidence(Side(pay_doc, net_field, [])), evidence(Side(bank_doc, dep_field, []))]
+    if len(currencies) > 1:
+        return [ctx.flag(title="Salary and deposits are in different currencies",
+                         explanation=f"Net salary {net['amount']} {net['currency']}; deposits in {', '.join(sorted(currencies))}. "
+                                     "Compare manually.", evidence=sides)]
+    average = sum(d["amount"] for d in deposits) / len(deposits)
+    gap = abs(average - net["amount"]) / net["amount"] * 100 if net["amount"] else 100.0
+    if gap <= tolerance:
+        return []
+    return [ctx.flag(title=f"Declared income differs from deposits by {gap:.0f}%",
+                     explanation=f"Payslip net salary {net['amount']:.2f} {net['currency']}; average salary deposit "
+                                 f"{average:.2f} {net['currency']} over {len(deposits)} deposit(s) on the bank statement "
+                                 f"(tolerance {tolerance:g}%).",
+                     evidence=sides, fix_vars={"tolerance_pct": tolerance})]

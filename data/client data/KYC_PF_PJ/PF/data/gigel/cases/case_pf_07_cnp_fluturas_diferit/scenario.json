@@ -3,11 +3,13 @@
   "reference_date": "2026-10-28",
   "scenario_type": "negative",
   "mutation": "pay_cnp",
-  "expected_rule_ids": [],
+  "expected_rule_ids": [
+    "R-PF-018"
+  ],
   "synthetic": true,
   "playbook_id": "pb_cont_pf_v1",
   "legacy_expected_rule_ids": [
     "R-PF-005"
   ],
-  "out_of_procedure": "Procedura PF-ONB-01 nu înregistrează CNP-ul de pe fluturaș (4.3) și compară doar numele (5.1). Playbook-ul nu are regulă pentru acest caz."
+  "procedure_basis": "Procedura PF-ONB-01 compară doar numele (5.1), dar un fluturaș cu CNP-ul altei persoane ridică suspiciuni privind valabilitatea (9.3): regula R-PF-018."
 }

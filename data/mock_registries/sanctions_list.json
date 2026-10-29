@@ -23,5 +23,6 @@
   {"pk_match_key":"OFAC-142#NADIASOKOLOVA#1974#UA","id_sursa":"OFAC-142","nume_complet":"Nadia Sokolova","anul_nasterii":"1974","cetatenie":"UA","categorie_risc":"SANCTIONS","motiv_includere":"Tax evasion","act_identitate_cunoscut":"P1250896"},
   {"pk_match_key":"OFAC-144#SERGEIVOLKOV#1966#MD","id_sursa":"OFAC-144","nume_complet":"Sergei Volkov","anul_nasterii":"1966","cetatenie":"MD","categorie_risc":"SANCTIONS","motiv_includere":"Government member","act_identitate_cunoscut":"P7952289"},
   {"pk_match_key":"OFAC-146#IONNISTOR#1995#FR","id_sursa":"OFAC-146","nume_complet":"Ion Nistor","anul_nasterii":"1995","cetatenie":"FR","categorie_risc":"SANCTIONS","motiv_includere":"Corruption","act_identitate_cunoscut":null},
-  {"pk_match_key":"OFAC-148#NIKOLADIMITROV#1983#RU","id_sursa":"OFAC-148","nume_complet":"Nikola Dimitrov","anul_nasterii":"1983","cetatenie":"RU","categorie_risc":"SANCTIONS","motiv_includere":"Government member","act_identitate_cunoscut":null}
+  {"pk_match_key":"OFAC-148#NIKOLADIMITROV#1983#RU","id_sursa":"OFAC-148","nume_complet":"Nikola Dimitrov","anul_nasterii":"1983","cetatenie":"RU","categorie_risc":"SANCTIONS","motiv_includere":"Government member","act_identitate_cunoscut":null},
+  {"pk_match_key":"EU-ENT-900#FICTIVTRADEHOLDING","id_sursa":"EU-ENT-900","nume_complet":"Fictiv Trade Holding SRL","anul_nasterii":null,"cetatenie":"RO","categorie_risc":"SANCTIONS","tip_entitate":"companie","motiv_includere":"Entitate fictivă SPECIMEN, sancțiuni economice","act_identitate_cunoscut":null}
 ]

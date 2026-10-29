@@ -50,7 +50,7 @@ FIELDS = {
     "id_card": {"full_name", "cnp", "date_of_birth", "address", "series_number", "expiry_date", "mrz"},
     "passport": {"full_name", "cnp", "date_of_birth", "series_number", "expiry_date"},
     "proof_of_address": {"full_name", "address", "issue_date"},
-    "payslip": {"full_name", "employer", "gross_salary", "deductions", "net_salary", "period_end"},
+    "payslip": {"full_name", "cnp", "employer", "gross_salary", "deductions", "net_salary", "period_end"},
     "income_certificate": {"full_name", "employer", "net_salary", "issue_date"},
     "bank_statement": {"full_name", "iban", "salary_deposits", "period_end"},
     "certificat_constatator": {"company_name", "cui", "registration_number", "registered_office",

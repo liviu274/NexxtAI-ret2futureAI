@@ -1,0 +1,41 @@
+[
+  {
+    "key": "media_carmen_radu",
+    "id_stire": "NEWS-RO-051",
+    "tip_subiect": "persoana",
+    "nume_subiect": "Carmen Radu",
+    "anul_nasterii": "1981",
+    "titlu_stire": "Investigație privind un posibil conflict de interese — SPECIMEN",
+    "sursa_stire": "Gazeta SPECIMEN (sursă fictivă)",
+    "an_publicare": 2025,
+    "tara_subiect": "RO",
+    "cuvinte_cheie_risc": ["conflict de interese", "investigație"],
+    "nivel_risc": "medium"
+  },
+  {
+    "key": "media_sorin_cobalt_fictiv",
+    "id_stire": "NEWS-DEMO-001",
+    "tip_subiect": "persoana",
+    "nume_subiect": "Sorin Cobalt Fictiv",
+    "anul_nasterii": "1968",
+    "titlu_stire": "Eveniment negativ exclusiv fictiv pentru test — SPECIMEN",
+    "sursa_stire": "Presă simulată",
+    "an_publicare": 2026,
+    "tara_subiect": "ZZ",
+    "cuvinte_cheie_risc": ["fraudă"],
+    "nivel_risc": "high"
+  },
+  {
+    "key": "media_fictiv_trade_holding",
+    "id_stire": "NEWS-DEMO-002",
+    "tip_subiect": "companie",
+    "nume_subiect": "Fictiv Trade Holding SRL",
+    "anul_nasterii": null,
+    "titlu_stire": "Firmă fictivă cercetată pentru evaziune fiscală — SPECIMEN",
+    "sursa_stire": "Presă simulată",
+    "an_publicare": 2026,
+    "tara_subiect": "RO",
+    "cuvinte_cheie_risc": ["evaziune fiscală", "spălare de bani"],
+    "nivel_risc": "high"
+  }
+]

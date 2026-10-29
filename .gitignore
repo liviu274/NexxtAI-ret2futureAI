@@ -225,3 +225,6 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
+
+# Fake ID photos (some show real public figures): local test data only, never committed
+data/id_photos/

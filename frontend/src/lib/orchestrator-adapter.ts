@@ -1,0 +1,219 @@
+import type { AuditEntry, Case, CaseStatus, DocumentEvidence, Flag, OwnershipPerson, Person, Playbook, Severity } from "@/types";
+import type { ScreeningListEntry, ScreeningMatch } from "@/types/extensions";
+import { normalizedBBox } from "@/lib/dataset";
+import { riskFromFlags } from "@/lib/review";
+import { documentLabels, portalDocumentPlan } from "@/lib/portal";
+
+export interface OrchestratorEvidence { doc_id: string; page: number; bbox: number[]; field_id?: string | null }
+export interface OrchestratorField { field_id: string; name: string; value: unknown; confidence: number; source: OrchestratorEvidence }
+export interface OrchestratorDocument {
+  doc_id: string; file: string; doc_type: string; pages: number; owner_person_id: string | null;
+  /** 0 until a classifier ran; "unknown" with a confidence above 0 means it ran and did not recognize the file. */
+  classification_confidence?: number;
+  fields: Record<string, OrchestratorField>;
+}
+export interface OrchestratorFlag {
+  flag_id: string; rule_id: string; person_id?: string | null; stage?: string; severity: Severity | "info";
+  title: string; explanation: string; evidence: OrchestratorEvidence[];
+  status: NonNullable<Flag["status"]>; client_fixable: boolean; fix_message: string | null; resolution_note?: string | null;
+}
+export interface OrchestratorCase {
+  case_id: string; playbook_id: string; customer_type: "PF" | "PJ";
+  status: "intake" | "processing" | "waiting_client" | "review" | "decided";
+  created_at: string; company: Record<string, unknown> | null;
+  persons: { person_id: string; role: "applicant" | "ubo" | "signatory" | "administrator" | "shareholder" | "company"; full_name: string }[];
+  documents: OrchestratorDocument[]; flags: OrchestratorFlag[];
+  risk_draft: { level: "low" | "medium" | "high"; reasons: { text: string; flag_ids: string[] }[] } | null;
+  decision: { outcome: "approved" | "rejected" | "documents_requested" } | null;
+}
+export interface OrchestratorAudit {
+  entries: { seq: number; ts: string; case_id: string; actor: string; tool: string; input: unknown; output: unknown; duration_ms: number; error: unknown }[];
+  chain_valid: boolean;
+}
+export interface AuditLogResult { entries: AuditEntry[]; chain_valid?: boolean; serviceUnavailable?: boolean }
+
+const text = (value: unknown): string => value == null ? "" : typeof value === "object" ? JSON.stringify(value) : String(value);
+const roles: Partial<Record<OrchestratorCase["persons"][number]["role"], Person["role"]>> = { applicant: "titular", ubo: "UBO", signatory: "semnatar", administrator: "administrator" };
+const documentNames: Record<string, string> = { certificat_constatator: "Certificat constatator", act_constitutiv: "Act constitutiv", ubo_declaration: "Declarație beneficiar real", id_card: "Carte de identitate", passport: "Pașaport", signature_specimen: "Specimen de semnătură", financial_statement: "Situații financiare" };
+function dateLabel(iso: string): string { const [date = ""] = iso.split("T"); return date.split("-").reverse().join("."); }
+
+export function fromOrchestratorEvidence(source: OrchestratorEvidence, field?: string): DocumentEvidence {
+  // OCR uses the whole page as a sentinel for an unknown field location.
+  const wholePage = source.bbox.length === 4 && source.bbox[0] === 0 && source.bbox[1] === 0 && source.bbox[2] === 1 && source.bbox[3] === 1;
+  const bbox = wholePage ? undefined : normalizedBBox(source.bbox);
+  return { documentId: source.doc_id, page: Math.max(0, source.page - 1), ...(bbox ? { bbox } : {}), ...(field ?? source.field_id ? { field: field ?? source.field_id! } : {}) };
+}
+
+// Translate the registry check's diagnostics without replacing its names or percentages with fixture findings.
+function registryExplanation(value: string): string {
+  return value.replace(/ONRC registry/g, "Registrul ONRC").replace(/Declaration:/g, "Declarație:")
+    .replace(/% declared/g, "% declarat").replace(/% in the registry/g, "% în registru")
+    .replace(/ is declared as UBO but is not a UBO in the registry/g, " este declarat beneficiar real, dar nu figurează ca beneficiar real în registru")
+    .replace(/ is a UBO in the registry but is missing from the declaration/g, " este beneficiar real în registru, dar lipsește din declarație");
+}
+export function fromOrchestratorFlag(flag: OrchestratorFlag, rules: Playbook["rules"] = [], fields: OrchestratorField[] = []): Flag {
+  const rule = rules.find((r) => r.id === flag.rule_id);
+  return {
+    id: flag.flag_id, ruleId: flag.rule_id, title: rule?.text ?? "Problemă semnalată la verificarea dosarului", ruleText: rule?.text ?? flag.rule_id,
+    severity: flag.severity === "info" ? "low" : flag.severity,
+    explanation: flag.explanation.startsWith("ONRC registry") ? registryExplanation(flag.explanation) : rule?.text ?? "Dosarul necesită verificarea analistului.",
+    evidence: flag.evidence.map((e) => fromOrchestratorEvidence(e, fields.find((f) => f.field_id === e.field_id)?.name)),
+    status: flag.status, client_fixable: flag.client_fixable, fix_message: flag.fix_message, clientFixMessage: flag.fix_message ?? "",
+    ...(flag.person_id ? { personId: flag.person_id } : {}),
+    ...(flag.resolution_note ? { dismissalNote: flag.resolution_note, dismissedBy: flag.resolution_note.split(":")[0] ?? "Elena Radu" } : {}),
+    ...(flag.stage === "screening" ? screeningState(flag) : {}),
+  };
+}
+/** Screening flags open the side-by-side panel; the analyst's confirmation is kept in resolution_note. */
+function screeningState(flag: OrchestratorFlag): Partial<Flag> {
+  const confirmed = flag.resolution_note?.match(/^confirmed by [^:]+(?:: ([\s\S]*))?$/);
+  const note = flag.resolution_note?.split(": ").slice(1).join(": ") ?? "";
+  return { stage: "screening", ...(flag.person_id ? { screeningPersonId: flag.person_id } : {}),
+    ...(confirmed ? { screeningResolution: "confirmed" as const, screeningReason: confirmed[1] ?? "" } : flag.status === "dismissed" ? { screeningResolution: "dismissed" as const, screeningReason: note } : {}) };
+}
+
+/** `GET /cases/{id}/flags/{flag}/screening`: the list entry behind a screening flag and what the case knows of the client. */
+export interface OrchestratorScreeningMatch { entry: Record<string, unknown>; score: number; client: { name: string; birth_year: number | null; citizenship: string | null; identity_document: string | null } }
+export function fromOrchestratorScreening(m: OrchestratorScreeningMatch): ScreeningMatch {
+  const e = m.entry; const s = (k: string) => (e[k] == null ? "" : String(e[k]));
+  const entry: ScreeningListEntry = "id_stire" in e
+    ? { key: s("key") || s("id_stire"), id_stire: s("id_stire"), nume_subiect: s("nume_subiect"), titlu_stire: s("titlu_stire"), sursa_stire: s("sursa_stire"), an_publicare: Number(e["an_publicare"]) || 0, tara_subiect: s("tara_subiect"), cuvinte_cheie_risc: Array.isArray(e["cuvinte_cheie_risc"]) ? e["cuvinte_cheie_risc"].map(String) : [], nivel_risc: s("nivel_risc") === "high" || s("nivel_risc") === "low" ? s("nivel_risc") as "high" | "low" : "medium" }
+    : { key: s("pk_match_key") || s("id_sursa"), id_sursa: s("id_sursa"), nume_complet: s("nume_complet"), anul_nasterii: Number(e["anul_nasterii"]) || 0, cetatenie: s("cetatenie"), categorie_risc: s("categorie_risc") === "PEP" ? "PEP" : "SANCTIONS", motiv_includere: s("motiv_includere"), act_identitate_cunoscut: s("act_identitate_cunoscut") || "—" };
+  const c = m.client;
+  return { entry, score: m.score, client: { name: c.name, ...(c.birth_year ? { birthYear: c.birth_year } : {}), ...(c.citizenship ? { citizenship: c.citizenship } : {}), ...(c.identity_document ? { identityDocument: c.identity_document } : {}) } };
+}
+
+/** `GET /cases/{id}/client-status` (and the upload/process answer a client gets): no flags, screening, risk or fields. */
+export interface OrchestratorClientView {
+  case_id: string; playbook_id: string; customer_type: "PF" | "PJ"; status: OrchestratorCase["status"]; created_at: string;
+  decision: "approved" | "rejected" | "documents_requested" | null; request_note: string | null;
+  requests: { message: string; doc_ids: string[] }[]; persons: OrchestratorCase["persons"];
+  documents: { doc_id: string; doc_type: string; owner_person_id: string | null; pages?: number; file?: string }[];
+}
+/**
+ * The client view in the case shape the portal projections read. Each request for the client becomes an open,
+ * client-fixable flag on its documents; documents count as read once classified (the view carries no fields).
+ * A full case file (dev-mode server, tests) passes through unchanged.
+ */
+export function fromClientView(view: OrchestratorClientView | OrchestratorCase): OrchestratorCase {
+  if ("flags" in view) return view;
+  return {
+    case_id: view.case_id, playbook_id: view.playbook_id, customer_type: view.customer_type, status: view.status, created_at: view.created_at,
+    company: null, persons: view.persons, risk_draft: null, decision: view.decision ? { outcome: view.decision } : null,
+    documents: view.documents.map((d) => ({ doc_id: d.doc_id, file: d.file ?? d.doc_id, doc_type: d.doc_type, pages: d.pages ?? 1, owner_person_id: d.owner_person_id,
+      classification_confidence: d.doc_type === "unknown" ? 0 : 1, fields: d.doc_type === "unknown" ? {} : { read: { field_id: `${d.doc_id}_read`, name: "read", value: true, confidence: 1, source: { doc_id: d.doc_id, page: 1, bbox: [0, 0, 1, 1] } } } })),
+    flags: view.requests.map((r, i) => ({ flag_id: `request_${i + 1}`, rule_id: "", severity: "medium", title: r.message, explanation: r.message,
+      evidence: r.doc_ids.map((doc_id) => ({ doc_id, page: 1, bbox: [0, 0, 1, 1] })), status: "sent_to_client", client_fixable: true, fix_message: r.message })),
+  };
+}
+function declaredOwners(value: unknown): OwnershipPerson[] {
+  let parsed = value;
+  if (typeof parsed === "string") { try { parsed = JSON.parse(parsed); } catch { return []; } }
+  if (!Array.isArray(parsed)) return [];
+  return parsed.filter((p): p is Record<string, unknown> => !!p && typeof p === "object").flatMap((p) => {
+    const name = text(p["full_name"]); const pct = Number(p["ownership_pct"]);
+    return name && p["ownership_pct"] != null && Number.isFinite(pct) ? [{ id: text(p["person_id"]) || name, name, pct }] : [];
+  });
+}
+const IDENTITY_TYPES = ["id_card", "passport"];
+/**
+ * Documents the client has to replace for a flag. A cross-check cites both sides; the identity document is the
+ * reference, so the other side is the one to replace (a payslip with another name, not the ID it was compared with).
+ */
+export function blamedDocuments(raw: Pick<OrchestratorCase, "documents">, flag: Pick<OrchestratorFlag, "evidence">): string[] {
+  const typeOf = (id: string) => raw.documents.find((d) => d.doc_id === id)?.doc_type;
+  const ids = [...new Set(flag.evidence.map((e) => e.doc_id))].filter((id) => typeOf(id) !== undefined);
+  const others = ids.filter((id) => !IDENTITY_TYPES.includes(typeOf(id) ?? ""));
+  return ids.length > 1 && others.length && others.length < ids.length ? others : ids;
+}
+/** Client-safe messages for one document: only open, client-fixable flags (validate / cross-check) carry them. */
+export function clientMessagesFor(raw: Pick<OrchestratorCase, "documents" | "flags">, docId: string): string[] {
+  return [...new Set(raw.flags.filter((f) => f.client_fixable && f.fix_message && ["open", "sent_to_client"].includes(f.status) && blamedDocuments(raw, f).includes(docId)).map((f) => f.fix_message as string))];
+}
+
+/** `uploadSlots` maps a doc_id to the portal step it was uploaded at, so an unrecognized file stays on that step. */
+export function fromOrchestratorCase(raw: OrchestratorCase, mock?: Case, rules: Playbook["rules"] = [], requiredDocuments?: string[], uploadSlots: Record<string, string> = {},
+  live: { ownership?: { registry: OwnershipPerson[] }; pageUrl?: (docId: string, page: number) => string } = {}): Case {
+  const allFields = raw.documents.flatMap((d) => Object.values(d.fields));
+  const flags = raw.flags.map((f) => fromOrchestratorFlag(f, rules, allFields));
+  const certificate = raw.documents.find((d) => d.doc_type === "certificat_constatator");
+  const companyValue = (key: string) => text(raw.company?.[key] ?? certificate?.fields[key]?.value);
+  const company = raw.customer_type === "PJ" ? { name: companyValue("name") || companyValue("company_name"), cui: companyValue("cui"), registration: companyValue("registration_number"), caen: companyValue("caen_code"), address: companyValue("registered_office") } : undefined;
+  const statuses: Record<OrchestratorCase["status"], CaseStatus> = { intake: "Nou", processing: "Se verifică", waiting_client: "Documente solicitate", review: "În analiză", decided: raw.decision?.outcome === "approved" ? "Aprobat" : raw.decision?.outcome === "rejected" ? "Respins" : "Documente solicitate" };
+  const persons = raw.persons.flatMap((p) => { const role = roles[p.role]; return role ? [{ id: p.person_id, name: p.full_name, role }] : []; });
+  const plan = portalDocumentPlan(raw.customer_type, requiredDocuments ?? [...new Set(raw.documents.map((d) => d.doc_type).filter((t) => t !== "unknown"))], persons);
+  const used = new Set<string>();
+  const unrecognized = (d: OrchestratorDocument) => d.doc_type === "unknown" && (d.classification_confidence ?? 0) > 0;
+  const uploaded = (d: OrchestratorDocument) => {
+    const messages = clientMessagesFor(raw, d.doc_id);
+    return {
+      documentId: d.doc_id, fileName: d.file.split(/[\\/]/).at(-1) ?? d.file,
+      processingPending: !unrecognized(d) && (d.doc_type === "unknown" || !Object.keys(d.fields).length),
+      ok: d.doc_type !== "unknown" && Object.keys(d.fields).length > 0 && !messages.length,
+      ...(messages.length ? { clientMessage: messages.join(" ") } : {}),
+    };
+  };
+  const portalDocuments: NonNullable<Case["portalDocuments"]> = plan.map((slot) => {
+    const key = slot.personId ? `${slot.personId}-${slot.type}` : `company-${slot.type}`;
+    // PF steps name no person (the applicant is implied), so any owner fits; PJ steps belong to one person.
+    const ownerFits = (d: OrchestratorDocument) => slot.personId === undefined || d.owner_person_id === slot.personId;
+    const matches = raw.documents.filter((d) => d.doc_type === slot.type && ownerFits(d) && !used.has(d.doc_id));
+    // Otherwise the file the client uploaded at this step, even if it was not recognized or is another document type.
+    const d = matches.length === 1 ? matches[0] : raw.documents.find((x) => uploadSlots[x.doc_id] === key && !used.has(x.doc_id));
+    if (d) used.add(d.doc_id);
+    if (!d) return { ...slot, key };
+    const issue = unrecognized(d) ? "unrecognized" as const : d.doc_type !== "unknown" && (d.doc_type !== slot.type || !ownerFits(d)) ? "wrong_type" as const : undefined;
+    return { ...slot, key, ...uploaded(d), ...(issue ? { issue, ok: false } : {}) };
+  });
+  // Unclassified files and ambiguous/extra documents stay visible and can be reprocessed.
+  // An unclassified file with no remembered step (uploaded before steps were remembered, or in another browser)
+  // goes to the first empty step: the portal walks the client through the steps in order.
+  for (const d of raw.documents.filter((d) => !used.has(d.doc_id) && d.doc_type === "unknown")) {
+    const i = portalDocuments.findIndex((slot) => !slot.fileName);
+    const slot = portalDocuments[i];
+    if (!slot) break;
+    used.add(d.doc_id);
+    portalDocuments[i] = { ...slot, ...uploaded(d), ...(unrecognized(d) ? { issue: "unrecognized" as const, ok: false } : {}) };
+  }
+  for (const d of raw.documents.filter((d) => !used.has(d.doc_id))) portalDocuments.push({
+    key: d.doc_id, type: d.doc_type, label: documentLabels[d.doc_type] ?? documentNames[d.doc_type] ?? "Document neidentificat",
+    ...(d.owner_person_id ? { personId: d.owner_person_id, personName: raw.persons.find((p) => p.person_id === d.owner_person_id)?.full_name ?? "" } : {}),
+    ...uploaded(d), ...(unrecognized(d) ? { issue: "unrecognized" as const, ok: false } : {}),
+  });
+  return {
+    id: raw.case_id, source: "backend", playbookId: raw.playbook_id, customerType: raw.customer_type,
+    clientName: company?.name || raw.persons[0]?.full_name || "Dosar fără nume", ...(company ? { company, cui: company.cui } : {}),
+    status: statuses[raw.status], createdAt: dateLabel(raw.created_at), processingMs: 0,
+    persons, portalDocuments,
+    documents: raw.documents.map((d) => {
+      const basename = d.file.split(/[\\/]/).at(-1) ?? d.file;
+      const imageName = basename.replace(/\.[^.]+$/, "") + ".png";
+      return { id: d.doc_id, type: documentNames[d.doc_type] ?? "Document", ownerPersonId: d.owner_person_id ?? "", fileName: basename,
+        // Dataset cases have rendered pages in /mocks; portal uploads are rendered by the orchestrator, page by page.
+        pageImages: raw.case_id.startsWith("live_") ? (live.pageUrl ? Array.from({ length: Math.max(1, d.pages) }, (_, i) => live.pageUrl!(d.doc_id, i + 1)) : []) : [`/mocks/${raw.case_id}/images/${imageName}`],
+        status: flags.some((f) => !["resolved", "dismissed"].includes(f.status ?? "open") && f.evidence.some((e) => e.documentId === d.doc_id)) ? "cu-probleme" as const : "valid" as const,
+        extractedFields: Object.values(d.fields).map((f) => ({ name: f.name, value: text(f.value), confidence: f.confidence, source: fromOrchestratorEvidence(f.source, f.name) })) };
+    }), flags,
+    riskDraft: raw.risk_draft ? { level: raw.risk_draft.level, reasons: raw.risk_draft.reasons.map((r) => ({ factor: r.flag_ids.map((id) => flags.find((f) => f.id === id)?.ruleId ?? id).join(", ") || "Evaluare dosar", value: r.flag_ids.map((id) => flags.find((f) => f.id === id)?.explanation).filter(Boolean).join("; ") || (flags.length ? "Propunere de risc pentru revizuirea analistului." : "Nu au fost semnalate probleme."), impact: r.flag_ids.length ? "crește" as const : "neutru" as const })) } : riskFromFlags(flags),
+    ownership: {
+      // The ONRC side comes from GET /cases/{id}/ownership; without it, from the matching fixture.
+      registry: structuredClone(live.ownership?.registry ?? mock?.ownership?.registry ?? []),
+      declared: declaredOwners(raw.documents.find((d) => d.doc_type === "ubo_declaration")?.fields["ubos"]?.value),
+    },
+  };
+}
+const stages: Record<string, string> = { classify: "Clasificare", extract: "Extracție", required_present: "Validare", not_expired: "Validare", max_age_days: "Validare", field_present: "Validare", fields_match: "Verificare încrucișată", income_vs_deposits: "Verificare încrucișată", registry_vs_declaration: "Verificare încrucișată", pdf_metadata: "Detectare falsificare", font_consistency: "Detectare falsificare", totals_consistency: "Detectare falsificare", sanctions: "Screening", pep: "Screening", adverse_media: "Screening", risk_factors: "Propunere de risc", pipeline_done: "Dosar pregătit", decision: "Revizuire", dismiss_flag: "Revizuire", submit: "Încărcări client" };
+export function fromOrchestratorAudit(raw: OrchestratorAudit, rules: Playbook["rules"] = []): AuditLogResult {
+  return { chain_valid: raw.chain_valid, entries: raw.entries.map((e) => {
+    const tool = e.tool.replace(/^check:/, "");
+    const stage = stages[tool] ?? (/upload|receive|replace_document/.test(tool) ? "Încărcări client" : "Verificare dosar");
+    const input = e.input && typeof e.input === "object" ? e.input as Record<string, unknown> : {};
+    const rule = rules.find((r) => r.id === input["rule_id"]);
+    const time = e.ts.split("T")[1]?.match(/^(\d{2}:\d{2}:\d{2})(?:\.(\d+))?/);
+    const timestamp = `${dateLabel(e.ts)} ${time?.[1] ?? "00:00:00"}.${(time?.[2] ?? "").padEnd(3, "0").slice(0, 3)}`;
+    return { id: `${e.case_id}-${e.seq}`, caseId: e.case_id, timestamp, actor: e.actor.startsWith("human:") ? "human" as const : "ai" as const, stage,
+      action: rule?.text ?? (tool === "dismiss_flag" ? "Problemă ignorată cu motiv" : tool === "decision" ? "Decizie înregistrată de analist" : stage),
+      status: e.error ? "eroare" as const : "ok" as const, durationMs: e.duration_ms,
+      input: JSON.stringify(e.input ?? null, null, 2), output: JSON.stringify(e.error ? { rezultat: e.output, eroare: e.error } : e.output ?? null, null, 2) };
+  }) };
+}

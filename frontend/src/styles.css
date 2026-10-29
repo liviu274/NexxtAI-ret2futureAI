@@ -1,0 +1,245 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+@import "@xyflow/react/dist/style.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design system definition.
+ *
+ * The @theme inline block maps CSS custom properties to Tailwind utility
+ * classes (e.g. --color-primary -> bg-primary, text-primary).
+ *
+ * The :root and .dark blocks define the actual color values using oklch.
+ * All colors MUST use oklch format.
+ *
+ * To add a new semantic color:
+ * 1. Add the variable to :root (light value) and .dark (dark value)
+ * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-brand: var(--brand);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-beige: var(--beige);
+  --color-beige-dark: var(--beige-dark);
+  --color-teal: var(--teal);
+  --color-sev-high: var(--sev-high);
+  --color-sev-medium: var(--sev-medium);
+  --color-sev-ok: var(--sev-ok);
+  --color-workspace: var(--workspace);
+  --color-avatar: var(--avatar);
+  --font-sans: "Onest", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  --color-rail: var(--rail);
+  --color-rail-foreground: var(--rail-foreground);
+  --color-rail-muted: var(--rail-muted);
+  --color-on-brand: var(--on-brand);
+  --shadow-card: 0 1px 2px rgb(17 17 17 / 0.04), 0 10px 30px -18px rgb(17 17 17 / 0.25);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.875rem;
+  /* Raif2Future palette: Raiffeisen-style yellow + black + light gray. Light theme. */
+  --brand: #FFE600;
+  --on-brand: #111111;
+  --ink: #111111;
+  --ink-muted: #5E5E5B;
+  --line: #D6D6D2;
+  --beige: #EFEFED;
+  --workspace: #EFEFED;
+  --avatar: #111111;
+  --beige-dark: #E6E6E3;
+  --teal: #037080;
+  --rail: #111111;
+  --rail-foreground: #F2F2F0;
+  --rail-muted: #8C8C88;
+  --sev-high: #D23B2A;
+  --sev-medium: #E07A12;
+  --sev-ok: #2F8A55;
+  --background: #EFEFED;
+  --foreground: #111111;
+  --card: #FFFFFF;
+  --card-foreground: #111111;
+  --popover: #FFFFFF;
+  --popover-foreground: #111111;
+  --primary: #FFE600;
+  --primary-foreground: #111111;
+  --secondary: #E6E6E3;
+  --secondary-foreground: #111111;
+  --muted: #F2F2F0;
+  --muted-foreground: #5E5E5B;
+  --accent: #F2F2F0;
+  --accent-foreground: #111111;
+  --destructive: #D23B2A;
+  --destructive-foreground: #FFFFFF;
+  --border: #E3E3DF;
+  --input: #D6D6D2;
+  --ring: #111111;
+  --chart-1: #111111;
+  --chart-2: #FFE600;
+  --chart-3: #D23B2A;
+  --chart-4: #E07A12;
+  --chart-5: #2F8A55;
+  --sidebar: #111111;
+  --sidebar-foreground: #F2F2F0;
+  --sidebar-primary: #FFE600;
+  --sidebar-primary-foreground: #111111;
+  --sidebar-accent: #1F1F1F;
+  --sidebar-accent-foreground: #F2F2F0;
+  --sidebar-border: #262626;
+  --sidebar-ring: #FFE600;
+}
+
+/* Dark theme: near-black surfaces, the same yellow; toggled by the "dark" class on <html>. */
+.dark {
+  --brand: #FFE600;
+  --on-brand: #111111;
+  --ink: #F3F3F1;
+  --ink-muted: #A3A39E;
+  --line: #3A3A38;
+  --beige: #0B0B0B;
+  --workspace: #0B0B0B;
+  --avatar: #FFE600;
+  --beige-dark: #242424;
+  --teal: #5BC0CF;
+  --rail: #000000;
+  --rail-foreground: #F3F3F1;
+  --rail-muted: #7A7A76;
+  --sev-high: #FF6A55;
+  --sev-medium: #FFA243;
+  --sev-ok: #57C48A;
+  --background: #0B0B0B;
+  --foreground: #F3F3F1;
+  --card: #191919;
+  --card-foreground: #F3F3F1;
+  --popover: #1F1F1F;
+  --popover-foreground: #F3F3F1;
+  --primary: #FFE600;
+  --primary-foreground: #111111;
+  --secondary: #242424;
+  --secondary-foreground: #F3F3F1;
+  --muted: #222222;
+  --muted-foreground: #A3A39E;
+  --accent: #262626;
+  --accent-foreground: #F3F3F1;
+  --destructive: #FF6A55;
+  --destructive-foreground: #111111;
+  --border: #2C2C2B;
+  --input: #3A3A38;
+  --ring: #FFE600;
+  --chart-1: #F3F3F1;
+  --chart-2: #FFE600;
+  --chart-3: #FF6A55;
+  --chart-4: #FFA243;
+  --chart-5: #57C48A;
+  --sidebar: #000000;
+  --sidebar-foreground: #F3F3F1;
+  --sidebar-primary: #FFE600;
+  --sidebar-primary-foreground: #111111;
+  --sidebar-accent: #1F1F1F;
+  --sidebar-accent-foreground: #F3F3F1;
+  --sidebar-border: #262626;
+  --sidebar-ring: #FFE600;
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+}
+
+/* Stitch screen proportions and the direct ownership diagram. */
+body { letter-spacing: 0; }
+.portal-progress { appearance: none; background: var(--border); }
+.portal-progress::-webkit-progress-bar { background: var(--border); }
+.portal-progress::-webkit-progress-value { background: var(--brand); }
+.portal-progress::-moz-progress-bar { background: var(--brand); }
+.staff-nav { flex-shrink: 0; }
+@media (max-width: 800px) {
+  .staff-header { flex-wrap: wrap; padding-top: 10px; padding-bottom: 10px; }
+  .staff-nav { order: 3; width: 100%; justify-content: center; }
+}
+.ownership-match .react-flow__edge-path { stroke: var(--line); }
+.ownership-mismatch .react-flow__edge-path { stroke: var(--sev-high); }
+.react-flow__edge-text { fill: var(--ink-muted); font-size: 10px; }
+.react-flow__edge-textbg { fill: var(--beige); }
+.ownership-mismatch .react-flow__edge-text { fill: var(--sev-high); }
+@media (max-width: 640px) {
+  .staff-header { flex-wrap: wrap; padding-top: 10px; padding-bottom: 10px; }
+  .staff-nav { order: 3; width: 100%; justify-content: center; }
+  .review-shell aside { border-right: 0; border-bottom: 1px solid var(--border); }
+}
+
+/* Yellow surfaces keep dark text in both themes (the ink token turns light in dark mode). */
+.bg-brand, .bg-primary { color: var(--on-brand); }
+.bg-brand svg, .bg-primary svg { color: inherit; }
+/* Officer area: a fixed side rail on desktop; the page content moves right. */
+@media (min-width: 901px) {
+  body:has(.staff-rail) { padding-left: 236px; }
+}
+.dark .react-flow__node { background: var(--card); color: var(--ink); border-color: var(--line); }
+.dark .react-flow__background { background: transparent; }
+@media (prefers-reduced-motion: no-preference) {
+  body { transition: background-color .2s ease, color .2s ease; }
+}
+
+/* Same page token as every screen wrapper (bg-beige), so the canvas never shows white in dark mode. */
+html, body { background-color: var(--beige); }
+
+/* Landing intro (Splash.tsx): hidden unless the root script marked this load to play it. */
+.r2f-splash { display: none; }
+html[data-intro="play"] .r2f-splash {
+  display: block; position: fixed; inset: 0; z-index: 100; overflow: hidden; cursor: pointer;
+  background-color: #FFE600;
+}
+html[data-intro="play"], html[data-intro="play"] body { overflow: hidden; }

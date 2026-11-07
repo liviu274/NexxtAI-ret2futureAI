@@ -105,6 +105,7 @@ The pipeline implements exactly these checks. The playbook validator rejects any
 | `fields_match` | cross_check | `{field, doc_types[], mode}`; mode: `exact` \| `normalized` \| `fuzzy` | Values differ across documents |
 | `income_vs_deposits` | cross_check | `{tolerance_pct}` | Declared net salary differs from statement deposits by more than the tolerance |
 | `registry_vs_declaration` | cross_check | `{}` | UBOs in the registry extract differ from the UBO declaration |
+| `face_match` | cross_check | `{}` | The selfie taken in the portal does not match the portrait on the identity document (cosine similarity below 0.363); no flag before a selfie exists, "could not run" when no face can be compared |
 | `pdf_metadata` | tamper | `{}` | Editing software, modification date after creation or issue date, or incremental saves (more than one `%%EOF`); for a photo: editing software in EXIF/XMP, or EXIF re-save date after capture date |
 | `font_consistency` | tamper | `{}` | Mixed fonts inside a single field or line |
 | `totals_consistency` | tamper | `{doc_type}` | Lines don't add up to stated totals |

@@ -9,7 +9,7 @@ import { fileProblem, portalDocumentPlan, simulatePortalResult } from "@/lib/por
 import type { CustomerType, Person } from "@/types";
 import { toClientCaseStatus, toClientPortalCase, type ClientCaseStatus, type ClientPortalCase } from "@/lib/client-status";
 import { fromBuilder, type BuilderResult } from "@/lib/playbook-builder";
-import { hasRequiredConsent, isValidEmail, isValidPhone, type ClientSession, type Consent, type ConsentId, type IdentityCheck, type Onboarding } from "@/lib/onboarding";
+import { hasRequiredConsent, isValidEmail, isValidPhone, type ClientSession, type Consent, type ConsentId, type FaceComparison, type IdentityCheck, type IdentityReview, type Onboarding, type StoredOnboarding } from "@/lib/onboarding";
 
 import { fromOrchestratorCase, fromOrchestratorAudit, fromOrchestratorScreening, fromClientView, clientMessagesFor, type OrchestratorCase, type OrchestratorAudit, type AuditLogResult, type OrchestratorClientView, type OrchestratorScreeningMatch } from "@/lib/orchestrator-adapter";
 
@@ -62,10 +62,13 @@ function analystHeaders(): Record<string, string> {
 async function orchestratorHttp<T>(path: string, init?: RequestInit, processing = false, retried = false): Promise<T> {
   let res: Response;
   const multipart = init?.body instanceof FormData;
-  const token = analystToken();
-  try { res = await fetch(`${ORCHESTRATOR_BASE}${path}`, { ...init, headers: { ...(!multipart ? { "Content-Type": "application/json" } : {}), ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init?.headers }, signal: AbortSignal.timeout(processing ? OCR_TIMEOUT_MS : 10_000) }); }
+  const token = analystToken(); const client = getSession()?.token;
+  try { res = await fetch(`${ORCHESTRATOR_BASE}${path}`, { ...init, headers: { ...(!multipart ? { "Content-Type": "application/json" } : {}), ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(client ? { "X-Client-Token": client } : {}), ...init?.headers }, signal: AbortSignal.timeout(processing ? OCR_TIMEOUT_MS : 10_000) }); }
   catch { availability = Promise.resolve(false); throw new Error(processing ? OCR_UNCONFIRMED : SERVICE_UNAVAILABLE); }
-  if (res.status === 401 && !retried && typeof window !== "undefined" && typeof window.prompt === "function") {
+  // Client-account errors answer {code, message}; only the analyst endpoints answer 401 with plain text.
+  const errorBody = res.ok ? null : await res.json().catch(() => null) as { detail?: unknown } | null; // read once
+  const clientRefusal = res.status === 401 && typeof errorBody?.detail === "object" && errorBody.detail !== null;
+  if (res.status === 401 && !clientRefusal && !retried && typeof window !== "undefined" && typeof window.prompt === "function") {
     // The server requires analyst tokens (NEXXT_ANALYSTS): ask once, keep it for this browser tab.
     const entered = window.prompt("Tokenul tău de analist:")?.trim();
     if (entered) {
@@ -74,8 +77,11 @@ async function orchestratorHttp<T>(path: string, init?: RequestInit, processing 
     }
   }
   if (!res.ok) {
-    const body = await res.json().catch(() => null) as { detail?: unknown } | null;
+    const body = errorBody;
     const detail = typeof body?.detail === "string" ? body.detail : "";
+    const structured = body?.detail && typeof body.detail === "object" ? body.detail as { code?: string; message?: string } : null;
+    if (structured?.code === "session_expired" || structured?.code === "signed_out") clearClientSession();
+    if ((res.status === 401 || res.status === 409) && structured?.message) { availability = Promise.resolve(true); throw new Error(structured.message); }
     if (res.status === 401) throw new Error("Este necesară autentificarea analistului. Reîncarcă pagina și introdu tokenul.");
     if (res.status === 503 && detail.includes("FEATHERLESS_API_KEY")) {
       // The service is up; it only cannot read documents. Nothing was stored.
@@ -499,11 +505,14 @@ export async function getClientPortalCase(caseId: string): Promise<ClientPortalC
  return toClientPortalCase(c, c.portalDocuments);
 }
 
+/** The signed-in account's cases, from the orchestrator, whichever browser opened them; never another account's. */
 export async function listMyPortalCases(): Promise<ClientPortalCase[]> {
  const m = await mocks();
- const demo = readDemoCases(m.cases).filter((c) => c.id.startsWith("demo_")).map((c) => toClientPortalCase(c, c.portalDocuments ?? []));
- // Cases opened in the backend from this browser; skipped while the service is down.
- const live = await Promise.all(readMyLiveCases().map((id) => getClientPortalCase(id).catch(() => null)));
+ const demo = DEMO_UPLOADS ? readDemoCases(m.cases).filter((c) => c.id.startsWith("demo_")).map((c) => toClientPortalCase(c, c.portalDocuments ?? [])) : [];
+ if (!getSession()?.token || !await orchestratorAvailable()) return demo;
+ const mine = await orchestratorHttp<{ case_id: string }[]>("/client/cases");
+ for (const c of mine) backendIds.add(c.case_id);
+ const live = await Promise.all(mine.map((c) => getClientPortalCase(c.case_id).catch(() => null)));
  return [...live.filter((c): c is ClientPortalCase => !!c), ...demo];
 }
 
@@ -623,7 +632,26 @@ function writeOnboarding(caseId: string, patch: Onboarding) {
  notifyCaseChange();
 }
 export async function getOnboarding(caseId: string): Promise<Onboarding> {
- return readOnboardingStore()[caseId] ?? {};
+ const local = readOnboardingStore()[caseId] ?? {};
+ if (!isRealCase(caseId) || !await orchestratorAvailable()) return local;
+ // The orchestrator says which steps are stored, so a step done in another browser counts as done.
+ const view = await orchestratorHttp<{ onboarding?: StoredOnboarding }>(`/cases/${encodeURIComponent(caseId)}/client-status`).catch(() => null);
+ return view?.onboarding ? { ...local, stored: view.onboarding } : local;
+}
+
+/** The officer's identity panel: consent, the selfie with its liveness result, and the face comparison with the ID. */
+export async function getIdentityReview(caseId: string): Promise<IdentityReview> {
+ if (isRealCase(caseId) && await orchestratorAvailable()) {
+  const r = await orchestratorHttp<{ consent: Consent | null; face: FaceComparison | null;
+   identity: { captured_at: string; liveness: IdentityCheck["liveness"]; fallback_reason: string | null; selfie_url: string } | null }>(`/cases/${encodeURIComponent(caseId)}/identity`);
+  return {
+   stored: true, face: r.face,
+   ...(r.consent ? { consent: r.consent } : {}),
+   ...(r.identity ? { identity: { selfie: `${ORCHESTRATOR_BASE}${r.identity.selfie_url}`, capturedAt: r.identity.captured_at, liveness: r.identity.liveness, ...(r.identity.fallback_reason ? { fallbackReason: r.identity.fallback_reason } : {}) } } : {}),
+  };
+ }
+ const o = readOnboardingStore()[caseId] ?? {};
+ return { stored: false, ...(o.consent ? { consent: o.consent } : {}), ...(o.identity ? { identity: o.identity } : {}) };
 }
 function auditOnboarding(caseId: string, action: string, output: unknown) {
  if (isRealCase(caseId)) return; // backend cases keep their own audit chain
@@ -632,12 +660,22 @@ function auditOnboarding(caseId: string, action: string, output: unknown) {
 export async function saveConsent(caseId: string, items: ConsentId[]) {
  const consent: Consent = { at: new Date().toISOString(), items: [...new Set(items)] };
  if (!hasRequiredConsent(consent)) throw new Error("Bifează acordurile obligatorii ca să continui.");
+ if (isRealCase(caseId)) {
+  await mutationCase(caseId, false, true);
+  const stored = await orchestratorHttp<Consent>(`/cases/${encodeURIComponent(caseId)}/consent`, { method: "POST", body: JSON.stringify({ items: consent.items }) });
+  consent.at = stored.at;
+ }
  writeOnboarding(caseId, { consent });
  auditOnboarding(caseId, "Consimțământ acordat de client", consent);
  return consent;
 }
 export async function saveIdentityCheck(caseId: string, check: Omit<IdentityCheck, "capturedAt" | "faceMatch">) {
  if (!/^data:image\/(jpeg|png);base64,/.test(check.selfie)) throw new Error("Fotografia nu a putut fi citită. Încearcă din nou.");
+ if (isRealCase(caseId)) {
+  // Stored with the case for the officer; a photo without exactly one face is refused here, with a message to retake it.
+  await mutationCase(caseId, false, true);
+  await orchestratorHttp(`/cases/${encodeURIComponent(caseId)}/identity`, { method: "POST", body: JSON.stringify({ selfie: check.selfie, liveness: check.liveness, fallback_reason: check.fallbackReason ?? null }) });
+ }
  const identity: IdentityCheck = { ...check, capturedAt: new Date().toISOString(), faceMatch: "pending" };
  writeOnboarding(caseId, { identity });
  auditOnboarding(caseId, "Fotografie de verificare a identității primită", { liveness: identity.liveness, fallbackReason: identity.fallbackReason ?? null });
@@ -649,14 +687,31 @@ export function getSession(): ClientSession | null {
  if (typeof window === "undefined") return null;
  try { return JSON.parse(window.localStorage.getItem(SESSION_KEY) ?? "null") as ClientSession | null; } catch { return null; }
 }
-export async function requestSignInCode(email: string, phone: string) {
+/**
+ * Sign up or sign in, one step: the orchestrator accepts an e-mail and a phone that are new, or that belong to the same
+ * account, and refuses either one when it belongs to another account. It generates the code; until an SMS provider is
+ * connected it returns it in demo mode (`demoCode`), and the page shows it.
+ */
+export async function requestSignInCode(email: string, phone: string): Promise<{ sentTo: string; demoCode?: string; existing?: boolean }> {
  if (!isValidEmail(email)) throw new Error("Adresa de e-mail nu este validă.");
  if (!isValidPhone(phone)) throw new Error("Introdu un număr de mobil românesc, de exemplu 0722 123 456.");
+ if (await orchestratorAvailable()) {
+  const r = await orchestratorHttp<{ sent_to: string; account: "new" | "existing"; demo_code?: string }>("/auth/start", { method: "POST", body: JSON.stringify({ email, phone }) });
+  return { sentTo: r.sent_to, existing: r.account === "existing", ...(r.demo_code ? { demoCode: r.demo_code } : {}) };
+ }
+ if (!DEMO_UPLOADS) throw new Error("Serviciul de verificare nu este disponibil acum. Încearcă din nou mai târziu.");
  await delay(600);
  return { sentTo: phone.replace(/[\s.-]/g, "").replace(/\d(?=\d{3})/g, "•") };
 }
 export async function verifySignInCode(email: string, phone: string, code: string): Promise<ClientSession> {
  if (!/^\d{6}$/.test(code)) throw new Error("Codul are 6 cifre.");
+ if (await orchestratorAvailable()) {
+  const r = await orchestratorHttp<{ token: string; account_id: string; email: string; phone: string; created_at: string }>("/auth/verify", { method: "POST", body: JSON.stringify({ email, phone, code }) });
+  const session: ClientSession = { email: r.email, phone: r.phone, createdAt: r.created_at, token: r.token, accountId: r.account_id };
+  try { window.localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch { /* the session lasts for this page only */ }
+  window.dispatchEvent(new Event("raif2future-session-change"));
+  return session;
+ }
  await delay(500);
  const session: ClientSession = { email: email.trim().toLowerCase(), phone: phone.replace(/[\s.-]/g, ""), createdAt: new Date().toISOString() };
  try { window.localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch { /* the session lasts for this page only */ }
@@ -664,6 +719,12 @@ export async function verifySignInCode(email: string, phone: string, code: strin
  return session;
 }
 export function signOut() {
+ const token = getSession()?.token;
+ if (token) void fetch(`${ORCHESTRATOR_BASE}/auth/sign-out`, { method: "POST", headers: { "X-Client-Token": token } }).catch(() => undefined);
+ clearClientSession();
+}
+function clearClientSession() {
+ if (typeof window === "undefined") return;
  try { window.localStorage.removeItem(SESSION_KEY); } catch { /* already gone */ }
  window.dispatchEvent(new Event("raif2future-session-change"));
 }

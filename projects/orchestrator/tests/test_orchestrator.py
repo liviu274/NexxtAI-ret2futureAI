@@ -1,5 +1,6 @@
 import copy
 import json
+import sqlite3
 from datetime import date
 from pathlib import Path
 
@@ -152,9 +153,12 @@ def test_audit_log_records_every_call_and_detects_tampering(orch, tmp_path):
     assert "submit" in tools and "check:not_expired" in tools and "pipeline_done" in tools
     assert all(e["ts"] and e["duration_ms"] >= 0 for e in entries)
     assert orch.audit.verify(case.case_id)
-    path = orch.audit.path(case.case_id)
-    path.write_text(path.read_text().replace("check:not_expired", "check:nothing", 1))
-    assert not orch.audit.verify(case.case_id)
+    with sqlite3.connect(orch.audit.db.path) as conn:
+        with pytest.raises(sqlite3.IntegrityError, match="append-only"):  # the database refuses the edit
+            conn.execute("UPDATE audit SET tool = 'check:nothing' WHERE tool = 'check:not_expired'")
+        conn.execute("DROP TRIGGER audit_no_update")  # someone with the file in hand gets past that
+        conn.execute("UPDATE audit SET tool = 'check:nothing' WHERE tool = 'check:not_expired'")
+    assert not orch.audit.verify(case.case_id)  # the hash chain still shows it
 
 
 def test_pj_person_flow_runs_for_every_ubo(orch):

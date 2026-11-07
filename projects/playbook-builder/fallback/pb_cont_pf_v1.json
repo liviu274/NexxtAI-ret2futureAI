@@ -1,6 +1,6 @@
 {
   "playbook_id": "pb_cont_pf_v1",
-  "version": 3,
+  "version": 4,
   "process_name": "Deschiderea contului curent pentru persoane fizice",
   "customer_type": "PF",
   "source_procedure": {
@@ -246,6 +246,18 @@
       "applies_to": "applicant",
       "severity": "high",
       "description": "CNP-ul de pe fluturașul de salariu, când este tipărit, trebuie să fie cel din actul de identitate; altfel fluturașul poate aparține altei persoane.",
+      "client_fixable": false,
+      "fix_message": null,
+      "source_ref": { "page": 3, "clause": "9.3", "quote": "Deschiderea contului poate fi refuzată dacă documentele sunt incomplete, neconforme cu realitatea sau ridică suspiciuni privind valabilitatea lor (CGB 3.1.4 lit. b și c)." }
+    },
+    {
+      "rule_id": "R-PF-019",
+      "stage": "cross_check",
+      "check": "face_match",
+      "params": {},
+      "applies_to": "applicant",
+      "severity": "high",
+      "description": "Fotografia de verificare făcută în portal trebuie să fie a aceleiași persoane ca poza din actul de identitate; altfel actul poate aparține altcuiva.",
       "client_fixable": false,
       "fix_message": null,
       "source_ref": { "page": 3, "clause": "9.3", "quote": "Deschiderea contului poate fi refuzată dacă documentele sunt incomplete, neconforme cu realitatea sau ridică suspiciuni privind valabilitatea lor (CGB 3.1.4 lit. b și c)." }

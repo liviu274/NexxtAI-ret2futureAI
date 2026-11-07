@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import threading
 import time
 from datetime import date, datetime
 from pathlib import Path
@@ -32,24 +31,25 @@ def _digest(entry: dict[str, Any]) -> str:
     return hashlib.sha256(json.dumps(body, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
 
 
+COLUMNS = ("seq", "ts", "case_id", "actor", "tool", "input", "output", "duration_ms", "error", "prev_hash", "hash")
+JSON_COLUMNS = ("input", "output", "duration_ms")  # stored as JSON text, read back exactly as hashed
+
+
 class AuditLog:
+    """Append-only, hash-chained log per case, in SQLite (db.py): triggers refuse UPDATE and DELETE on the table, the
+    chain detects an edited entry, and audit_head (count and last hash) detects entries cut off the end."""
+
     def __init__(self, root: Path):
+        from .db import database_for
+
         self.root = Path(root)
-        self._lock = threading.Lock()
-
-    def path(self, case_id: str) -> Path:
-        return self.root / safe_id(case_id) / "audit.jsonl"
-
-    def head_path(self, case_id: str) -> Path:
-        """Count and hash of the last entry, rewritten on every append: deleting entries from the end of the log
-        no longer goes unnoticed."""
-        return self.root / safe_id(case_id) / "audit.head"
+        self.db = database_for(self.root)
 
     def entries(self, case_id: str) -> list[dict[str, Any]]:
-        path = self.path(case_id)
-        if not path.exists():
-            return []
-        return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
+        safe_id(case_id)
+        with self.db.read() as conn:
+            rows = conn.execute(f"SELECT {', '.join(COLUMNS)} FROM audit WHERE case_id = ? ORDER BY seq", (case_id,)).fetchall()
+        return [{**dict(r), **{c: json.loads(r[c]) for c in JSON_COLUMNS}} for r in rows]
 
     def record(
         self,
@@ -61,10 +61,13 @@ class AuditLog:
         duration_ms: float,
         error: str | None = None,
     ) -> dict[str, Any]:
-        with self._lock:
-            previous = self.entries(case_id)
+        from .db import dumps
+
+        safe_id(case_id)
+        with self.db.transaction() as conn:  # joins the caller's transaction: the entry commits with the change it records
+            head = conn.execute("SELECT seq, hash FROM audit_head WHERE case_id = ?", (case_id,)).fetchone()
             entry = {
-                "seq": len(previous) + 1,
+                "seq": head["seq"] + 1 if head else 1,
                 "ts": datetime.now().astimezone().isoformat(timespec="milliseconds"),
                 "case_id": case_id,
                 "actor": actor,
@@ -73,15 +76,15 @@ class AuditLog:
                 "output": jsonable(output),
                 "duration_ms": round(duration_ms, 2),
                 "error": error,
-                "prev_hash": previous[-1]["hash"] if previous else None,
+                "prev_hash": head["hash"] if head else None,
             }
+            entry = {**entry, **{c: json.loads(dumps(entry[c])) for c in JSON_COLUMNS}}
             entry["hash"] = _digest(entry)
-            path = self.path(case_id)
-            path.parent.mkdir(parents=True, exist_ok=True)
-            with path.open("a", encoding="utf-8") as handle:
-                handle.write(json.dumps(entry, ensure_ascii=False) + "\n")
-            self.head_path(case_id).write_text(f"{entry['seq']} {entry['hash']}\n", encoding="utf-8")
-            return entry
+            conn.execute(f"INSERT INTO audit ({', '.join(COLUMNS)}) VALUES ({', '.join('?' * len(COLUMNS))})",
+                         tuple(dumps(entry[c]) if c in JSON_COLUMNS else entry[c] for c in COLUMNS))
+            conn.execute("INSERT INTO audit_head (case_id, seq, hash) VALUES (?, ?, ?) ON CONFLICT (case_id) DO UPDATE"
+                         " SET seq = excluded.seq, hash = excluded.hash", (case_id, entry["seq"], entry["hash"]))
+        return entry
 
     def call(self, case_id: str, actor: str, tool: str, input: Any, fn: Callable[[], T]) -> T:
         started = time.perf_counter()
@@ -100,7 +103,8 @@ class AuditLog:
             if entry["seq"] != seq or entry["prev_hash"] != previous_hash or entry["hash"] != _digest(entry):
                 return False
             previous_hash = entry["hash"]
-        head = self.head_path(case_id)
-        if not head.exists():
+        with self.db.read() as conn:
+            head = conn.execute("SELECT seq, hash FROM audit_head WHERE case_id = ?", (case_id,)).fetchone()
+        if head is None:
             return not entries
-        return head.read_text(encoding="utf-8").split() == [str(len(entries)), str(previous_hash)]
+        return (head["seq"], head["hash"]) == (len(entries), previous_hash)

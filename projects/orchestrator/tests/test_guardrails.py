@@ -1,6 +1,7 @@
 """Each test is an attack or slip that used to get through: approving without the deep checks, a self-declared
 analyst, a path in an id, overwriting a decided case, client-supplied field values, a truncated audit log."""
 import json
+import sqlite3
 import os
 import tempfile
 
@@ -102,10 +103,13 @@ def test_a_case_id_is_never_overwritten(orch):
 def test_truncating_the_audit_log_is_detected(orch):
     case = orch.submit(fixture(PF / "case_pf_00_corect_control"))
     orch.decide(case.case_id, "rejected", "maria")
-    path = orch.audit.path(case.case_id)
     assert orch.audit.verify(case.case_id)
-    path.write_text("".join(path.read_text().splitlines(keepends=True)[:-1]))
-    assert not orch.audit.verify(case.case_id)
+    with sqlite3.connect(orch.audit.db.path) as conn:
+        with pytest.raises(sqlite3.IntegrityError, match="append-only"):  # the database refuses the deletion
+            conn.execute("DELETE FROM audit WHERE seq = (SELECT max(seq) FROM audit)")
+        conn.execute("DROP TRIGGER audit_no_delete")
+        conn.execute("DELETE FROM audit WHERE seq = (SELECT max(seq) FROM audit)")  # the decision, cut off the end
+    assert not orch.audit.verify(case.case_id)  # audit_head still remembers it
 
 
 # --- over HTTP ---------------------------------------------------------------------------------------------------

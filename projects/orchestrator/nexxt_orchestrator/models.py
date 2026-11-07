@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
 
 CustomerType = Literal["PF", "PJ"]
 Role = Literal["applicant", "company", "administrator", "shareholder", "ubo", "signatory"]
@@ -158,6 +158,7 @@ class Decision(Model):
 
 
 class CaseFile(Model):
+    _version: int | None = PrivateAttr(default=None)  # storage version it was loaded at; not part of the contract
     case_id: SafeId
     playbook_id: str
     customer_type: CustomerType

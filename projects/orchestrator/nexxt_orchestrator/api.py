@@ -18,11 +18,14 @@ from pypdf import PdfReader
 from .audit import AuditLog
 from .checks.registry import compact_cui, load_registry, person_list
 from .checks.tamper import document_path
+from .accounts import AccountError, AccountStore
+from .checks.face_match import face_result
 from .gate import UploadRejected, check_format, make_gate
+from .identity import IdentityStore, decode_image
 from .ingest import make_ingest
 from .models import CaseFile, Document, Outcome
 from .orchestrator import CaseExists, NeedsSecondAnalyst, Orchestrator
-from .store import DEFAULT_RUNS_DIR, CaseStore, PlaybookStore
+from .store import DEFAULT_RUNS_DIR, CaseStore, ConcurrentUpdate, PlaybookStore
 
 log = logging.getLogger("nexxt_orchestrator")
 
@@ -30,6 +33,8 @@ store = CaseStore(DEFAULT_RUNS_DIR)
 audit = AuditLog(DEFAULT_RUNS_DIR)
 playbooks = PlaybookStore()
 orchestrator = Orchestrator(store, audit, playbooks)
+identities = IdentityStore(store.root)
+accounts = AccountStore(store.db)
 OCR_ENABLED = bool(os.environ.get("FEATHERLESS_API_KEY"))
 if OCR_ENABLED:
     classify, extract = make_ingest(playbooks, store.root)
@@ -50,7 +55,7 @@ if not _analyst_tokens():
 DEFAULT_ORIGINS = "http://localhost:8080,http://localhost:5173,http://localhost:3000"
 app = FastAPI(title="NexxtAI orchestrator")
 app.add_middleware(CORSMiddleware, allow_origins=os.environ.get("NEXXT_CORS_ORIGINS", DEFAULT_ORIGINS).split(","),
-                   allow_methods=["GET", "POST"], allow_headers=["Authorization", "Content-Type", "X-Analyst"])
+                   allow_methods=["GET", "POST"], allow_headers=["Authorization", "Content-Type", "X-Analyst", "X-Client-Token"])
 
 
 def _guard(fn):
@@ -60,6 +65,8 @@ def _guard(fn):
         raise HTTPException(404, f"not found: {exc}") from exc
     except CaseExists as exc:
         raise HTTPException(409, str(exc)) from exc
+    except ConcurrentUpdate as exc:
+        raise HTTPException(409, f"{exc}; try again") from exc
     except PermissionError as exc:
         raise HTTPException(403, str(exc)) from exc
     except ValueError as exc:
@@ -97,6 +104,74 @@ def is_staff(authorization: str | None = Header(None), x_analyst: str | None = H
         return False
 
 
+def client_account(x_client_token: str | None = Header(None)):
+    """The signed-in client (X-Client-Token from /auth/verify), None when not signed in; an expired token is a 401."""
+    if not x_client_token:
+        return None
+    account = accounts.account_for(x_client_token)
+    if account is None:
+        raise HTTPException(401, {"code": "session_expired", "message": "Sesiunea a expirat. Intră din nou în cont."})
+    return account
+
+
+def case_access(case_id: str, account=Depends(client_account), authorization: str | None = Header(None),
+                x_analyst: str | None = Header(None)) -> None:
+    """A case opened from an account answers only that account, and analysts; to anyone else it does not exist."""
+    owner = accounts.owner_of(case_id)
+    if owner is None or (account is not None and account.account_id == owner):
+        return
+    tokens = _analyst_tokens()
+    given = (authorization or "").removeprefix("Bearer ").strip()
+    if (tokens and given in tokens) or (not tokens and x_analyst and x_analyst.strip()):
+        return
+    raise HTTPException(404, f"not found: {case_id}")
+
+
+def _account_error(exc: AccountError) -> HTTPException:
+    status = {"invalid_email": 422, "invalid_phone": 422, "email_taken": 409, "phone_taken": 409}.get(exc.code, 401)
+    return HTTPException(status, {"code": exc.code, "message": exc.message})
+
+
+class SignInBody(BaseModel):
+    email: str
+    phone: str
+    code: str | None = None
+
+
+@app.post("/auth/start")
+def auth_start(body: SignInBody):
+    """Sign up or sign in: checks that the e-mail and the phone are free or belong to the same account, sends a code."""
+    try:
+        return accounts.start(body.email, body.phone)
+    except AccountError as exc:
+        raise _account_error(exc) from exc
+
+
+@app.post("/auth/verify")
+def auth_verify(body: SignInBody):
+    try:
+        account, token = accounts.verify(body.email, body.phone, body.code or "")
+    except AccountError as exc:
+        raise _account_error(exc) from exc
+    return {"token": token, "account_id": account.account_id, "email": account.email, "phone": account.phone,
+            "created_at": account.created_at}
+
+
+@app.post("/auth/sign-out")
+def auth_sign_out(x_client_token: str | None = Header(None)):
+    if x_client_token:
+        accounts.sign_out(x_client_token)
+    return {"ok": True}
+
+
+@app.get("/client/cases")
+def my_cases(account=Depends(client_account)):
+    """The signed-in client's own cases, from any browser."""
+    if account is None:
+        raise HTTPException(401, {"code": "signed_out", "message": "Intră în cont ca să-ți vezi dosarele."})
+    return [client_view(store.load(i)) for i in accounts.cases_of(account.account_id) if store.exists(i)]
+
+
 class DecisionBody(BaseModel):
     outcome: Outcome
     note: str | None = None
@@ -127,8 +202,13 @@ def get_playbook(playbook_id: str):
 
 
 @app.post("/cases", response_model=CaseFile)
-def submit_case(case: CaseFile):
-    return _guard(lambda: orchestrator.submit(case))
+def submit_case(case: CaseFile, account=Depends(client_account)):
+    """A case opened by a signed-in client belongs to that account (in the same transaction as the case itself)."""
+    with store.db.transaction():
+        created = _guard(lambda: orchestrator.submit(case))
+        if account is not None:
+            accounts.own(created.case_id, account.account_id)
+    return created
 
 
 def client_name(case: CaseFile) -> str:
@@ -153,7 +233,7 @@ def get_case(case_id: str):
     return _guard(lambda: store.load(case_id))
 
 
-@app.post("/cases/{case_id}/process")
+@app.post("/cases/{case_id}/process", dependencies=[Depends(case_access)])
 def process_case(case_id: str, full: bool = Depends(is_staff)):
     case = _guard(lambda: orchestrator.process(case_id, mode="full"))
     return case if full else client_view(case)
@@ -192,7 +272,7 @@ def uploads_allowed() -> bool:
     return OCR_ENABLED or os.environ.get("NEXXT_ALLOW_UPLOAD_WITHOUT_OCR") == "1"
 
 
-@app.post("/cases/{case_id}/documents")
+@app.post("/cases/{case_id}/documents", dependencies=[Depends(case_access)])
 def upload_document(case_id: str, file: UploadFile = File(...), replaces: str | None = None, expected: str | None = None,
                     full: bool = Depends(is_staff)):
     """Client upload: the file is stored, then classify, extract and the intake checks run on it. With `expected` (the
@@ -297,17 +377,101 @@ def client_view(case: CaseFile) -> dict:
             "request_note": case.decision.note if case.decision and case.decision.outcome == "documents_requested" else None,
             "client_messages": [r["message"] for r in requests], "requests": requests,
             "persons": [p.model_dump() for p in case.persons],
+            # Whether the onboarding steps are done, so a portal in another browser knows (never the face result).
+            "onboarding": {"consent": "consent" in identities.load(case.case_id), "identity": "identity" in identities.load(case.case_id)},
             "documents": [{"doc_id": d.doc_id, "doc_type": d.doc_type, "owner_person_id": d.owner_person_id,
                            "mime_type": d.mime_type, "pages": d.pages, "file": d.file, "uploaded_at": d.uploaded_at}
                           for d in case.documents]}
 
 
-@app.get("/cases/{case_id}/client-status")
+@app.get("/cases/{case_id}/client-status", dependencies=[Depends(case_access)])
 def client_status(case_id: str):
     return client_view(_guard(lambda: store.load(case_id)))
 
 
-@app.get("/cases/{case_id}/client-messages")
+class ConsentBody(BaseModel):
+    items: list[str]
+
+
+class Liveness(BaseModel):
+    blink: bool = False
+    turn: bool = False
+    method: str = "none"
+
+
+class IdentityBody(BaseModel):
+    selfie: str  # JPEG or PNG data URL
+    liveness: Liveness = Liveness()
+    fallback_reason: str | None = None
+
+
+def _open_case(case_id: str) -> CaseFile:
+    case = _guard(lambda: store.load(case_id))
+    if case.status == "decided":
+        raise HTTPException(403, "case is already decided")
+    return case
+
+
+@app.post("/cases/{case_id}/consent", dependencies=[Depends(case_access)])
+def save_consent(case_id: str, body: ConsentBody):
+    _open_case(case_id)
+    with store.db.transaction():  # the consent and its audit entry are stored together
+        consent = _guard(lambda: identities.save_consent(case_id, body.items))
+        audit.record(case_id, "client", "consent", {"items": consent["items"]}, {"at": consent["at"]}, 0)
+    return consent
+
+
+@app.post("/cases/{case_id}/identity", dependencies=[Depends(case_access)])
+def save_identity(case_id: str, body: IdentityBody):
+    """The verification selfie. One face must be visible; the comparison with the ID runs for the analyst, and its
+    result is never sent to the client."""
+    from . import face
+
+    _open_case(case_id)
+    try:
+        image = decode_image(body.selfie)
+    except ValueError as exc:
+        raise HTTPException(422, {"code": "invalid_image", "message": "Fotografia nu a putut fi citită. Fă una nouă."}) from exc
+    try:
+        faces = face.count_faces(face.load_image_bytes(image))
+    except face.FaceError:
+        faces = None  # model or image problem: kept, and the analyst's check reports "could not run"
+    if faces == 0:
+        raise HTTPException(422, {"code": "no_face", "message": "Nu îți vedem fața în fotografie. Privește drept în cameră, cu lumină bună, și încearcă din nou."})
+    if faces is not None and faces > 1:
+        raise HTTPException(422, {"code": "several_faces", "message": "În fotografie trebuie să fii doar tu. Încearcă din nou."})
+    with store.db.transaction():
+        saved = identities.save_selfie(case_id, image, body.liveness.model_dump(), body.fallback_reason)
+        audit.record(case_id, "client", "identity_selfie", {"bytes": len(image), "liveness": saved["liveness"],
+                     "fallback_reason": body.fallback_reason}, {"sha256": saved["selfie_sha256"]}, 0)
+    return {"ok": True, "captured_at": saved["captured_at"]}
+
+
+@app.get("/cases/{case_id}/identity", dependencies=[Depends(staff)])
+def identity_review(case_id: str):
+    """The analyst's view: consent, liveness, and the selfie compared with the ID photo."""
+    case = _guard(lambda: store.load(case_id))
+    record = identities.load(case_id)
+    applicants = {p.person_id for p in case.persons if p.role == "applicant"}
+    face_view = face_result(case, store.root, applicants) if record.get("identity") else None
+    if face_view:
+        face_view = {k: v for k, v in face_view.items() if k != "selfie_sha256"}
+    identity_view = dict(record["identity"], selfie_url=f"/cases/{case_id}/identity/selfie") if record.get("identity") else None
+    if identity_view:
+        identity_view.pop("selfie_sha256", None)
+    return {"consent": record.get("consent"), "identity": identity_view, "face": face_view}
+
+
+@app.get("/cases/{case_id}/identity/selfie", dependencies=[Depends(staff)])
+def identity_selfie(case_id: str):
+    path = identities.selfie_path(case_id) if store.exists(case_id) else None
+    if path is None or not path.is_file():
+        raise HTTPException(404, "no selfie")
+    data = path.read_bytes()
+    return Response(data, media_type="image/png" if data.startswith(b"\x89PNG") else "image/jpeg")
+
+
+@app.get("/cases/{case_id}/client-messages", dependencies=[Depends(case_access)])
 def client_messages(case_id: str):
     return _guard(lambda: orchestrator.client_messages(case_id))
 

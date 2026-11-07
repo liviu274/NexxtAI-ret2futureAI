@@ -1,8 +1,9 @@
 """The client's onboarding record: consent, the verification selfie and its liveness result, and the face comparison.
 
-Stored next to the case (runs/<case_id>/identity/), not in the case file: the contract has no field for it, and the
-selfie is biometric data that only the analyst's endpoints serve. The face comparison is cached with the selfie hash and
-the document it was made against, so it is recomputed only when one of them changes.
+The record is in the database (table identity), the selfie image in runs/<case_id>/identity/selfie.jpg; neither is in
+the case file: the contract has no field for it, and the selfie is biometric data that only the analyst's endpoints
+serve. The face comparison is cached with the selfie hash and the document it was made against, so it is recomputed
+only when one of them changes.
 """
 from __future__ import annotations
 
@@ -23,7 +24,10 @@ MAX_SELFIE_BYTES = 2 * 1024 * 1024
 
 class IdentityStore:
     def __init__(self, root: Path):
+        from .db import database_for
+
         self.root = Path(root)
+        self.db = database_for(self.root)
 
     def folder(self, case_id: str) -> Path:
         return self.root / safe_id(case_id) / "identity"
@@ -32,13 +36,16 @@ class IdentityStore:
         return self.folder(case_id) / "selfie.jpg"
 
     def load(self, case_id: str) -> dict[str, Any]:
-        path = self.folder(case_id) / "identity.json"
-        return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
+        safe_id(case_id)
+        with self.db.read() as conn:
+            row = conn.execute("SELECT data FROM identity WHERE case_id = ?", (case_id,)).fetchone()
+        return json.loads(row["data"]) if row else {}
 
     def _save(self, case_id: str, record: dict[str, Any]) -> None:
-        folder = self.folder(case_id)
-        folder.mkdir(parents=True, exist_ok=True)
-        (folder / "identity.json").write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
+        safe_id(case_id)
+        with self.db.transaction() as conn:
+            conn.execute("INSERT INTO identity (case_id, data) VALUES (?, ?) ON CONFLICT (case_id) DO UPDATE SET data = excluded.data",
+                         (case_id, json.dumps(record, ensure_ascii=False)))
 
     def save_consent(self, case_id: str, items: list[str]) -> dict[str, Any]:
         chosen = sorted(set(items))

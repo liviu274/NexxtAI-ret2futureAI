@@ -62,10 +62,13 @@ function analystHeaders(): Record<string, string> {
 async function orchestratorHttp<T>(path: string, init?: RequestInit, processing = false, retried = false): Promise<T> {
   let res: Response;
   const multipart = init?.body instanceof FormData;
-  const token = analystToken();
-  try { res = await fetch(`${ORCHESTRATOR_BASE}${path}`, { ...init, headers: { ...(!multipart ? { "Content-Type": "application/json" } : {}), ...(token ? { Authorization: `Bearer ${token}` } : {}), ...init?.headers }, signal: AbortSignal.timeout(processing ? OCR_TIMEOUT_MS : 10_000) }); }
+  const token = analystToken(); const client = getSession()?.token;
+  try { res = await fetch(`${ORCHESTRATOR_BASE}${path}`, { ...init, headers: { ...(!multipart ? { "Content-Type": "application/json" } : {}), ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(client ? { "X-Client-Token": client } : {}), ...init?.headers }, signal: AbortSignal.timeout(processing ? OCR_TIMEOUT_MS : 10_000) }); }
   catch { availability = Promise.resolve(false); throw new Error(processing ? OCR_UNCONFIRMED : SERVICE_UNAVAILABLE); }
-  if (res.status === 401 && !retried && typeof window !== "undefined" && typeof window.prompt === "function") {
+  // Client-account errors answer {code, message}; only the analyst endpoints answer 401 with plain text.
+  const errorBody = res.ok ? null : await res.json().catch(() => null) as { detail?: unknown } | null; // read once
+  const clientRefusal = res.status === 401 && typeof errorBody?.detail === "object" && errorBody.detail !== null;
+  if (res.status === 401 && !clientRefusal && !retried && typeof window !== "undefined" && typeof window.prompt === "function") {
     // The server requires analyst tokens (NEXXT_ANALYSTS): ask once, keep it for this browser tab.
     const entered = window.prompt("Tokenul tău de analist:")?.trim();
     if (entered) {
@@ -74,8 +77,11 @@ async function orchestratorHttp<T>(path: string, init?: RequestInit, processing 
     }
   }
   if (!res.ok) {
-    const body = await res.json().catch(() => null) as { detail?: unknown } | null;
+    const body = errorBody;
     const detail = typeof body?.detail === "string" ? body.detail : "";
+    const structured = body?.detail && typeof body.detail === "object" ? body.detail as { code?: string; message?: string } : null;
+    if (structured?.code === "session_expired" || structured?.code === "signed_out") clearClientSession();
+    if ((res.status === 401 || res.status === 409) && structured?.message) { availability = Promise.resolve(true); throw new Error(structured.message); }
     if (res.status === 401) throw new Error("Este necesară autentificarea analistului. Reîncarcă pagina și introdu tokenul.");
     if (res.status === 503 && detail.includes("FEATHERLESS_API_KEY")) {
       // The service is up; it only cannot read documents. Nothing was stored.
@@ -499,11 +505,14 @@ export async function getClientPortalCase(caseId: string): Promise<ClientPortalC
  return toClientPortalCase(c, c.portalDocuments);
 }
 
+/** The signed-in account's cases, from the orchestrator, whichever browser opened them; never another account's. */
 export async function listMyPortalCases(): Promise<ClientPortalCase[]> {
  const m = await mocks();
- const demo = readDemoCases(m.cases).filter((c) => c.id.startsWith("demo_")).map((c) => toClientPortalCase(c, c.portalDocuments ?? []));
- // Cases opened in the backend from this browser; skipped while the service is down.
- const live = await Promise.all(readMyLiveCases().map((id) => getClientPortalCase(id).catch(() => null)));
+ const demo = DEMO_UPLOADS ? readDemoCases(m.cases).filter((c) => c.id.startsWith("demo_")).map((c) => toClientPortalCase(c, c.portalDocuments ?? [])) : [];
+ if (!getSession()?.token || !await orchestratorAvailable()) return demo;
+ const mine = await orchestratorHttp<{ case_id: string }[]>("/client/cases");
+ for (const c of mine) backendIds.add(c.case_id);
+ const live = await Promise.all(mine.map((c) => getClientPortalCase(c.case_id).catch(() => null)));
  return [...live.filter((c): c is ClientPortalCase => !!c), ...demo];
 }
 
@@ -678,14 +687,31 @@ export function getSession(): ClientSession | null {
  if (typeof window === "undefined") return null;
  try { return JSON.parse(window.localStorage.getItem(SESSION_KEY) ?? "null") as ClientSession | null; } catch { return null; }
 }
-export async function requestSignInCode(email: string, phone: string) {
+/**
+ * Sign up or sign in, one step: the orchestrator accepts an e-mail and a phone that are new, or that belong to the same
+ * account, and refuses either one when it belongs to another account. It generates the code; until an SMS provider is
+ * connected it returns it in demo mode (`demoCode`), and the page shows it.
+ */
+export async function requestSignInCode(email: string, phone: string): Promise<{ sentTo: string; demoCode?: string; existing?: boolean }> {
  if (!isValidEmail(email)) throw new Error("Adresa de e-mail nu este validă.");
  if (!isValidPhone(phone)) throw new Error("Introdu un număr de mobil românesc, de exemplu 0722 123 456.");
+ if (await orchestratorAvailable()) {
+  const r = await orchestratorHttp<{ sent_to: string; account: "new" | "existing"; demo_code?: string }>("/auth/start", { method: "POST", body: JSON.stringify({ email, phone }) });
+  return { sentTo: r.sent_to, existing: r.account === "existing", ...(r.demo_code ? { demoCode: r.demo_code } : {}) };
+ }
+ if (!DEMO_UPLOADS) throw new Error("Serviciul de verificare nu este disponibil acum. Încearcă din nou mai târziu.");
  await delay(600);
  return { sentTo: phone.replace(/[\s.-]/g, "").replace(/\d(?=\d{3})/g, "•") };
 }
 export async function verifySignInCode(email: string, phone: string, code: string): Promise<ClientSession> {
  if (!/^\d{6}$/.test(code)) throw new Error("Codul are 6 cifre.");
+ if (await orchestratorAvailable()) {
+  const r = await orchestratorHttp<{ token: string; account_id: string; email: string; phone: string; created_at: string }>("/auth/verify", { method: "POST", body: JSON.stringify({ email, phone, code }) });
+  const session: ClientSession = { email: r.email, phone: r.phone, createdAt: r.created_at, token: r.token, accountId: r.account_id };
+  try { window.localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch { /* the session lasts for this page only */ }
+  window.dispatchEvent(new Event("raif2future-session-change"));
+  return session;
+ }
  await delay(500);
  const session: ClientSession = { email: email.trim().toLowerCase(), phone: phone.replace(/[\s.-]/g, ""), createdAt: new Date().toISOString() };
  try { window.localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch { /* the session lasts for this page only */ }
@@ -693,6 +719,12 @@ export async function verifySignInCode(email: string, phone: string, code: strin
  return session;
 }
 export function signOut() {
+ const token = getSession()?.token;
+ if (token) void fetch(`${ORCHESTRATOR_BASE}/auth/sign-out`, { method: "POST", headers: { "X-Client-Token": token } }).catch(() => undefined);
+ clearClientSession();
+}
+function clearClientSession() {
+ if (typeof window === "undefined") return;
  try { window.localStorage.removeItem(SESSION_KEY); } catch { /* already gone */ }
  window.dispatchEvent(new Event("raif2future-session-change"));
 }

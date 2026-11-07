@@ -1,7 +1,8 @@
 /** Client onboarding: demo session, consent and the identity check. For cases in the orchestrator, consent and the
  * selfie are sent to it (POST /consent, /identity) and the selfie is compared there with the ID photo. */
 
-export interface ClientSession { email: string; phone: string; createdAt: string }
+/** `token` and `accountId` come from the orchestrator (POST /auth/verify); an offline demo session has neither. */
+export interface ClientSession { email: string; phone: string; createdAt: string; token?: string; accountId?: string }
 
 export const CONSENT_ITEMS = [
   { id: "kyc", label: "Sunt de acord ca banca să-mi verifice documentele și datele pentru deschiderea contului (obligație legală KYC).", required: true },

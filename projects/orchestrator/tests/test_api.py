@@ -3,12 +3,12 @@ import os
 import tempfile
 from pathlib import Path
 
-os.environ["NEXXT_RUNS_DIR"] = tempfile.mkdtemp(prefix="nexxt_api_")
+os.environ.setdefault("NEXXT_RUNS_DIR", tempfile.mkdtemp(prefix="nexxt_api_"))  # whichever test module imports the API first
 os.environ["NEXXT_ALLOW_UPLOAD_WITHOUT_OCR"] = "1"  # these tests store files; no model reads them
 
 from fastapi.testclient import TestClient
 
-from nexxt_orchestrator.api import app
+from nexxt_orchestrator.api import app, store
 from nexxt_orchestrator.store import REPO_ROOT
 
 client = TestClient(app)
@@ -54,7 +54,7 @@ def test_upload_stores_the_file_and_registers_an_unknown_document():
     [doc] = res.json()["documents"]
     assert doc["doc_id"] == "doc_001" and doc["file"] == "docs/doc_001.pdf"
     assert doc["mime_type"] == "application/pdf" and doc["pages"] == 1 and doc["doc_type"] == "unknown"
-    stored = Path(os.environ["NEXXT_RUNS_DIR"]) / "case_upload" / "docs" / "doc_001.pdf"
+    stored = store.root / "case_upload" / "docs" / "doc_001.pdf"
     assert stored.read_bytes() == (PF_CASE / "docs" / "doc_001_identity_document.pdf").read_bytes()
 
     png = upload("case_upload", PF_CASE / "images" / "doc_003_payslip.png", name="../../evil.pdf").json()["documents"][-1]

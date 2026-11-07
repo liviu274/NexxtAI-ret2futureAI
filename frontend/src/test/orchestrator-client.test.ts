@@ -136,5 +136,33 @@ describe("Hybrid orchestrator client", () => {
     expect(await api.getIdentityReview("live_pf_3")).toMatchObject({ stored: true, face: { status: "no_match", score: 0.12 },
       identity: { selfie: "/api/orch/cases/live_pf_3/identity/selfie", fallbackReason: "camera", liveness: { method: "none" } } });
   });
+  it("signs up through the orchestrator, refuses an e-mail or phone used by another account, and sends the session", async () => {
+    const taken = { detail: { code: "email_taken", message: "Acest e-mail este folosit de alt cont." } };
+    const fetch = vi.fn((url: string, init?: RequestInit) => {
+      const body = init?.body ? JSON.parse(init.body as string) as { email?: string } : {};
+      if (url.endsWith("/auth/start")) return Promise.resolve(body.email === "luat@exemplu.ro" ? response(taken, 409) : response({ sent_to: "+40•••••456", account: "new", demo_code: "482913" }));
+      if (url.endsWith("/auth/verify")) return Promise.resolve(response({ token: "tok-1", account_id: "acc_1", email: "ana@exemplu.ro", phone: "+40722123456", created_at: "2026-10-29T10:00:00+02:00" }));
+      if (url.endsWith("/client/cases")) return Promise.resolve(response([]));
+      return Promise.resolve(response({ ok: true }));
+    });
+    vi.stubGlobal("fetch", fetch);
+    const prompt = vi.fn(); vi.stubGlobal("prompt", prompt);
+    const api = await import("@/api/client");
+    await expect(api.requestSignInCode("luat@exemplu.ro", "0722123456")).rejects.toThrow("folosit de alt cont");
+    expect(prompt).not.toHaveBeenCalled(); // a client refusal never asks for an analyst token
+    expect(await api.requestSignInCode("ana@exemplu.ro", "0722123456")).toMatchObject({ demoCode: "482913", existing: false });
+    expect(await api.verifySignInCode("ana@exemplu.ro", "0722123456", "482913")).toMatchObject({ token: "tok-1", accountId: "acc_1" });
+    expect(await api.listMyPortalCases()).toEqual([]);
+    const mine = fetch.mock.calls.find(([url]) => String(url).endsWith("/client/cases"));
+    expect((mine?.[1] as RequestInit).headers).toMatchObject({ "X-Client-Token": "tok-1" });
+  });
+  it("signs the client out when the server says the session expired", async () => {
+    localStorage.setItem("raif2future-session-v1", JSON.stringify({ email: "a@b.ro", phone: "+40722123456", createdAt: "x", token: "old" }));
+    vi.stubGlobal("fetch", vi.fn((url: string) => Promise.resolve(url.endsWith("/client/cases")
+      ? response({ detail: { code: "session_expired", message: "Sesiunea a expirat. Intră din nou în cont." } }, 401) : response({ ok: true }))));
+    const api = await import("@/api/client");
+    await expect(api.listMyPortalCases()).rejects.toThrow("Sesiunea a expirat");
+    expect(api.getSession()).toBeNull();
+  });
 });
 

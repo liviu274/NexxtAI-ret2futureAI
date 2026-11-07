@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 from datetime import date, datetime
 from typing import Callable, Literal
 
@@ -9,11 +10,21 @@ from .checks import CHECKS, CheckContext, load_stubs, whole_doc_evidence
 from .models import (
     BLOCKING, CLIENT_VISIBLE_STAGES, CaseFile, Decision, Document, Flag, Outcome, Playbook, RiskDraft, Rule,
 )
-from .store import CaseStore, PlaybookStore
+from .store import CaseStore, ConcurrentUpdate, PlaybookStore
 
 STAGE_ORDER = ["validate", "cross_check", "tamper", "screening"]
 ACTIVE = ("open", "sent_to_client")
 MACHINE_ACTORS = ("agent", "system", "orchestrator")
+
+
+def atomic(method):
+    """Runs the method in one write transaction: the case change and its audit entries commit together, and no other
+    request can change the case between this method's read and its write."""
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        with self.store.db.transaction():
+            return method(self, *args, **kwargs)
+    return wrapper
 
 
 class CaseExists(Exception):
@@ -53,6 +64,7 @@ class Orchestrator:
         if gate:
             self.gate = gate
 
+    @atomic
     def submit(self, case: CaseFile) -> CaseFile:
         if self.store.exists(case.case_id):
             raise CaseExists(f"case {case.case_id} already exists")
@@ -81,19 +93,35 @@ class Orchestrator:
                 self.audit.record(case_id, "orchestrator", "reject_upload", {"doc_id": doc.doc_id, "expected": expected,
                                   "doc_type": doc.doc_type}, {"code": exc.code}, 0)
                 raise
-        if replaces:
-            old = next((d for d in case.documents if d.doc_id == replaces), None)
-            if old is None:
-                raise KeyError(replaces)
-            case.documents.remove(old)
-            doc.owner_person_id = doc.owner_person_id or old.owner_person_id
-            self.audit.record(case_id, "client", "replace_document", {"old_doc_id": replaces, "old_file": old.file}, {"new_doc_id": doc.doc_id}, 0)
-        case.documents.append(doc)
-        self.audit.record(case_id, "client", "upload_document", {"doc_id": doc.doc_id, "file": doc.file}, None, 0)
-        self.store.save(case)
+        with self.store.db.transaction():  # the reading above can take a minute: attach to the case as it is now
+            case = self.store.load(case_id)
+            if case.status == "decided":
+                raise PermissionError("case is already decided")
+            if replaces:
+                old = next((d for d in case.documents if d.doc_id == replaces), None)
+                if old is None:
+                    raise KeyError(replaces)
+                case.documents.remove(old)
+                doc.owner_person_id = doc.owner_person_id or old.owner_person_id
+                self.audit.record(case_id, "client", "replace_document", {"old_doc_id": replaces, "old_file": old.file}, {"new_doc_id": doc.doc_id}, 0)
+            case.documents.append(doc)
+            self.audit.record(case_id, "client", "upload_document", {"doc_id": doc.doc_id, "file": doc.file}, None, 0)
+            self.store.save(case)
         return self.process(case_id, mode="intake")
 
     def process(self, case_id: str, mode: Literal["intake", "full"] = "full") -> CaseFile:
+        """The pipeline runs without holding the database (OCR can take minutes); if the case changed meanwhile (an
+        analyst dismissed a flag, the client uploaded), its result is not saved over that change: it runs again on the
+        case as it is now. OCR transcriptions are cached, so a second run is quick."""
+        for attempt in range(3):
+            try:
+                return self._process_once(case_id, mode)
+            except ConcurrentUpdate:
+                if attempt == 2:
+                    raise
+        raise AssertionError("unreachable")
+
+    def _process_once(self, case_id: str, mode: Literal["intake", "full"]) -> CaseFile:
         intake = mode == "intake"
         case = self.store.load(case_id)
         if case.status == "decided":
@@ -217,7 +245,14 @@ class Orchestrator:
 
     def dismiss_flag(self, case_id: str, flag_id: str, analyst: str, note: str) -> CaseFile:
         """Close a flag with a reason (this is also how a medium flag is acknowledged). A critical flag needs a
-        second, different analyst: the first call only records the request."""
+        second, different analyst: the first call only records the request, then raises NeedsSecondAnalyst."""
+        with self.store.db.transaction():
+            result = self._dismiss(case_id, flag_id, analyst, note)
+        if isinstance(result, NeedsSecondAnalyst):
+            raise result  # after the commit: the recorded request must survive
+        return result
+
+    def _dismiss(self, case_id: str, flag_id: str, analyst: str, note: str) -> CaseFile | NeedsSecondAnalyst:
         analyst = human(analyst)
         if not note.strip():
             raise ValueError("dismissing a flag needs an analyst name and a note")
@@ -234,7 +269,7 @@ class Orchestrator:
                             if e["tool"] == "dismiss_request" and (e["input"] or {}).get("flag_id") == flag_id}
             if not requested_by - {f"human:{analyst}"}:
                 self.audit.record(case_id, f"human:{analyst}", "dismiss_request", {"flag_id": flag_id, "note": note}, None, 0)
-                raise NeedsSecondAnalyst(f"flag {flag_id} is critical: a second analyst must confirm the dismissal")
+                return NeedsSecondAnalyst(f"flag {flag_id} is critical: a second analyst must confirm the dismissal")
         flag.status, flag.resolution_note = "dismissed", f"{analyst}: {note}"
         self.audit.record(case_id, f"human:{analyst}", "dismiss_flag", {"flag_id": flag_id, "note": note}, None, 0)
         self._touch(case)
@@ -262,6 +297,7 @@ class Orchestrator:
         ctx = CheckContext(case=case, playbook=pb, rule=rule, today=self.today(), person_id=flag.person_id, runs_dir=self.store.root)
         return screening_detail(ctx, flag.person_id)
 
+    @atomic
     def confirm_flag(self, case_id: str, flag_id: str, analyst: str, note: str) -> CaseFile:
         """The analyst confirms a screening match is the client. The flag stays open and keeps blocking approval:
         the next step is the compliance officer, or a rejection."""
@@ -289,6 +325,7 @@ class Orchestrator:
                 return (entry["input"] or {}).get("mode") == "full"
         return False
 
+    @atomic
     def decide(self, case_id: str, outcome: Outcome, analyst: str, note: str | None = None) -> CaseFile:
         analyst = human(analyst)
         case = self.store.load(case_id)
